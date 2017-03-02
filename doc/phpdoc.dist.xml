@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdoc>
+    <title><![CDATA[PhpMe Framework API Document]]></title>
+    <files>
+        <directory>./src</directory>
+        <ignore>./src/cache</ignore>
+    </files>
+    <transformer>
+        <target>./doc/ApiDoc/api</target>
+    </transformer>
+    <parser>
+        <default-package-name>ROOT</default-package-name>
+        <target>./doc/ApiDoc/cache</target>
+        <encoding>utf8</encoding>
+        <!--
+        <markers>
+            <item>TODO</item>
+            <item>FIXME</item>
+        </markers>
+        -->
+        <extensions>
+            <extension>php</extension>
+        </extensions>
+    </parser>
+
+    <transformations>
+        <template name="clean" />
+    </transformations>
+    <logging>
+        <level>warn</level>
+        <paths>
+            <default>./doc/ApiDoc/log/{DATE}.log</default>
+            <errors>./doc/ApiDoc/log/{DATE}.errors.log</errors>
+        </paths>
+    </logging>
+</phpdoc>

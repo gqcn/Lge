@@ -1,0 +1,98 @@
+<?php
+if (!defined('PhpMe')) {
+	exit('Include Permission Denied!');
+}
+
+class Controller_Order extends BaseControllerDefault
+{
+    /**
+     * 我的预约.
+     */
+    public function index()
+    {
+        $this->_getOpenidByAuth('/');
+        $tables = array(
+            'shop_order so',
+            'left join shop s ON(s.id=so.shop_id)',
+        );
+        $fields = 'so.*,s.name as shop_name,s.logo as shop_logo,s.v as shop_v';
+        $uid    = $this->_session['user']['uid'];
+        $list   = array();
+        if (!empty($uid)) {
+            $condition = array('uid=?', $uid);
+            // $condition = 1;
+            $list      = Instance::table($tables)->getAll($fields, $condition, null, '`status` desc, id desc', 0, 0);
+        }
+        $this->assigns(array(
+            'list'         => $list,
+            'title'        => '我的订单',
+            'containerTpl' => '_order/list',
+        ));
+
+        $this->display();
+    }
+
+    /**
+     * 添加.
+     */
+    public function asyncAdd()
+    {
+        $request = Lib_Request::getArray(array(
+            'name'           => '',
+            'shop_id'        => 0,
+            'phone'          => '',
+            'address'        => 1,
+            'order_content'  => '',
+            'order_date'     => date('Y-m-d'),
+            'order_time'     => date('H:i:s'),
+        ), 'post');
+        $data = array(
+            'uid'            => $this->_session['user']['uid'],
+            'shop_id'        => $request['shop_id'],
+            'name'           => $request['name'],
+            'phone'          => $request['phone'],
+            'address'        => $request['address'],
+            'order_content'  => $request['order_content'],
+            'order_time'     => strtotime("{$request['order_date']} {$request['order_time']}"),
+            'create_time'    => time(),
+            'status'         => Module_Order::ORDER_NEW,
+        );
+        /*
+        $this->log(json_encode($data), 'test');
+        $this->log(json_encode($this->_session), 'test');
+        $this->log(json_encode($_SESSION), 'test');
+        */
+        $result = Instance::table('shop_order')->insert($data, '', false);
+        Lib_Response::json(array(), $result);
+    }
+
+    /**
+     * 取消兑换.
+     */
+    public function asyncCancel()
+    {
+        $result = false;
+        $id     = Lib_Request::getPost('id');
+        if (!empty($id)) {
+            $uid       = $this->_session['user']['uid'];
+            $data      = array('status' => Module_Order::ORDER_CANCEL);
+            $condition = array('id=? AND uid=?', $id, $uid);
+            $result    = Instance::table('shop_order')->update($data, $condition);
+        }
+        Lib_Response::json(array(), $result);
+    }
+
+    /**
+     * 用户购买流程
+     */
+    public function buy_products()
+    {
+        $this->assigns(array(
+            'title'        => '产品购买 - '.Config::get()['Site']['front']['name'],
+            'containerTpl' => '_product/buy_product_1',
+        ));
+
+        $this->display();
+    }
+
+}
