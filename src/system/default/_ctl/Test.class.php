@@ -1,10 +1,12 @@
 <?php
-if(!defined('PhpMe')){
+namespace Lge;
+
+if(!defined('LGE')){
 	exit('Include Permission Denied!');
 }
 
 
-class Controller_Test extends Controller_Base
+class Controller_Test extends BaseController
 {
     public function index()
     {

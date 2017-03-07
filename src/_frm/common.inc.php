@@ -12,8 +12,8 @@
  * @author john
  */
 // 用于判断包含标识
-if (!defined('PhpMe')) {
-    define('PhpMe',     1);                           
+if (!defined('LGE')) {
+    define('LGE',       1);
 }
 // 是否开启调试模式
 if (!defined('DEBUG')) {
@@ -29,7 +29,7 @@ if (!defined('FRAME_PATH')) {
     define('FRAME_PATH', __DIR__.'/');
 }
 
-define('FRAME_VERSION', 'PhpMe v2.8');
+define('FRAME_VERSION', 'Lge v2.8');
 
 // 加载框架
 include(FRAME_PATH.'/core/Core.inc.php');

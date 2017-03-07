@@ -1,5 +1,7 @@
 <?php
-if (!defined('PhpMe')) {
+namespace Lge;
+
+if (!defined('LGE')) {
     exit('Include Permission Denied!');
 }
 
@@ -147,7 +149,6 @@ class Core
     public static $necessaryClasses   = array(
         'PDO'          => 'PDO',
         'Redis'        => 'Redis',
-        'Memcached'    => 'Memcached', // 不再使用老版的memcache扩展
     );
 
     /**
@@ -164,7 +165,7 @@ class Core
         ini_set("date.timezone", DEFAULT_TIME_ZONE);
 
         // 注册页面执行结束的回调函数
-        self::registerShutdownFunction(array('Core', 'shutDownFunction'));
+        self::registerShutdownFunction(array('\Lge\Core', 'shutDownFunction'));
 
         // 关闭默认错误显示,使用自定义错误控制
         if (DEBUG === 1) {
@@ -335,8 +336,9 @@ class Core
 
             // 加载控制器文件
             include $filePath;
-            // 生成类对象
-            $ctlClass     = 'Controller_'.$ctlName;
+
+            // 生成类对象(控制器必须在框架的命名空间下)
+            $ctlClass     = '\Lge\\Controller_'.$ctlName;
             self::$ctlObj = new $ctlClass();
             // 使用__init回调方法在控制器对象初始化之后立即调用，相当于初始化函数
             if (method_exists(self::$ctlObj, '__init')) {
@@ -378,7 +380,8 @@ class Core
      */
     public static function classAutoloader($className)
     {
-        $classWordArray = explode('_', $className);
+        $namespaceArray = explode('\\', $className);
+        $classWordArray = explode('_', $namespaceArray[count($namespaceArray) - 1]);
         $firstWord      = strtolower($classWordArray[0]);
         switch ($firstWord) {
             // 控制器自动加载

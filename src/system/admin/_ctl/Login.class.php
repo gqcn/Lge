@@ -1,5 +1,6 @@
 <?php
-if(!defined('PhpMe')){
+namespace Lge;
+if(!defined('LGE')){
     exit('Include Permission Denied!');
 }
 

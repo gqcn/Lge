@@ -1,4 +1,6 @@
 <?php
+namespace Lge;
+
 /**
  * 微信API封装.
  */

@@ -1,5 +1,7 @@
 <?php
-if (!defined('PhpMe')) {
+namespace Lge;
+
+if (!defined('LGE')) {
 	exit('Include Permission Denied!');
 }
 
@@ -53,8 +55,8 @@ class BaseController extends Base
 	    $act   = Core::$act;
         $error = '';
 		try {
-			$reflection = new ReflectionMethod($this, $act);
-		} catch (Exception $e) {
+			$reflection = new \ReflectionMethod($this, $act);
+		} catch (\Exception $e) {
             $error = "No act '{$act}' found for controller '{$ctl}'\n";
 		}
         if (empty($error) && $reflection->isPublic() && $reflection->getNumberOfParameters() == 0) {

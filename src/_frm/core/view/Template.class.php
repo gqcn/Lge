@@ -1,5 +1,5 @@
 <?php
-if (!defined('PhpMe')) {
+if (!defined('LGE')) {
 	exit('Include Permission Denied!');
 }
 /**

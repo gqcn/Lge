@@ -5,6 +5,7 @@
  * @author john
  * @version v0.1 2014-03-06
  */
+namespace Lge;
 
 class Plugin_String
 {

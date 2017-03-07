@@ -12,9 +12,9 @@ return array(
         // 缓存写入的日志内容，最后请求执行完毕后再真正写入
         'cache'        => false,
         // 适配配置
-        'adapter'      => Logger::ADAPTER_FILE,
+        'adapter'      => \Lge\Logger::ADAPTER_FILE,
         // 日志记录级别
-        'levels'       => Logger::LOG_LEVEL_ALL,
+        'levels'       => \Lge\Logger::LOG_LEVEL_ALL,
         // 对应适配配置
         'setting'      => array(
             // 日志文件配置

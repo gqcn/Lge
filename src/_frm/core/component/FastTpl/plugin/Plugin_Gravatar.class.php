@@ -4,6 +4,7 @@
  * 
  * @author john
  */
+namespace Lge;
 
 class Plugin_Gravatar
 {

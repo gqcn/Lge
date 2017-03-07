@@ -1,4 +1,6 @@
 <?php
+namespace Lge;
+
 /**
  * 回调控制控制器.
  *

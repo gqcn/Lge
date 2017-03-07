@@ -1,4 +1,6 @@
 <?php
+namespace Lge;
+
 /**
  * 百度地图API封装.
  */

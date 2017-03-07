@@ -1,4 +1,6 @@
 <?php
+namespace Lge;
+
 /**
  * 百度ApiStore API封装.
  */

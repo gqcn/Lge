@@ -12,4 +12,4 @@ include(FRAME_PATH.'common.inc.php');
 
 
 // 框架初始化并执行
-Core::initController();
+\Lge\Core::initController();

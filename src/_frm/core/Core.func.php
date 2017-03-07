@@ -1,12 +1,12 @@
 <?php
-
+namespace Lge;
 
 /**
  * 框架核心函数定义(为简化使用，并没有进行封装).
  * 
  * @author John
  */
-if (!defined('PhpMe')) {
+if (!defined('LGE')) {
 	exit('Include Permission Denied!');
 }
 
