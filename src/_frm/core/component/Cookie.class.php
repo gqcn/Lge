@@ -8,9 +8,8 @@ if (!defined('LGE')) {
 /**
  * COOKIE操作封装类
  * 由于COOKIE涉及到加密操作，因此使用专门的类来封装，而SESSION封装比较简单，只是对全局内置变量的引用。
- * 
- *   
- * @version v0.1 2011-12-20
+ *
+ * @author John
  */
 class Cookie
 {

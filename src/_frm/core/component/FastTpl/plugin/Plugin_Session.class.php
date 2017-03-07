@@ -17,8 +17,7 @@ class Plugin_Session
     
     public function __construct()
     {
-        // 这里不能使用引用，防止模板赋值给$this->data -> $_SESSION
-        $this->data = $_SESSION;
+        $this->data = &$_SESSION;
     }
     
     /**

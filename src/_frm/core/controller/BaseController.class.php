@@ -7,8 +7,8 @@ if (!defined('LGE')) {
 
 /**
  * 业务层处理APP的基类，主要执行一些基本的APP操作，特别是一些通用的APP处理。
- * 
- * @author john
+ *
+ * @author John
 */
 class BaseController extends Base
 {

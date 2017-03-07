@@ -7,9 +7,8 @@ if (!defined('LGE')) {
 
 /**
  * 调试封装类.
- * 
- * @author john
  *
+ * @author John
  */
 class Debugger
 {

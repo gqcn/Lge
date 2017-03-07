@@ -7,6 +7,8 @@ if (!defined('LGE')) {
 
 /**
  * 配置管理类，主要管理配置文件(_cfg以及exten下的_cfg目录下*.inc.php规则的配置文件)。
+ *
+ * @author John
  */
 class Config
 {

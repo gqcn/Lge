@@ -7,8 +7,8 @@ if (!defined('LGE')) {
 
 /**
  * 模型基类，主要是对于数据的封装，注意不仅仅是对于数据库的数据。
- *   
- * @version v0.1 2011-12-20
+ *
+ * @author John
  */
 class BaseModel extends Base
 {

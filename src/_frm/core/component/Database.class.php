@@ -10,7 +10,7 @@ if (!defined('LGE')) {
  * 该基类已包含一些定义的公共继承方法。
  *
  *
- * @version v1.0 2015-09-09
+ * @author John
  */
 class Database
 {

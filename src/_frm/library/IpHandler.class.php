@@ -8,7 +8,7 @@ if (!defined('LGE')) {
 /**
  * Ip处理类.
  *
- * @author Claymore 2013-03-06
+ * @author John
  */
 class Lib_IpHandler
 {

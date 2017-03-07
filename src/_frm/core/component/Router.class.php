@@ -7,6 +7,8 @@ if (!defined('LGE')) {
 
 /**
  * 框架路由控制类。
+ *
+ * @author John
  */
 class Router
 {

@@ -8,7 +8,7 @@ if (!defined('LGE')) {
 /**
  * 数据模型封装基类，该基类主要是对于特定数据库的操作封装。
  *
- * @author john
+ * @author John
  */
 class BaseModelTable extends Base
 {

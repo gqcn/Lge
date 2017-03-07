@@ -100,7 +100,6 @@ class Plugin_String
      * @return string
      */
     public function subStr($string, $length, $addStr = '...') {
-       $strcut = '';
        $strLength = 0;
        if(strlen($string) > $length) {
            //将$length换算成实际UTF8格式编码下字符串的长度

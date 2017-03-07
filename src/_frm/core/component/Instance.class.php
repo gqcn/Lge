@@ -13,8 +13,8 @@ if (!defined('LGE')) {
  * 缓存服务器
  * 模板引擎
  * Cookie对象
- * 
- *  John
+ *
+ * @author John
  */
 class Instance
 {

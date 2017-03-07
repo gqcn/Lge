@@ -8,7 +8,7 @@ if (!defined('LGE')) {
 /**
  * 日志操作封装类.
  *
- * @author john
+ * @author John
  */
 class Logger
 {

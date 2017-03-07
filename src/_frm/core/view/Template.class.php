@@ -4,6 +4,8 @@ if (!defined('LGE')) {
 }
 /**
  * 模板管理类，实现模板引擎功能。
+ *
+ * @author John
  */
 class Template
 {

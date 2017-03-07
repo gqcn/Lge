@@ -22,12 +22,14 @@ return array(
                 // 日志目录存放位置
                 'path' => ROOT_PATH.'../log/',
             ),
+            /*
             // 日志数据库服务器配置
             'database' => array(
                 // 数据库配置对应节点名称(配置文件中需要有该节点的配置)
                 'node'  => 'default',
                 'table' => 'log',
             ),
+            */
         ),
     ),
 
@@ -47,16 +49,6 @@ return array(
     		'database' => 'smiling_goat',     //数据库名称
         ),
         */
-        'sqlite_demo' => array(
-            'host'     => '',
-            'user'     => '',
-            'pass'     => '',
-            'port'     => '',
-            'type'     => 'sqlite',
-            'prefix'   => '',
-            'charset'  => 'utf8',
-    		'database' => ROOT_PATH.'cache/data/test.sqlite3',
-        ),
 
         /**
          * 天然支持主从复制模式，当配置项中包含master和slave字段时，数据库操作自动切换为主从模式，不会读取该配置项内的其他配置.
@@ -160,35 +152,9 @@ return array(
      */
     'Cookie' => array(
         'path'    => '/',
-        'domain'  => '.johnx.cn',  // 格式为“.xxx.com”，如果为空，那么默认获取当前一级域名
+        'domain'  => '.johng.cn',  // 格式为“.xxx.com”，如果为空，那么默认获取当前一级域名
         'expire'  => 86400 * 7,
         'authkey' => 'PhpMe',
     ),
 
-    /**
-     * 微信配置(可选)
-     */
-    'WeChat' => array(
-        'appid'     => 'wx83d21dcf8a76bc82',
-        'unionid'   => '',
-        'appsecret' => '4b74e385d939239ba353363569408514',
-        'token'     => 'hello_world',
-        'mch_key'   => '99b1ff8f11781541f7f89f9bd41c4a17',
-        'mch_id'    => '1291508701',
-        'cert_path' => __DIR__.'/cert/picc/',
-    ),
-
-    /**
-     * 网站配置(可选)
-     */
-    'System' => array(
-        // 前台
-        'default' => array(
-            'name' => '前台页面',
-        ),
-        // 后台
-        'admin' => array(
-            'name' => '管理后台',
-        ),
-    ),
 );

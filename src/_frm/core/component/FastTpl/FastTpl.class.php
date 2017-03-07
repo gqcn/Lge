@@ -23,14 +23,13 @@
  * 
  * PHP代码支持
  *     <?php php代码，只有在设置允许的条件下才能使用 ?>
- * 
- * @author john <johnx8086@vip.qq.com>
- * @version v1.0 2016-05-12
+ *
+ * @author John
  */
 namespace Lge;
 /**
  * 注意模板标签替换应该和模板一样不能增删行数，以便产生错误时给用户提醒定位.
- * 
+ *
  */
 class FastTpl
 {

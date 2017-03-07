@@ -26,8 +26,8 @@ class Lib_Time
                                            $fromTimeZone = 'America/Denver', 
                                            $toTimeZone   = 'Asia/Shanghai', 
                                            $format       = 'Y-m-d H:i:s') {
-        $datetime = new DateTime($src, new DateTimeZone($fromTimeZone));
-        $datetime->setTimezone(new DateTimeZone($toTimeZone));
+        $datetime = new \DateTime($src, new \DateTimeZone($fromTimeZone));
+        $datetime->setTimezone(new \DateTimeZone($toTimeZone));
         return $datetime->format($format);
     }
 }
