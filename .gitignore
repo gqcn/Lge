@@ -6,11 +6,3 @@
 .swp
 .idea/
 
-log/
-src/_cfg/config.inc.php
-src/_cfg/const.inc.php
-src/_cfg/router.inc.php
-src/_cfg/auth.inc.php
-src/cache/
-src/upload/
-src/system/crontab/_cfg/backupper.inc.php

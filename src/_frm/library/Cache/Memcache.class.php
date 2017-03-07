@@ -20,12 +20,12 @@ class Lib_Cache_Memcache
     private $_options  = null;
 
     /*
-        $_options形如:
-        	array(
-                'host'   => MEMCACHE_HOST,
-                'port'   => MEMCACHE_PORT,
-                'expire' => CACHE_EXPIRE
-            )
+    $_options形如:
+        array(
+            'host'   => MEMCACHE_HOST,
+            'port'   => MEMCACHE_PORT,
+            'expire' => CACHE_EXPIRE
+        )
     */
     function __construct($options)
     {
