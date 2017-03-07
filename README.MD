@@ -12,7 +12,7 @@
     sudo apt-get install php5-odbc php5-sqlite
 
 
-# 安装配置
+# 环境配置
     Nginx配置示例
     server {
         listen      80;
