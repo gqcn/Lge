@@ -18,7 +18,7 @@ if (!defined('LGE')) {
  */
 function exception($string)
 {
-    throw new Exception($string);
+    throw new \Exception($string);
 }
 
 /**
