@@ -583,7 +583,7 @@ class Core
      * 
      * @return void
      */
-    public static function defaultExceptionHandler(Exception $e)
+    public static function defaultExceptionHandler(\Exception $e)
     {
         $message = $e->getMessage();
         switch ($message) {
@@ -602,7 +602,7 @@ class Core
                         $message .= PHP_EOL.$backtrace;
                     }
                     Logger::log($message, 'exception', Logger::ERROR);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     // 什么都不做，防止基础组件错误
                 }
                 // 显示换行控制

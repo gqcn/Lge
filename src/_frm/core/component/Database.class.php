@@ -123,8 +123,8 @@ class Database
                         }
                     }
                 }
-                $this->_link = new PDO($this->_linkInfo, $option['user'], $option['pass']);
-            } catch (Exception $e) {
+                $this->_link = new \PDO($this->_linkInfo, $option['user'], $option['pass']);
+            } catch (\Exception $e) {
                 $this->_halt($e->getMessage());
             }
         }
