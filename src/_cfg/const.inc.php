@@ -24,5 +24,5 @@ define('SYSTEM_BY_SUBDOMAIN',         false);
 define('SYSTEM_BY_SUBDOMAIN_LEVEL',   2);
 // 当 SYSTEM_BY_SUBDOMAIN=true 时有效，表示子级域名与子站点目录的映射数组，默认子站点名字与子域名相同
 define('SYSTEM_BY_SUBDOMAIN_MAPPING', json_encode(array()));
-// 时区设置(默认为上海时区)
+// 时区设置(默认为中国上海时区)
 define('DEFAULT_TIME_ZONE',           'Asia/Shanghai');

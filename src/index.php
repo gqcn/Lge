@@ -1,6 +1,7 @@
 <?php
 /**
- * Bootstrap 流程引导文件.
+ * Bootstrap.
+ * 流程引导文件，可以被其他框架包含或者直接访问使用.
  * 
  * @author john
  */
