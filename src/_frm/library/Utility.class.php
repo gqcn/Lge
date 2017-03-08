@@ -66,35 +66,4 @@ class Lib_Utility
     public static function validateMobile($mobile) {
         return preg_match('#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$#', $mobile) ? true : false;
     }
-
-
-    /**
-     * SQL文件执行初始化.
-     *
-     * @param string $path       存放SQL文件的文件夹路径.
-     * @param string $dbItemName 数据库配置项名称.
-     *
-     * @return void
-     */
-    public static function initSqlByPath($path, $dbItemName = 'default')
-    {
-        $db    = Instance::database($dbItemName);
-        $files = scandir($path);
-        foreach ($files as $file) {
-            if ($file == '.' || $file == '..') {
-                continue;
-            }
-            $filePath = realpath($path.$file);
-            if (is_dir($filePath)) {
-                self::initSqlByPath($filePath);
-            } else {
-                $fileType = Lib_FileSys::getFileType($filePath);
-                if (strcasecmp($fileType, 'sql') == 0) {
-                    // echo "Initializing {$filePath}".PHP_EOL;
-                    $content = file_get_contents($filePath);
-                    $db->query($content, array(), 'master');
-                }
-            }
-        }
-    }
 }
