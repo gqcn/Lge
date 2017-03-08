@@ -112,18 +112,18 @@ return array(
      * Redis服务器(可选)
      */
     'RedisServer' => array(
-        // 物理redis
-        'default' => array(
-            'host'     => '127.0.0.1',
-            'port'     => 6379,
-            'db'       => 0,
-        ),
-        // 缓存redis
-        'cache' => array(
-            'host'     => '127.0.0.1',
-            'port'     => 6379,
-            'db'       => 0,
-        ),
+//        // 物理redis
+//        'default' => array(
+//            'host'     => '127.0.0.1',
+//            'port'     => 6379,
+//            'db'       => 0,
+//        ),
+//        // 缓存redis
+//        'cache' => array(
+//            'host'     => '127.0.0.1',
+//            'port'     => 6379,
+//            'db'       => 0,
+//        ),
     ),
     
     /**
@@ -131,20 +131,20 @@ return array(
      * 注意：如果常量配置文件中设置的session的保存方式为memcache，那么该配置不能为空.
      */
     'MemcacheServer' => array(
-        'default' => array(
-            // IP、端口、权重
-            array('127.0.0.1', 11211, 100),
-        ),
+//        'default' => array(
+//            // IP、端口、权重
+//            array('127.0.0.1', 11211, 100),
+//        ),
     ),
     
     /**
      * Gearman配置(可选)
      */
     'Gearman' => array (
-        'default' => array(
-            'host' => '127.0.0.1',
-            'port' => '4730',
-        ),
+//        'default' => array(
+//            'host' => '127.0.0.1',
+//            'port' => '4730',
+//        ),
     ),
     
     /**
@@ -152,9 +152,8 @@ return array(
      */
     'Cookie' => array(
         'path'    => '/',
-        'domain'  => '.johng.cn',  // 格式为“.xxx.com”，如果为空，那么默认获取当前一级域名
+        'domain'  => '',  // 格式为“.xxx.com”，如果为空，那么默认获取当前一级域名
         'expire'  => 86400 * 7,
-        'authkey' => 'PhpMe',
+        'authkey' => 'Lge',
     ),
-
 );
