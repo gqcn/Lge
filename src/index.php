@@ -1,6 +1,6 @@
 <?php
 /**
- * Bootstrap.
+ * Bootstrap 流程引导文件.
  * 
  * @author john
  */
