@@ -483,6 +483,7 @@ class FastTpl
         }
         if (!empty($return)) {
             // 自动加载对象检查(格式是特殊的"$_大写字母"开头,因此规避了不允许在模板标签中函数调用的问题)
+            // @todo 这里每次调用一个对象方法都会新new一个对象，对性能有损耗，后期需改进为单例
             preg_match_all("/\\$(_[A-Z]{1}\w+?)\->.+?/sx", $return, $matches);
             if (!empty($matches[1])) {
                 $classes = array_unique($matches[1]);
@@ -490,7 +491,7 @@ class FastTpl
                     $className = "Plugin{$class}";
                     foreach ($this->options['plugin_dirs'] as $index => $dirPath) {
                         if (file_exists("{$dirPath}{$className}.class.php")) {
-                            $return = "if(empty(\${$class})){require_once(\$this->options['plugin_dirs'][{$index}].'{$className}.class.php');\${$class} = new {$className}();}{$return}";
+                            $return = "if(empty(\${$class})){require_once(\$this->options['plugin_dirs'][{$index}].'{$className}.class.php');\${$class} = new \Lge\\{$className}();}{$return}";
                             break;
                         }
                     }

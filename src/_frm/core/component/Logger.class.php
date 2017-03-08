@@ -90,7 +90,7 @@ class Logger
     public static function setOptions(array $options)
     {
         self::$_options = $options;
-        Core::registerShutdownFunction(array('Logger', 'flushLogCache'));
+        Core::registerShutdownFunction(array('\Lge\Logger', 'flushLogCache'));
     }
 
     /**

@@ -1,4 +1,6 @@
 <?php
+namespace Lge;
+
 if (!defined('LGE')) {
 	exit('Include Permission Denied!');
 }

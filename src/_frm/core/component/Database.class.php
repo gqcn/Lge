@@ -436,7 +436,7 @@ class Database
      * @param  PDOStatement $result 数据库操作结果资源
      * @return int
      */
-    public function rows(PDOStatement &$result)
+    public function rows(\PDOStatement &$result)
     {
         return @$result->rowCount();
     }
@@ -447,9 +447,9 @@ class Database
      * @param  PDOStatement $result 数据库操作结果资源
      * @return array
      */
-    public function fetchArray(PDOStatement &$result)
+    public function fetchArray(\PDOStatement &$result)
     {
-        return @$result->fetch(PDO::FETCH_BOTH);
+        return @$result->fetch(\PDO::FETCH_BOTH);
     }
 
     /**
@@ -458,9 +458,9 @@ class Database
      * @param  PDOStatement $result 数据库操作结果资源
      * @return array
      */
-    public function fetchAssoc(PDOStatement &$result)
+    public function fetchAssoc(\PDOStatement &$result)
     {
-        return @$result->fetch(PDO::FETCH_ASSOC);
+        return @$result->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -470,9 +470,9 @@ class Database
      * @param  PDOStatement $result 数据库操作结果资源
      * @return array
      */
-    public function fetchRow(PDOStatement &$result)
+    public function fetchRow(\PDOStatement &$result)
     {
-        return @$result->fetch(PDO::FETCH_NUM);
+        return @$result->fetch(\PDO::FETCH_NUM);
     }
 
     /**
@@ -482,7 +482,7 @@ class Database
      * @param  int          $index
      * @return string
      */
-    public function fieldName(PDOStatement &$result, $index)
+    public function fieldName(\PDOStatement &$result, $index)
     {
         return @$result->fetchColumn($index);
     }
