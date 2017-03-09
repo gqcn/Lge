@@ -168,6 +168,7 @@ class BaseModelTable extends Base
     
     /**
      * 添加记录，并返回添加记录的ID，失败返回false.
+     * 注意：如果主键为非自增ID，那么成功会返回0，因此判断返回值是否为false来判断是否执行成功.
      * 
      * @param  array   $data          写入的数据.
      * @param  mixed   $option        选项(replace:同记录替换, update:同记录更新, ignore:同记录忽略, 默认直接写入)
@@ -363,7 +364,7 @@ class BaseModelTable extends Base
      *
      * @param array $data 关联数组.
      *
-     * @return false|PDOStatement
+     * @return int|false
      */
     public function mysqlFiltSave(array $data)
     {
