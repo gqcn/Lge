@@ -634,6 +634,6 @@ class FastTpl
      */
     private function _exception($message)
     {
-        throw new Exception($message);
+        throw new \Exception($message);
     }
 }
