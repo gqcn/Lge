@@ -17,10 +17,10 @@ return array(
     /**
      * 连接转换规则，用于将页面特定规则的连接转换为伪静态连接形式(主要用于SEO)。
      */
-//    'url' => array(
-//        // 示例：http://xxx.xxx.xxx/?__c=user&__a=list&type=1&page=2 => http://xxx.xxx.xxx/user/list/?type=1&page=2
+    'url' => array(
+        // 示例：http://xxx.xxx.xxx/?__c=user&__a=list&type=1&page=2 => http://xxx.xxx.xxx/user/list/?type=1&page=2
 //        '/\/*(\w+\.php){0,1}\?\_\_s=(\w+)\&\_\_c=(\w+)\&\_\_a=(\w+)[\&]*/' => '/$3/$4/?__s=$2&',
 //        '/\/*(\w+\.php){0,1}\?\_\_c=(\w+)\&\_\_a=(\w+)[\&]*/'              => '/$2/$3/?',
 //        '/\/*(\w+\.php){0,1}\?\_\_c=(\w+)[\&]*/'                           => '/$2/?',
-//    ),
+    ),
 );

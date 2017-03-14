@@ -39,14 +39,14 @@ return array(
     'DataBase' => array(
         /*
         'default' => array(
-            'host'     => '127.0.0.1',        //主机地址(使用IP防止DNS解析)
-            'user'     => 'root',             //账号
-            'pass'     => '8692651',          //密码
-            'port'     => '3306',             //数据库端口
-            'type'     => 'mysql',            //数据库类型 mysql|pgsql|sqlite
-            'prefix'   => '',                 //表名前缀
-            'charset'  => 'utf8',             //数据库编码
-    		'database' => 'smiling_goat',     //数据库名称
+            'host'     => '127.0.0.1', // 主机地址(使用IP防止DNS解析)
+            'user'     => 'root',      // 账号
+            'pass'     => '',          // 密码
+            'port'     => '3306',      // 数据库端口
+            'type'     => 'mysql',     // 数据库类型 mysql|pgsql|sqlite
+            'charset'  => 'utf8',      // 数据库编码
+            'database' => '',          // 数据库名称
+            'linkinfo' => '',          // 可自定义PDO数据库连接信息
         ),
         */
 

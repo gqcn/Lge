@@ -4,11 +4,11 @@
     2. 逻辑简单，结构清晰，运行高效；
     3. 易于集成到其他框架，并互不影响；
 
-# 环境安装(Debian、Ubuntu)
-    1.基础环境
+# 环境安装(Debian/Ubuntu)
+    1. 基础环境
     sudo apt-get install mercurial memcached nginx mysql-server redis-server
     sudo apt-get install php5 php5-cli php5-common php5-curl php5-dev php5-gd php5-mysql php5-fpm php5-memcached php5-redis
-    2.附加扩展
+    2. 附加扩展
     sudo apt-get install php5-odbc php5-sqlite
 
 
@@ -29,4 +29,8 @@
             fastcgi_pass unix:/var/run/php5-fpm.sock;
         }
     }
+    
+# 其他
+    1. 框架使用文档请参考 /doc/Lge.pdf
+    2. 代码示例请参考 Lge_Playard 项目
 
