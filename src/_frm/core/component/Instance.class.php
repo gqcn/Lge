@@ -178,7 +178,7 @@ class Instance
      *
      * @return BaseModelTable
      */
-    public static function table($table, $dbConfigName = '')
+    public static function table($table, $dbConfigName = 'default')
     {
         return BaseModelTable::getInstance($table, $dbConfigName);
     }

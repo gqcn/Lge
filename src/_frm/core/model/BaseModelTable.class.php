@@ -39,7 +39,7 @@ class BaseModelTable extends Base
      * 
      * @throws Exception
      */
-    public function __construct($table = '', $dbConfigName = '')
+    public function __construct($table = '', $dbConfigName = 'default')
     {
         parent::__construct();
         if (!empty($table)) {
@@ -73,7 +73,7 @@ class BaseModelTable extends Base
      * 
      * @return BaseModelTable
      */
-    public static function getInstance ($table = '', $dbConfigName = '')
+    public static function getInstance ($table = '', $dbConfigName = 'default')
     {
         if (is_array($table)) {
             $table = implode(' ', $table);
