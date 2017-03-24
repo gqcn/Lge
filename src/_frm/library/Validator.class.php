@@ -17,22 +17,45 @@ if (!defined('LGE')) {
  */
 class Lib_Validator
 {
+    /**
+     * 默认校验错误提示信息.
+     * @var array
+     */
     public static $defaultMessages = array(
-        'required'   => '字段不能为空',
-        'email'      => '邮箱地址格式不正确',
-        'ip'         => 'IP地址格式不正确',
-        'mac'        => 'MAC地址格式不正确',
-        'url'        => 'URL地址格式不正确',
-        'length'     => '字段长度为:min到:max个字符',
-        'min_length' => '字段最小长度为:min',
-        'max_length' => '字段最大长度为:max',
-        'between'    => '字段大小为:min到:max',
-        'min'        => '字段最小值为:min',
-        'max'        => '字段最大值为:max',
-        'integer'    => '字段应当为整数',
-        'float'      => '字段应当为浮点数',
-        'boolean'    => '字段应当为布尔值',
+        'required'          => '字段不能为空',
+        'required_if'       => '字段不能为空',                // required_if:field,value,...
+        'required_with'     => '字段不能为空',                // required_with:foo,bar,...
+        'required_with_all' => '字段不能为空',                // required_with_all:foo,bar,...
+        'date'              => '日期格式不正确',
+        'date_format'       => '日期格式不正确',              // date_format:format
+        'email'             => '邮箱地址格式不正确',
+        'phone'             => '手机号码格式不正确',
+        'ip'                => 'IP地址格式不正确',
+        'mac'               => 'MAC地址格式不正确',
+        'url'               => 'URL地址格式不正确',
+        'length'            => '字段长度为:min到:max个字符',   // length:min,max
+        'min_length'        => '字段最小长度为:min',
+        'max_length'        => '字段最大长度为:max',
+        'between'           => '字段大小为:min到:max',        // between:min,max
+        'min'               => '字段最小值为:min',
+        'max'               => '字段最大值为:max',
+        'json'              => '字段应当为JSON格式',
+        'array'             => '字段应当为数组',
+        'integer'           => '字段应当为整数',
+        'float'             => '字段应当为浮点数',
+        'boolean'           => '字段应当为布尔值',
+        'same'              => '字段值不合法',                // same:field
+        'different'         => '字段值不合法',                // different:field
+        'in'                => '字段值不合法',                // in:foo,bar,...
+        'not_in'            => '字段值不合法',                // not_in:foo,bar,...
+
     );
+
+    /**
+     * 当前校验的数据数组.
+     * @var array
+     */
+    private static $_currentData = array();
 
     /**
      * 根据规则验证数组，如果返回值为空那么表示满足规则，否则返回值为错误信息数组.
@@ -42,7 +65,8 @@ class Lib_Validator
      * @return array
      */
     public static function check(array $data, array $rules) {
-        $result = array();
+        $result             = array();
+        self::$_currentData = $data;
         foreach ($rules as $key => $rule) {
             if (isset($data[$key])) {
                 $r = self::checkRule($data[$key], $rule);
@@ -81,6 +105,89 @@ class Lib_Validator
                 // 必须字段
                 case 'required':
                     $ruleMatch = !empty($value);
+                    break;
+
+                // 必须字段(当给定字段值与所给任意值相等时)
+                case 'required_if':
+                    $tmpArray = explode(',', $ruleAttr);
+                    if (isset($tmpArray[0]) && isset(self::$_currentData[$tmpArray[0]])) {
+                        $fieldValue = self::$_currentData[$tmpArray[0]];
+                        unset($tmpArray[0]);
+                        if (in_array($fieldValue, $tmpArray) && empty($value)) {
+                            $ruleMatch = false;
+                        }
+                    }
+                    break;
+
+                // 必须字段(当所给定任意字段值不为空时)
+                case 'required_with':
+                    $ruleMatch = false;
+                    $tmpArray  = explode(',', $ruleAttr);
+                    foreach ($tmpArray as $v) {
+                        if (!empty(self::$_currentData[$v])) {
+                            $ruleMatch = true;
+                            break;
+                        }
+                    }
+                    break;
+
+                // 必须字段(当所给定所有字段值都不为空时)
+                case 'required_with_all':
+                    $tmpArray  = explode(',', $ruleAttr);
+                    foreach ($tmpArray as $v) {
+                        if (empty(self::$_currentData[$v])) {
+                            $ruleMatch = false;
+                            break;
+                        }
+                    }
+                    break;
+
+                // 日期格式(使用strtotime判断)
+                case 'date':
+                    if (!($value instanceof \DateTime) || strtotime($value) === false) {
+                        $ruleMatch = false;
+                    } else {
+                        $date      = date_parse($value);
+                        $ruleMatch = checkdate($date['month'], $date['day'], $date['year']);
+                    }
+                    break;
+
+                // 给定日期判断格式
+                case 'date_format':
+                    $parsed    = date_parse_from_format($ruleAttr, $value);
+                    $ruleMatch = ($parsed['error_count'] === 0 && $parsed['warning_count'] === 0);
+                    break;
+
+                // 两字段值应相同(非敏感字符判断，非类型判断)
+                case 'same':
+                    $ruleMatch = (isset(self::$_currentData[$ruleAttr]) && $value == self::$_currentData[$ruleAttr]);
+                    break;
+
+                // 两字段值不应相同(非敏感字符判断，非类型判断)
+                case 'different':
+                    $ruleMatch = (!isset(self::$_currentData[$ruleAttr]) || $value != self::$_currentData[$ruleAttr]);
+                    break;
+
+                // 字段值应当在指定范围中
+                case 'in':
+                    $ruleMatch = in_array($value, explode(',', $ruleAttr));
+                    break;
+
+                // 字段值不应当在指定范围中
+                case 'in':
+                    $ruleMatch = !in_array($value, explode(',', $ruleAttr));
+                    break;
+
+                /*
+                 * 验证所给手机号码是否符合手机号的格式.
+                 * 移动：134、135、136、137、138、139、150、151、152、157、158、159、182、183、184、187、188、178(4G)、147(上网卡)；
+                 * 联通：130、131、132、155、156、185、186、176(4G)、145(上网卡)；
+                 * 电信：133、153、180、181、189 、177(4G)；
+                 * 卫星通信：  1349
+                 * 虚拟运营商：170
+                 */
+                case 'phone':
+                    $ruleMatch = preg_match('#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$#', $value) ? true : false;
                     break;
 
                 // 长度范围
@@ -174,6 +281,10 @@ class Lib_Validator
                     }
                     break;
 
+                // 数组
+                case 'array':   $ruleMatch = is_array($value);              break;
+                // json
+                case 'json':    $ruleMatch = json_decode($value) !== false; break;
                 // 整数
                 case 'integer': $ruleMatch = filter_var($value, FILTER_VALIDATE_INT)     !== false; break;
                 // 小数
