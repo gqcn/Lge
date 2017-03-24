@@ -45,8 +45,8 @@ class Cookie
                 $this->_domain = '.'.trim(substr($name, strpos($name, '.')), '.');
             }
         }
-        if(isset($_COOKIE['PhpMe_Cookie'])){
-            $this->_cookies = unserialize($this->_authcode($_COOKIE['PhpMe_Cookie'], false));
+        if(isset($_COOKIE['Lge_Cookie'])){
+            $this->_cookies = unserialize($this->_authcode($_COOKIE['Lge_Cookie'], false));
             //过滤已过期的COOKIE
             if (is_array($this->_cookies)) {
                 $timestamp = time();
@@ -70,7 +70,7 @@ class Cookie
         } else {
             $cookie = $this->_authcode(serialize($this->_cookies), true, $this->_authkey);
         }
-        setcookie('PhpMe_Cookie', $cookie, time() + $this->_expire, $this->_path, $this->_domain);
+        setcookie('Lge_Cookie', $cookie, time() + $this->_expire, $this->_path, $this->_domain);
     }
     
     /**
