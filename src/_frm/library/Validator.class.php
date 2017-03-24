@@ -174,7 +174,7 @@ class Lib_Validator
                     break;
 
                 // 字段值不应当在指定范围中
-                case 'in':
+                case 'not_in':
                     $ruleMatch = !in_array($value, explode(',', $ruleAttr));
                     break;
 
