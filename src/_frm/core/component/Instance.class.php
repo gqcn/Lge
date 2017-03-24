@@ -134,7 +134,7 @@ class Instance
             if (isset($conf['Cookie'])) {
                 require_once(__DIR__.'/Cookie.class.php');
                 $config = $conf['Cookie'];
-                $obj    = new \Cookie($config['path'], $config['domain'], $config['expire'], $config['authkey']);
+                $obj    = new Cookie($config['path'], $config['domain'], $config['expire'], $config['authkey']);
                 Data::set($key, $obj);
             } else {
                 exception("Cookie configuration not found!");
