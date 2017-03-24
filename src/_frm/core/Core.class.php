@@ -243,7 +243,7 @@ class Core
              */
             if (SYSTEM_BY_SUBDOMAIN === true) {
                 $level     = SYSTEM_BY_SUBDOMAIN_LEVEL;
-                $subDomain = Lib_Redirecter::getSubdomain($level);
+                $subDomain = Lib_Url::getSubdomain($level);
                 if (!empty($subDomain)) {
                     $sys     = $subDomain;
                     $mapping = json_decode(SYSTEM_BY_SUBDOMAIN_MAPPING, true);

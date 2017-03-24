@@ -6,6 +6,9 @@ if (!defined('LGE')) {
 }
 
 /**
+ *
+ * 分页类。
+ *
 * 当需要伪静态时，需要这几句代码：
 if(strstr($_SERVER['REQUEST_URI'],'.html'))//是否使用了伪静态处理
 {

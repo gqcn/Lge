@@ -5,6 +5,11 @@ if (!defined('LGE')) {
     exit('Include Permission Denied!');
 }
 
+/**
+ * 树型结构管理类。
+ *
+ * @package Lge
+ */
 class Lib_Tree
 {
     /**

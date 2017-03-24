@@ -22,14 +22,6 @@ return array(
                 // 日志目录存放位置
                 'path' => ROOT_PATH.'../log/',
             ),
-            /*
-            // 日志数据库服务器配置
-            'database' => array(
-                // 数据库配置对应节点名称(配置文件中需要有该节点的配置)
-                'node'  => 'default',
-                'table' => 'log',
-            ),
-            */
         ),
     ),
 
@@ -45,6 +37,7 @@ return array(
             'port'     => '3306',      // 数据库端口
             'type'     => 'mysql',     // 数据库类型 mysql|pgsql|sqlite
             'charset'  => 'utf8',      // 数据库编码
+            'prefix'   => '',          // 表名前缀，当使用Instance::table操作数据表时可简写表名
             'database' => '',          // 数据库名称
             'linkinfo' => '',          // 可自定义PDO数据库连接信息
         ),
@@ -64,6 +57,7 @@ return array(
                     'port'     => '3306',
                     'type'     => 'mysql',
                     'charset'  => 'utf8',
+                    'prefix'   => '',
                     'database' => 'test',
                     'priority' => 100,
                     'linkinfo' => '',
@@ -75,6 +69,7 @@ return array(
                     'port'     => '3306',
                     'type'     => 'mysql',
                     'charset'  => 'utf8',
+                    'prefix'   => '',
                     'database' => 'test',
                     'priority' => 100,
                     'linkinfo' => '',
@@ -88,6 +83,7 @@ return array(
                     'port'     => '3306',
                     'type'     => 'mysql',
                     'charset'  => 'utf8',
+                    'prefix'   => '',
                     'database' => 'test',
                     'priority' => 100,
                     'linkinfo' => '',
@@ -99,6 +95,7 @@ return array(
                     'port'     => '3306',
                     'type'     => 'mysql',
                     'charset'  => 'utf8',
+                    'prefix'   => '',
                     'database' => 'test',
                     'priority' => 100,
                     'linkinfo' => '',
@@ -122,7 +119,7 @@ return array(
 //        'cache' => array(
 //            'host'     => '127.0.0.1',
 //            'port'     => 6379,
-//            'db'       => 0,
+//            'db'       => 1,
 //        ),
     ),
     

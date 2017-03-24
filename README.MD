@@ -6,7 +6,7 @@
 
 # 环境安装(Debian/Ubuntu)
     1. 基础环境
-    sudo apt-get install mercurial memcached nginx mysql-server redis-server
+    sudo apt-get install memcached nginx mysql-server redis-server
     sudo apt-get install php5 php5-cli php5-common php5-curl php5-dev php5-gd php5-mysql php5-fpm php5-memcached php5-redis
     2. 附加扩展
     sudo apt-get install php5-odbc php5-sqlite
@@ -31,6 +31,7 @@
     }
     
 # 其他
-    1. 框架使用文档请参考 /doc/Lge.pdf
-    2. 代码示例请参考 Lge_Playard 项目
+    1. 框架使用文档请参考 /doc/Lge.pdf；
+    2. 代码示例请参考 Lge_Playard 项目；
+    3. 框架使用文档没有完整说明框架提供的每个类的用法，请自行查看 /_frm/core/component 及 /_frm/library 下的源代码；
 

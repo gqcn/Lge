@@ -6,7 +6,7 @@ if (!defined('LGE')) {
 }
 
 /**
- * 接收HTTP客户端请求的封装类.
+ * 接收客户端请求的封装类.
  * 
  * @author john
  */

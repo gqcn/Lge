@@ -15,7 +15,7 @@ define('ROOT_PATH',                   __DIR__.'/../');
 // 指向使用的框架目录
 define('FRAME_PATH',                  __DIR__.'/../_frm/');
 // SESSION的存储方式，支持两种 file 和 memcache，默认是 file；当为memcache时，在配置文件中应有相关配置
-define('SESSION_STORAGE',             'memcache');
+define('SESSION_STORAGE',             'file');
 // 当 SESSION_STORAGE 值为 memache 时有效，设置config中用于session存储的memcache配置项名称
 define('SESSION_MEMCACHE_KEY',        'default');
 // 允许通过二级域名判断子网站(true|false, 如果为true，那么例如 admin.xxx.com 映射的子网站为admin)
