@@ -62,7 +62,7 @@ class Instance
             $conf = &Config::get();
             if (isset($conf['MemcacheServer'][$name])) {
                 $config = $conf['MemcacheServer'][$name];
-                $obj    = new Memcached();
+                $obj    = new \Memcached();
                 $obj->addServers($config);
                 Data::set($key, $obj);
             } else {
@@ -91,7 +91,7 @@ class Instance
                 $conf = &Config::get();
                 if (isset($conf['RedisServer'][$name])) {
                     $config       = $conf['RedisServer'][$name];
-                    $obj          = new Redis();
+                    $obj          = new \Redis();
                     $obj->open($config['host'], $config['port'], 0);
                     $obj->select($config['db']);
                     Data::set($key, $obj);
@@ -134,7 +134,7 @@ class Instance
             if (isset($conf['Cookie'])) {
                 require_once(__DIR__.'/Cookie.class.php');
                 $config = $conf['Cookie'];
-                $obj    = new Cookie($config['path'], $config['domain'], $config['expire'], $config['authkey']);
+                $obj    = new \Cookie($config['path'], $config['domain'], $config['expire'], $config['authkey']);
                 Data::set($key, $obj);
             } else {
                 exception("Cookie configuration not found!");
@@ -160,7 +160,7 @@ class Instance
             if (empty($obj)) {
                 $conf = &Config::get();
                 if (isset($conf['Gearman'][$name])) {
-                    $obj = new GearmanClient();
+                    $obj = new \GearmanClient();
                     $obj->addServer($conf['Gearman'][$name]['host'], $conf['Gearman'][$name]['port']);
                 } else {
                     exception("RedisServer configuration '{$name}' not found!");
