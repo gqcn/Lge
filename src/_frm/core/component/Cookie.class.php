@@ -42,7 +42,7 @@ class Cookie
             } else if (!empty($_SERVER['HTTP_HOST'])) {
                 $array             = explode($_SERVER['HTTP_HOST'], ':');
                 list($name, $port) = each($array);
-                $this->_domain = '.'.trim(substr($name, strpos($name, '.')), '.');
+                $this->_domain     = '.'.trim(substr($name, strpos($name, '.')), '.');
             }
         }
         if(isset($_COOKIE['Lge_Cookie'])){
@@ -141,7 +141,7 @@ class Cookie
         // 当此值为 0 时，则不产生随机密钥
         $ckeyLength = 4;
         
-        $key  = md5($key ? $key : 'LGE');
+        $key  = md5($key ? $key : $this->_authkey);
         $keya = md5(substr($key, 0, 16));
         $keyb = md5(substr($key, 16, 16));
         $keyc = $ckeyLength ? ($encode ? substr(md5(microtime()), - $ckeyLength) : substr($string, 0, $ckeyLength)) : '';

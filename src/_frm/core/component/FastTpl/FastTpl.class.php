@@ -135,8 +135,8 @@ class FastTpl
         $this->setOptions($options);
         
         if (!empty($this->options['cache_dir']) && !is_dir($this->options['cache_dir'])) {
-            mkdir($this->options['cache_dir'], 0777, true);
-            chmod($this->options['cache_dir'], 0777);
+            @mkdir($this->options['cache_dir'], 0777, true);
+            @chmod($this->options['cache_dir'], 0777);
         }
         if (!empty($this->options['cache_dir']) && !is_writable($this->options['cache_dir'])) {
             $this->_exception('缓存目录不可写!');

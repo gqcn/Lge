@@ -279,7 +279,10 @@ class Logger
             $levelStr = self::levelNo2String($level);
             $path     = $logDirPath.'/'.$category;
             if (!file_exists($path)) {
-                mkdir($path, 0777, true);
+                if (empty(@mkdir($path, 0777, true))) {
+                    die('Log folder not writable: '.$path);
+                    exit();
+                }
                 chmod($path, 0777);
             }
             $fileName = date('Ymd', $time);
