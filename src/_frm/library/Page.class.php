@@ -9,80 +9,56 @@ if (!defined('LGE')) {
  *
  * 分页类。
  *
-* 当需要伪静态时，需要这几句代码：
-if(strstr($_SERVER['REQUEST_URI'],'.html'))//是否使用了伪静态处理
-{
-    $queryString=strReplace("{$_SERVER['SCRIPT_NAME']}/",'',urldecode($_SERVER['REQUEST_URI']));//必须对URL解码
-    $queryString=substr($queryString,0,strrpos($queryString,'.'));//这句是去掉尾部的.html,注意自己写的脚本都是以.html结尾的，这样便于处理
-    $vars = explode("/",$queryString);
-    $count=count($vars);
-    for($i=0;$i<$count;$i+=2)
-    {
-        $_GET["{$vars[$i]}"]=$vars[$i+1];
-        $_SERVER['QUERY_STRING'].="&{$vars[$i]}={$vars[$i+1]}";
-    }
-    $_SERVER['QUERY_STRING'][0]=null;
-    $_SERVER['QUERY_STRING']=ltrim($_SERVER['QUERY_STRING']);
-}
-
-* 模式四种分页模式：
-   require_once('../libs/classes/page.class.php');
-   $page=new Page(array('total'=>1000,'perpage'=>20));
-   echo 'mode:1'.$page->show();
-   echo '<hr>mode:2'.$page->show(2);
-   echo '<hr>mode:3'.$page->show(3);
-   echo '<hr>mode:4'.$page->show(4);
-   开启AJAX：
-   $ajaxpage=new page(array('total'=>1000,'perpage'=>20,'ajax'=>'ajaxPage','pageName'=>'test'));
-   echo 'mode:1'.$ajaxpage->show();
-   采用继承自定义分页显示模式：
-   demo:[url=http://www.phpobject.net/blog]http://www.phpobject.net/blog[/url]
- * 
+ * 使用方式：
+    $page = new Lib_Page(array('total' => $totalSize, 'perpage' => $perPage));
+    $page = $page->show($type);
+ *
+ * 如果需要自定义分页展示内容，可以继承该分页类，然后覆盖show方法。
+ *
 */
 class Lib_Page
 {
     /**
     * config ,public
     */
-    var $pageName       =   "page"; //page标签，用来控制url页。比如说xxx.php?PBPage=2中的PBPage
-    var $nextPage       =   '>';    //下一页
-    var $prePage        =   '<';    //上一页
-    var $firstPage      =   '|<';   //首页
-    var $lastPage       =   '>|';   //尾页
-    var $pre_bar        =   '<<';   //上一分页条
-    var $next_bar       =   '>>';   //下一分页条
-    var $formatLeft     =   '';
-    var $formatRight    =   '';
-    var $isAjax         =   false;  //是否支持AJAX分页模式
-    var $isFstatic      =   false;  //是否使用伪静态URL方式
-    var $totalSize      =   0;
+    public $pageName       =   "page"; // page标签，用来控制url页。比如说xxx.php?PBPage=2中的PBPage
+    public $nextPage       =   '>';    // 下一页
+    public $prePage        =   '<';    // 上一页
+    public $firstPage      =   '|<';   // 首页
+    public $lastPage       =   '>|';   // 尾页
+    public $pre_bar        =   '<<';   // 上一分页条
+    public $next_bar       =   '>>';   // 下一分页条
+    public $formatLeft     =   '';
+    public $formatRight    =   '';
+    public $isAjax         =   false;  // 是否支持AJAX分页模式
+    public $totalSize      =   0;
 
     /**
     * private
     *
-    */ 
-    var $pagebarNum     =   10;     //控制记录条的个数。
-    var $totalPage      =   0;      //总页数
-    var $ajaxActionName =   ''; //AJAX动作名
-    var $currentPage    =   1;      //当前页
-    var $url            =   "";     //url地址头
-    var $offset         =   0;
+    */
+    private $pagebarNum     =   10;     // 控制记录条的个数。
+    private $totalPage      =   0;      // 总页数
+    private $ajaxActionName =   '';     // AJAX动作名
+    private $currentPage    =   1;      // 当前页
+    private $url            =   "";     // url地址头
+    private $offset         =   0;
 
     /**
     * constructor构造函数
     *
-    * @param array $array['total'],$array['perpage'],$array['currentPage'],$array['url'],$array['ajax']...
+    * @param array $array['total'], $array['perpage'], $array['currentPage'], $array['url'], $array['ajax']...
     */
-    function __construct($array)
+    public function __construct($array)
     {
         if (is_array($array)) {
             if (!array_key_exists('total', $array)) {
-                $this->error(__FUNCTION__,'need a param of total');
+                $this->_error(__FUNCTION__, 'need a param of total');
             }
             $total       = intval($array['total']);
-            $perpage     = (array_key_exists('perpage',$array))?intval($array['perpage']):10;
-            $currentPage = (array_key_exists('currentPage',$array))?intval($array['currentPage']):'';
-            $url         = (array_key_exists('url',$array))?$array['url']:'';
+            $perpage     = (array_key_exists('perpage',$array))     ? intval($array['perpage'])     : 10;
+            $currentPage = (array_key_exists('currentPage',$array)) ? intval($array['currentPage']) : '';
+            $url         = (array_key_exists('url',$array))         ? $array['url']                 : '';
         } else {
             $total       = $array;
             $perpage     = 10;
@@ -90,68 +66,64 @@ class Lib_Page
             $url         = '';
         }
         if ((!is_int($total)) || ($total < 0)) {
-            return;
-            $this->error(__FUNCTION__, $total.' is not a positive integer!');
+            $this->_error(__FUNCTION__, 'invalid total');
         }
         if ((!is_int($perpage)) || ($perpage <= 0)) {
-            return;
-            $this->error(__FUNCTION__, $perpage.' is not a positive integer!');
+            $this->_error(__FUNCTION__, 'invalid perpage');
         }
-        //的确使用了伪静态
-        if(strstr($_SERVER['REQUEST_URI'], '.html')){
-            $this->isFstatic = true;
-        }
-        if(!empty($array['pageName'])) {
-            //设置pagename
+        if (!empty($array['pageName'])) {
+            // 设置pagename
             $this->set('pageName', $array['pageName']);
         }
-        $this->SetCurrentPage($currentPage);//设置当前页
-        $this->SetUrl($url);//设置链接地址
+        $this->_setCurrentPage($currentPage); // 设置当前页
+        $this->_setUrl($url);                 // 设置链接地址
         $this->totalSize  = $total;
         $this->totalPage  = ceil($total/$perpage);
         $this->offset     = ($this->currentPage-1)*$perpage;
-        if(!empty($array['ajax'])){
+        if (!empty($array['ajax'])) {
             $this->openAjax($array['ajax']);//打开AJAX模式
         }
 
     }
-    
+
     /**
     * 设定类中指定变量名的值，如果改变量不属于这个类，将throw一个exception
     *
     * @param string $var
     * @param string $value
     */
-    function set($var, $value)
+    public function set($var, $value)
     {
-        if(inArray($var,get_object_vars($this))) {
+        if (inArray($var, get_object_vars($this))) {
             $this->$var = $value;
         } else {
-            $this->error(__FUNCTION__, $var." does not belong to PB_Page!");
+            $this->_error(__FUNCTION__, $var." does not belong to PB_Page!");
         }
 
     }
-    
+
     /**
-    * 打开倒AJAX模式
-    *
-    * @param string $action 默认ajax触发的动作。
-    */
+     * 使用AJAX模式。
+     *
+     * @param string $action 默认ajax触发的动作名称。
+     *
+     * @return void
+     */
     public function openAjax($action)
     {
         $this->isAjax          = true;
         $this->ajaxActionName = $action;
     }
-    
+
     /**
-    * 获取显示"下一页"的代码
-    * 
+    * 获取显示"下一页"的代码.
+    *
     * @param string $style
     * @return string
     */
-    function nextPage($curStyle='', $style='')
+    public function nextPage($curStyle = '', $style = '')
     {
-        if($this->currentPage < $this->totalPage) {
+        if ($this->currentPage < $this->totalPage) {
             return $this->_getLink($this->_getUrl($this->currentPage+1), $this->nextPage, '下一页', $style);
         }
         return '<span class="'.$curStyle.'">'.$this->nextPage.'</span>';
@@ -163,9 +135,9 @@ class Lib_Page
     * @param string $style
     * @return string
     */
-    function prePage($curStyle='', $style='')
+    public function prePage($curStyle='', $style='')
     {
-        if($this->currentPage > 1) {
+        if ($this->currentPage > 1) {
             return $this->_getLink($this->_getUrl($this->currentPage - 1), $this->prePage, '上一页', $style);
         }
         return '<span class="'.$curStyle.'">'.$this->prePage.'</span>';
@@ -176,9 +148,9 @@ class Lib_Page
     *
     * @return string
     */
-    function firstPage($curStyle = '', $style = '')
+    public function firstPage($curStyle = '', $style = '')
     {
-        if($this->currentPage == 1) {
+        if ($this->currentPage == 1) {
             return '<span class="'.$curStyle.'">'.$this->firstPage.'</span>';
         }
         return $this->_getLink($this->_getUrl(1), $this->firstPage, '第一页', $style);
@@ -189,10 +161,9 @@ class Lib_Page
     *
     * @return string
     */
-    function lastPage($curStyle='', $style='')
+    public function lastPage($curStyle='', $style='')
     {
-        if($this->currentPage == $this->totalPage)
-        {
+        if ($this->currentPage == $this->totalPage) {
             return '<span class="'.$curStyle.'">'.$this->lastPage.'</span>';
         }
         return $this->_getLink($this->_getUrl($this->totalPage), $this->lastPage, '最后页', $style);
@@ -205,16 +176,16 @@ class Lib_Page
      * @param 连接CSS $style
      * @return 分页条字符串
      */
-    function nowbar($curStyle='', $style='')
+    public function nowbar($curStyle = '', $style = '')
     {
         $plus = ceil($this->pagebarNum / 2);
-        if($this->pagebarNum - $plus + $this->currentPage > $this->totalPage) {
+        if ($this->pagebarNum - $plus + $this->currentPage > $this->totalPage) {
             $plus = ($this->pagebarNum - $this->totalPage + $this->currentPage);
         }
         $begin  = $this->currentPage - $plus + 1;
         $begin  = ($begin>=1) ? $begin : 1;
         $return = '';
-        for($i = $begin; $i < $begin + $this->pagebarNum; $i++) {
+        for ($i = $begin; $i < $begin + $this->pagebarNum; $i++) {
             if ($i <= $this->totalPage) {
                 if ($i != $this->currentPage) {
                     $return .= $this->_getText($this->_getLink($this->_getUrl($i), $i, $style));
@@ -234,15 +205,15 @@ class Lib_Page
     *
     * @return string
     */
-    function select()
+    public function select()
     {
         $url    = $this->_getUrl("' + this.value");
         $return = "<select name=\"PB_Page_Select\" onchange=\"window.location.href='$url\">";
-        for($i=1; $i <= $this->totalPage; $i++) {
+        for ($i=1; $i <= $this->totalPage; $i++) {
             if ($i==$this->currentPage) {
-                $return.='<option value="'.$i.'" selected>'.$i.'</option>';
+                $return .= '<option value="'.$i.'" selected>'.$i.'</option>';
             } else {
-                $return.='<option value="'.$i.'">'.$i.'</option>';
+                $return .= '<option value="'.$i.'">'.$i.'</option>';
             }
         }
         unset($i);
@@ -255,27 +226,26 @@ class Lib_Page
     *
     * @return string
     */
-    function offset()
+    public function offset()
     {
         return $this->offset;
     }
 
     /**
-    * 控制分页显示风格（你可以增加相应的风格）
-    * 
-    * @param int $mode
+    * 控制分页显示风格（你可以继承后增加相应的风格）
+    *
+    * @param int $mode 显示风格分类。
     * @return string
     */
-    function show($mode=1)
+    public function show($mode = 1)
     {
-        switch ($mode)
-        {
+        switch ($mode) {
             case '1':
                 $this->nextPage = '下一页';
                 $this->prePage  = '上一页';
                 return $this->prePage()."<span class=\"current\">{$this->currentPage}</span>".$this->nextPage();
                 break;
-                
+
             case '2':
                 $this->nextPage  = '下一页>>';
                 $this->prePage   = '<<上一页';
@@ -283,25 +253,25 @@ class Lib_Page
                 $this->lastPage  = '尾页';
                 return $this->firstPage().$this->prePage().'<span class="current">[第'.$this->currentPage.'页]</span>'.$this->nextPage().$this->lastPage().'第'.$this->select().'页';
                 break;
-                
+
             case '3':
                 $this->nextPage  = '下一页';
                 $this->prePage   = '上一页';
                 $this->firstPage = '首页';
                 $this->lastPage  = '尾页';
-                $pageStr = $this->firstPage()." ".$this->prePage();
+                $pageStr  = $this->firstPage()." ".$this->prePage();
                 $pageStr .= ' '.$this->nowbar('current');
                 $pageStr .= ' '.$this->nextPage()." ".$this->lastPage();
                 $pageStr .= "<span>当前页{$this->currentPage}/{$this->totalPage}</span> <span>共{$this->totalSize}条</span>";
                 return $pageStr;
                 break;
-                
+
             case '4':
                 $this->nextPage  = '下一页';
                 $this->prePage   = '上一页';
                 $this->firstPage = '首页';
                 $this->lastPage  = '尾页';
-                $pageStr = $this->firstPage()." ".$this->prePage();
+                $pageStr  = $this->firstPage()." ".$this->prePage();
                 $pageStr .= ' '.$this->nowbar('current');
                 $pageStr .= ' '.$this->nextPage()." ".$this->lastPage();
                 return $pageStr;
@@ -309,41 +279,32 @@ class Lib_Page
         }
 
     }
-    
-    
-    
+
     /*----------------private function (私有方法)-----------------------------------------------------------*/
     /**
     * 设置url头地址
-    * @param: String $url
+    * @param: string $url
     * @return boolean
     */
-    function SetUrl($url="")
+    private function _setUrl($url = "")
     {
-        if($this->isFstatic) {
-            /**
-             * @todo isFstatic
-             */
+        if (!empty($url)) {
+            //手动设置
+            $this->url = $url.((stristr($url,'?')) ? '&' : '?').$this->pageName."=";
         } else {
-            if(!empty($url)) {
-                //手动设置
-                $this->url=$url.((stristr($url,'?'))?'&':'?').$this->pageName."=";
+            $parse = parse_url($_SERVER['REQUEST_URI']);
+            $query = array();
+            if (!empty($parse['query'])) {
+                parse_str($parse['query'], $query);
+                if (!empty($query) && isset($query[$this->pageName])) {
+                    unset($query[$this->pageName]);
+                }
+            }
+            $array = explode('?', $_SERVER['REQUEST_URI']);
+            if (!empty($query)) {
+                $this->url = $array[0].'?'.http_build_query($query)."&{$this->pageName}=";
             } else {
-                $parse = parse_url($_SERVER['REQUEST_URI']);
-                $query = array();
-                if (!empty($parse['query'])) {
-                    parse_str($parse['query'], $query);
-                    if (!empty($query) && isset($query[$this->pageName])) {
-                        unset($query[$this->pageName]);
-                    }
-                }
-
-                $array = explode('?', $_SERVER['REQUEST_URI']);
-                if (!empty($query)) {
-                    $this->url = $array[0].'?'.http_build_query($query)."&{$this->pageName}=";
-                } else {
-                    $this->url = $array[0]."?{$this->pageName}=";
-                }
+                $this->url = $array[0]."?{$this->pageName}=";
             }
         }
     }
@@ -351,10 +312,10 @@ class Lib_Page
    /**
    * 设置当前页面
    */
-    function SetCurrentPage($currentPage)
+    private function _setCurrentPage($currentPage)
     {
         if(empty($currentPage)) {
-            //系统获取
+            // 系统获取
             if(isset($_GET[$this->pageName])) {
                 $this->currentPage = intval($_GET[$this->pageName]);
             }
@@ -370,13 +331,9 @@ class Lib_Page
    * @param int $pageNo
    * @return string $url
    */
-    function _getUrl($pageNo=1)
+    private function _getUrl($pageNo=1)
     {
-        if($this->isFstatic) {
-            return $this->url.$pageNo.'.html';
-        } else {
-            return $this->url.$pageNo;
-        }
+        return $this->url.$pageNo;
     }
 
    /**
@@ -384,17 +341,17 @@ class Lib_Page
    *
    * @param String $str
    * @return string $url
-   */ 
-    function _getText($str)
+   */
+    private function _getText($str)
     {
         return $this->formatLeft.$str.$this->formatRight;
     }
 
     //获取链接地址
-    function _getLink($url, $text, $title='', $style='')
+    private function _getLink($url, $text, $title='', $style='')
     {
         $style = (empty($style)) ? '' : 'class="'.$style.'"';
-        if($this->isAjax) {
+        if ($this->isAjax) {
             //如果是使用AJAX模式
             return "<a $style href='#' onclick=\"{$this->ajaxActionName}('$url');\">$text</a>";
         } else {
@@ -403,7 +360,15 @@ class Lib_Page
     }
 
     //出错处理方式
-    function error($function,$errormsg)
+    /**
+     * 展示错误病终止执行.
+     *
+     * @param string $function 错误产生的函数名称.
+     * @param string $errormsg 错误信息.
+     *
+     * @return void
+     */
+    private function _error($function, $errormsg)
     {
         die('Error in file <b>'.__FILE__.'</b> ,Function <b>'.$function.'()</b> :'.$errormsg);
     }
