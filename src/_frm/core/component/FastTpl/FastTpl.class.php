@@ -4,7 +4,7 @@
  * 7个标签，1个类，带有文件缓存功能，速度超级快。
  * 
  * 1. foreach:
- *     {foreach from=$array key=$key item=$item} {/foreach }
+ *     {foreach from=$array index=$index key=$key item=$item} {/foreach }
  * 2. for
  *     {for name=$i min=0 max=15 step=2}{/for}
  * 3. if

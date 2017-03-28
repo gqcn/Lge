@@ -43,13 +43,7 @@ class BaseModelTable extends Base
     {
         parent::__construct();
         if (!empty($table)) {
-            $config = Config::get();
-            if (!empty($config['DataBase'][$dbConfigName])
-                && !empty($config['DataBase'][$dbConfigName]['prefix'])) {
-                $this->table = $config['DataBase'][$dbConfigName]['prefix'].$table;
-            } else {
-                $this->table = $table;
-            }
+            $this->table = $this->_checkAndConvertTableWithPrefix($table);
         }
         // 判断变量是否定义
         if (empty($this->table)) {
@@ -63,6 +57,22 @@ class BaseModelTable extends Base
         if (empty($this->db)) {
             $this->db = Instance::database($this->dbConfigName);
         }
+    }
+
+    /**
+     * 如果有配置数据表前缀，那么将替换表名为带前缀的表名称(这个时候使用的表名应当以_开头).
+     *
+     * @param $table
+     * @return mixed
+     */
+    private function _checkAndConvertTableWithPrefix($table) {
+        $config = Config::get();
+        if (!empty($config['DataBase'][$dbConfigName])
+            && !empty($config['DataBase'][$dbConfigName]['prefix'])) {
+            $prefix = $config['DataBase'][$dbConfigName]['prefix'];
+            $table  = preg_replace("/(\s+)\_(\w+)/", "\$1{$prefix}\$2", ' '.$table);
+        }
+        return $table;
     }
 
     /**
