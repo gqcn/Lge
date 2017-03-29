@@ -36,7 +36,7 @@ class Lib_Redirecter
     static public function redirect($url = null)
     {
         if (empty($url)) {
-            $url = self::getReferer();
+            $url = Lib_Url::getReferer();
         }
         header("location:{$url}");
     }
