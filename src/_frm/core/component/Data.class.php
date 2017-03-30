@@ -52,7 +52,7 @@ class Data
                     if (sessionStarted() || php_sapi_name() == 'cli') {
                         self::$_data[$key] = &$_SESSION; 
                     } else {
-                        throw new Exception('Session not started!');
+                        throw new \Exception('Session not started!');
                     }
                     break;
             }

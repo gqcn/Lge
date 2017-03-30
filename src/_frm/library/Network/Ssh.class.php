@@ -44,10 +44,10 @@ class Lib_Network_Ssh
             if ($this->conn = ssh2_connect($this->host, $this->port)) {
                 $this->log("authenticating to {$this->host}:{$this->port}");
                 if (!ssh2_auth_password($this->conn, $this->user, $this->pass)) {
-                    throw new Exception("unable to authenticate to {$this->host}:{$this->port}");
+                    throw new \Exception("unable to authenticate to {$this->host}:{$this->port}");
                 }
             } else {
-                throw new Exception("unable to connect to {$this->host}:{$this->port}");
+                throw new \Exception("unable to connect to {$this->host}:{$this->port}");
             }
         }
     }
@@ -60,14 +60,14 @@ class Lib_Network_Ssh
      * @param integer $permision  远程文件创建权限.
      *
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function sendFile($localFile, $remoteFile, $permision = 0644)
     {
         $this->_init();
 
         if (!is_file($localFile)) {
-            throw new Exception("local file {$localFile} does not exist");
+            throw new \Exception("local file {$localFile} does not exist");
         }
         $this->log("sending file {$localFile} as {$remoteFile}");
 
@@ -76,7 +76,7 @@ class Lib_Network_Ssh
         if(empty($sftpStream)) {
             //  if 1 method failes try the other one
             if(!@ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision)) {
-                throw new Exception("could not open remote file: {$remoteFile}");
+                throw new \Exception("could not open remote file: {$remoteFile}");
             } else {
                 return true;
             }
@@ -84,7 +84,7 @@ class Lib_Network_Ssh
 
         $dataToSend = @file_get_contents($localFile);
         if (@fwrite($sftpStream, $dataToSend) === false) {
-            throw new Exception("could not send data from file: $localFile.");
+            throw new \Exception("could not send data from file: $localFile.");
         }
         @fclose($sftpStream);
         $this->log("sending file {$localFile} as {$remoteFile} succeeded");
@@ -115,7 +115,7 @@ class Lib_Network_Ssh
      * @param string $cmd 命令.
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
     public function cmd($cmd)
     {
@@ -124,7 +124,7 @@ class Lib_Network_Ssh
         $this->log($cmd);
         $this->stream = ssh2_exec($this->conn, $cmd);
         if (false === $this->stream ) {
-            throw new Exception("unable to execute command:{$cmd}");
+            throw new \Exception("unable to execute command:{$cmd}");
         }
         stream_set_blocking($this->stream, 1);
         stream_set_timeout($this->stream,  $this->streamTimeout);
@@ -143,7 +143,7 @@ class Lib_Network_Ssh
      *
      * @param mixed $cmds 命令列表.
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function shellCmd($cmds = array())
     {
@@ -227,7 +227,7 @@ class Lib_Network_Ssh
      * @param  string $path 远程文件绝对路径.
      *
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function fileExists($path)
     {

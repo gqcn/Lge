@@ -55,7 +55,7 @@ class BaseModelTable extends Base
         }
         // 判断变量是否定义
         if (empty($this->table)) {
-            throw new Exception('Table model not initialed, empty table set!');
+            throw new \Exception('Table model not initialed, empty table set!');
         }
 
         if (!empty($dbConfigName)) {
