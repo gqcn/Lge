@@ -38,7 +38,7 @@ class Instance
                 if (is_array($config)) {
                     require_once(__DIR__.'/Database.class.php');
                     $obj = new Database($config);
-                    $obj->setDebug(DEBUG);
+                    $obj->setDebug(L_DEBUG);
                     Data::set($key, $obj);
                 }
             }

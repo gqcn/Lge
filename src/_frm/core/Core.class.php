@@ -159,18 +159,18 @@ class Core
     public static function init()
     {
         // 时区设置
-        if (!defined('DEFAULT_TIME_ZONE')) {
-            define('DEFAULT_TIME_ZONE', 'Asia/Shanghai');
+        if (!defined('L_DEFAULT_TIME_ZONE')) {
+            define('L_DEFAULT_TIME_ZONE', 'Asia/Shanghai');
         }
-        ini_set("date.timezone", DEFAULT_TIME_ZONE);
+        ini_set("date.timezone", L_DEFAULT_TIME_ZONE);
 
         // 注册页面执行结束的回调函数
         self::registerShutdownFunction(array('\Lge\Core', 'shutDownFunction'));
 
         // 关闭默认错误显示,使用自定义错误控制
-        if (DEBUG === 1) {
+        if (L_DEBUG === 1) {
             ini_set('display_errors', 'on');
-            error_reporting(ERROR_LEVEL_FOR_DEBUG);
+            error_reporting(L_ERROR_LEVEL_FOR_DEBUG);
         } else {
             error_reporting(false);
         }
@@ -190,24 +190,24 @@ class Core
         }
 
         if (empty(self::$cfgDir)) {
-            self::$cfgDir = ROOT_PATH.'_cfg/';
+            self::$cfgDir = L_ROOT_PATH.'_cfg/';
         }
         if (empty(self::$incDir)) {
-            self::$incDir = ROOT_PATH.'_inc/';
+            self::$incDir = L_ROOT_PATH.'_inc/';
         }
         if (empty(self::$sysDir)) {
-            self::$sysDir = ROOT_PATH.'system/'.self::$sys.'/';
+            self::$sysDir = L_ROOT_PATH.'system/'.self::$sys.'/';
         }
 
         // 类自动加载搜索目录.
-        self::addClassSearchPath(FRAME_PATH.'core/component/');
+        self::addClassSearchPath(L_FRAME_PATH.'core/component/');
         self::addClassSearchPath(self::$incDir.'class/');
         self::addClassSearchPath(self::$incDir.'library/');
 
         // SESSION缓存管理(使用memcache缓存控制，不处理默认采用文件存储SESSION)
-        if (defined('SESSION_STORAGE') && SESSION_STORAGE == 'memcache') {
+        if (defined('L_SESSION_STORAGE') && L_SESSION_STORAGE == 'memcache') {
             $config      = Config::get();
-            $memcacheKey = SESSION_MEMCACHE_KEY;
+            $memcacheKey = L_SESSION_MEMCACHE_KEY;
             if (!empty($config['MemcacheServer'][$memcacheKey])) {
                 $sessionSavePath = '';
                 foreach ($config['MemcacheServer'][$memcacheKey] as $v) {
@@ -241,17 +241,17 @@ class Core
             /**
              * 子域名判断子分站
              */
-            if (SYSTEM_BY_SUBDOMAIN === true) {
-                $level     = SYSTEM_BY_SUBDOMAIN_LEVEL;
+            if (L_SYSTEM_BY_SUBDOMAIN === true) {
+                $level     = L_SYSTEM_BY_SUBDOMAIN_LEVEL;
                 $subDomain = Lib_Url::getSubdomain($level);
                 if (!empty($subDomain)) {
                     $sys     = $subDomain;
-                    $mapping = json_decode(SYSTEM_BY_SUBDOMAIN_MAPPING, true);
+                    $mapping = json_decode(L_SYSTEM_BY_SUBDOMAIN_MAPPING, true);
                     if (isset($mapping[$subDomain])) {
                         $sys = $mapping[$subDomain];
                     }
                     self::$sys    = $sys;
-                    self::$sysDir = ROOT_PATH.'system/'.self::$sys.'/';
+                    self::$sysDir = L_ROOT_PATH.'system/'.self::$sys.'/';
                 }
             }
             // GET全局变量引用
@@ -286,7 +286,7 @@ class Core
             }
 
             // 根据请求重置分站目录
-            self::$sysDir = ROOT_PATH.'system/'.self::$sys.'/';
+            self::$sysDir = L_ROOT_PATH.'system/'.self::$sys.'/';
         }
 
         // 添加分站的类搜索目录
@@ -296,10 +296,10 @@ class Core
         // 固定模板参数设置(模板引擎只对请求有效)
         self::$tplOptions   = array(
             'tpl_ext'       => 'tpl',
-            "tpl_dir"       => ROOT_PATH.'system/'.self::$sys.'/template/',
-            "cache_dir"     => ROOT_PATH.'cache/compile/'.self::$sys.'/',
-            "debug"         => (DEBUG == 1),
-            'check_update'  => (DEBUG == 1),
+            "tpl_dir"       => L_ROOT_PATH.'system/'.self::$sys.'/template/',
+            "cache_dir"     => L_ROOT_PATH.'cache/compile/'.self::$sys.'/',
+            "debug"         => (L_DEBUG == 1),
+            'check_update'  => (L_DEBUG == 1),
             'totally_php'   => false,
             'php_enabled'   => true,
         );
@@ -402,7 +402,7 @@ class Core
                 unset($classWordArray[0]);
                 $dir  = self::$incDir;
                 if (empty($dir)) {
-                    $dir = ROOT_PATH.'_inc/';
+                    $dir = L_ROOT_PATH.'_inc/';
                 }
                 $name = implode('/', $classWordArray);
                 $path = "{$dir}model/{$name}.class.php";
@@ -418,7 +418,7 @@ class Core
                 unset($classWordArray[0]);
                 $dir  = self::$incDir;
                 if (empty($dir)) {
-                    $dir = ROOT_PATH.'_inc/';
+                    $dir = L_ROOT_PATH.'_inc/';
                 }
                 $name = implode('/', $classWordArray);
                 $path = "{$dir}module/{$name}.class.php";
@@ -433,7 +433,7 @@ class Core
             case 'lib':
                 unset($classWordArray[0]);
                 $name = implode('/', $classWordArray);
-                $path = FRAME_PATH.'library/'.$name.'.class.php';
+                $path = L_FRAME_PATH.'library/'.$name.'.class.php';
                 if (file_exists($path)) {
                     require_once($path);
                 } else {
@@ -566,7 +566,7 @@ class Core
             }
             Logger::log($errorStr, 'error', $levelNo);
             // 如果是调试模式，那么产生错误后将错误显示出来
-            if (DEBUG == 1) {
+            if (L_DEBUG == 1) {
                 $levelStr = Logger::levelNo2String($levelNo);
                 echo "{$levelStr}\t{$errorStr}".PHP_EOL;
             }

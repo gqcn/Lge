@@ -62,7 +62,7 @@ class Router
         }
         $config = array();
         // 全局路由配置
-        $rootCfgPath = ROOT_PATH.'_cfg/router.inc.php';
+        $rootCfgPath = L_ROOT_PATH.'_cfg/router.inc.php';
         if (file_exists($rootCfgPath)) {
             $config = include($rootCfgPath);
         }

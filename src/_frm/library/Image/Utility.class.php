@@ -121,7 +121,7 @@ class Lib_Image_Utility
    /**
     * PHP图片水印 (水印支持图片或文字)
     *
-    * @example Image::makeWaterMark($srcImagePath, 9, ROOT_PATH.'/images/logo2.png');
+    * @example Image::makeWaterMark($srcImagePath, 9, L_ROOT_PATH.'/images/logo2.png');
     * 
     * @param string $groundImage    背景图片，即需要加水印的图片，暂只支持GIF,JPG,PNG格式；
     * @param int    $waterPos       水印位置，有10种状态，0为随机位置；

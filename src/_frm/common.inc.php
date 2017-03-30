@@ -16,20 +16,20 @@ if (!defined('LGE')) {
     define('LGE',       1);
 }
 // 是否开启调试模式
-if (!defined('DEBUG')) {
-    define('DEBUG',     1);
+if (!defined('L_DEBUG')) {
+    define('L_DEBUG',     1);
 }
 // 系统根目录文件系统绝对路径
-if (!defined('ROOT_PATH')) {
-    define('ROOT_PATH', realpath(__DIR__.'/..').'/');
+if (!defined('L_ROOT_PATH')) {
+    define('L_ROOT_PATH', realpath(__DIR__.'/..').'/');
 }
 
 // 系统根目录文件系统绝对路径
-if (!defined('FRAME_PATH')) {
-    define('FRAME_PATH', __DIR__.'/');
+if (!defined('L_FRAME_PATH')) {
+    define('L_FRAME_PATH', __DIR__.'/');
 }
 
 define('FRAME_VERSION', 'Lge v2.8');
 
 // 加载框架
-include(FRAME_PATH.'/core/Core.inc.php');
+include(L_FRAME_PATH.'/core/Core.inc.php');

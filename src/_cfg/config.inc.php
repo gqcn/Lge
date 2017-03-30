@@ -20,7 +20,7 @@ return array(
             // 日志文件配置
             'file' => array(
                 // 日志目录存放位置
-                'path' => ROOT_PATH.'../log/',
+                'path' => L_ROOT_PATH.'../log/',
             ),
         ),
     ),
