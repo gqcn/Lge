@@ -5,4 +5,10 @@
 .orig
 .swp
 .idea/
+src/cache/
+!src/cache/.keep
+src/upload/
+!src/upload/file/.keep
+!src/upload/image/.keep
+!src/upload/media/.keep
 
