@@ -43,19 +43,19 @@ class BaseModelTable extends Base
     {
         parent::__construct();
         if (!empty($table)) {
+            $this->table = $table;
+        }
+        // 判断变量是否定义
+        if (empty($this->table)) {
+            throw new \Exception('Table model not initialed, empty table set!');
+        } else {
             $config = Config::get();
             if (!empty($config['DataBase'][$dbConfigName])
                 && !empty($config['DataBase'][$dbConfigName]['prefix'])) {
                 $prefix      = $config['DataBase'][$dbConfigName]['prefix'];
                 $this->table = preg_replace("/(\s+)\_(\w+)/", "\$1{$prefix}\$2", ' '.$table);
                 $this->table = ltrim($this->table);
-            } else {
-                $this->table = $table;
             }
-        }
-        // 判断变量是否定义
-        if (empty($this->table)) {
-            throw new \Exception('Table model not initialed, empty table set!');
         }
 
         if (!empty($dbConfigName)) {

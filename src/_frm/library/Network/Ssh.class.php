@@ -54,6 +54,8 @@ class Lib_Network_Ssh
 
     /**
      * 上传本地文件到远程服务器地址.
+     * 注意文件大小：由于采用的是 file_get_contents 读取文件内容，因此会很占内存。
+     * @todo 优化读写效率，采用分块形式读写
      *
      * @param string  $localFile  本地文件路径.
      * @param string  $remoteFile 远程文件路径.
@@ -69,13 +71,12 @@ class Lib_Network_Ssh
         if (!is_file($localFile)) {
             throw new \Exception("local file {$localFile} does not exist");
         }
-        $this->log("sending file {$localFile} as {$remoteFile}");
+        $this->log("sending file {$localFile} to {$remoteFile}");
 
         $sftp       = ssh2_sftp($this->conn);
         $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'w');
         if(empty($sftpStream)) {
-            //  if 1 method failes try the other one
-            if(!@ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision)) {
+            if (!@ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision)) {
                 throw new \Exception("could not open remote file: {$remoteFile}");
             } else {
                 return true;
@@ -103,8 +104,8 @@ class Lib_Network_Ssh
     {
         $this->_init();
 
-        $this->log("receiving file {$remoteFile} as {$localFile}");
-        return ssh2_scp_recv($this->conn, $remoteFile, $localFile);
+        $this->log("receiving file {$remoteFile} top {$localFile}");
+        return @ssh2_scp_recv($this->conn, $remoteFile, $localFile);
     }
 
     /**
