@@ -29,7 +29,7 @@ if (!defined('L_FRAME_PATH')) {
     define('L_FRAME_PATH', __DIR__.'/');
 }
 
-define('FRAME_VERSION', 'Lge v2.8');
+define('FRAME_VERSION', 'Lge v3.0');
 
 // 加载框架
 include(L_FRAME_PATH.'/core/Core.inc.php');

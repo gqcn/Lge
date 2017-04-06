@@ -14,24 +14,27 @@ if (!defined('LGE')) {
  */
 class Database
 {
-    protected $_debug    	= false;   // 是否调试，在调试状态下，类会记录很多有用的调试信息
+    protected $_options     = array(); // 连接参数
+    protected $_debug    	= true;    // 是否调试，在调试状态下，类会记录很多有用的调试信息(例如SQL执行语句及执行时间等等)
     protected $_sqls     	= array(); // 执行过的SQL语句列表，包含执行时间
-    protected $_maxSqlCount	= 1000;    // 记录执行的SQL的最大大小
-    protected $_link     	= null;    // 建立数据库连接后保存的连接
-    protected $_links    	= array(); // 用于主从连接时，用于存放主从两个连接
-    protected $_linkInfo 	= null;    // 连接信息
+    protected $_maxSqlCount	= 1000;    // 记录执行的SQL的最大大小，调试模式下防止内存占用
+    protected $_link     	= null;    // 当前对象建立数据库连接后保存的连接
+    protected $_links    	= array(); // 用于主从连接时，用于存放主从两个连接(主从模式下，该对象会根据权重随机选用两个配置进行操作，所以同一个数据库对象中最多只存放主从两个连接)
+    protected $_linkInfo 	= null;    // PDO连接信息
     protected $_halt       	= true;    // 当数据库错误发生时停止执行并显示错误
-    protected $_retryCount 	= 0;       // 当数据库错误发生时重试连接次数
     protected $_error    	= null;    // 最新一次错误
     protected $_mode     	= null;    // 执行模式(master|slave)
-    protected $_result   	= null;    // 每次查询返回的PDOStatement对象
-    protected $_options;            // 连接参数
+    protected $_result   	= null;    // 每次查询返回的PDOStatement对象(废弃)
+    protected $_retryCount 	= 0;       // 当数据库错误发生时重试连接次数(废弃)
+
 
     /**
      *
      * 构造函数只保存所需变量.
      *
-     * @param array $options
+     * @param array $options 配置参数.
+     *
+     * @return void
      */
     public function __construct($options)
     {
@@ -44,7 +47,7 @@ class Database
      *
      * @param string $mode 主从模式(master|slave)，如果不是主从模式，默认为空.
      *
-     * @return PDO
+     * @return PDO操作对象|null
      */
     public function getLink($mode = '')
     {
@@ -70,7 +73,8 @@ class Database
         }
 
         /**
-         * 数据库连接判断.
+         * 数据库连接判断。
+         * 注意不同的数据库下，SQL的操作可能会有所区别。
          */
         if (empty($this->_link)) {
             if (empty($option)) {
@@ -104,7 +108,7 @@ class Database
                                     $charsetStr = ";charset={$option['charset']}";
                                 }
                                 /**
-                                 * Oracle连接采用SID的方式
+                                 * Oracle连接采用SID的方式.
                                  */
                                 $tns = "(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)
                                         (HOST={$option['host']})(PORT={$option['port']})))
@@ -154,7 +158,6 @@ class Database
         $index      = 0;
         $totalCount = 0;
         foreach ($options as $k => $v) {
-            $priority = 0;
             if (isset($v['priority'])) {
                 $priority    = $v['priority']*100;
                 $totalCount += $priority;
@@ -230,7 +233,7 @@ class Database
     }
 
     /**
-     * 设置调试模式(目前没什么用).
+     * 设置调试模式.
      *
      * @param boolean $debug 是否调试(0:否，1:是)
      *
@@ -243,6 +246,7 @@ class Database
 
     /**
      * 设置记录执行的SQL数组最大大小，超过这个大小则从头开始删除旧的SQL，保留最新的SQL.
+     *
      * @param integer $count 大小.
      *
      * @return void
@@ -276,8 +280,8 @@ class Database
      * 执行一条SQL操作，注意返回的数据类型是和exec方法不一样的。
      * query方法一般用于select查询。
      *
-     * @param string $sql        SQL.
-     * @param array  $bindParams 绑定数据数组.
+     * @param string $sql        SQL语句.
+     * @param array  $bindParams 预执行绑定数据数组.
      * @param string $mode       主从模式(master|slave).
      *
      * @return PDOStatement|false
@@ -290,16 +294,17 @@ class Database
         $start  = microtime(true);
         $result = $this->getLink($mode) ? $this->getLink($mode)->query($sql) : false;
         $end    = microtime(true);
-        $this->_recordSql(array(
-            'sql'    => $sql,
-            'mode'   => $mode,
-            'cost'   => $end - $start,
-            'link'   => &$this->_linkInfo,
-            'time'   => time(),
-            'method' => __FUNCTION__,
-            'params' => $bindParams,
-        ));
-
+        if ($this->_debug) {
+            $this->_recordSql(array(
+                'sql'    => $sql,
+                'mode'   => $mode,
+                'cost'   => $end - $start,
+                'link'   => &$this->_linkInfo,
+                'time'   => time(),
+                'method' => __FUNCTION__,
+                'params' => $bindParams,
+            ));
+        }
         if ($result === false) {
             $this->_halt();
         }
@@ -310,7 +315,7 @@ class Database
      * 预处理执行SQL语句.
      *
      * @param string $sql        SQL.
-     * @param array  $bindParams 绑定数据数组.
+     * @param array  $bindParams 预处理绑定数据数组.
      * @param string $mode       主从模式(master|slave).
      *
      * @return PDOStatement|false
@@ -325,25 +330,25 @@ class Database
     }
 
     /**
-     * Prepare.
+     * 预处理SQL.
      *
      * @param string $sql  SQL.
      * @param string $mode 模式.
      *
-     * @return PDOStatement | null
+     * @return PDOStatement | false
      */
     public function prepare($sql, $mode = '')
     {
-        return $this->getLink($mode) ? $this->getLink($mode)->prepare($sql) : null;
+        return $this->getLink($mode) ? $this->getLink($mode)->prepare($sql) : false;
     }
 
     /**
      * 预处理执行SQL语句.
      *
-     * @todo 不支持in(?)这样的预处理，参见pdo::execute方法的官方说明。这种情况下室友拼接字符串的方式来处理.
+     * @todo 不支持in(?)这样的预处理，参见pdo::execute方法的官方说明。这种情况下采用拼接字符串的方式来处理.
      *
      * @param string $sql        SQL.
-     * @param array  $bindParams 绑定数据数组.
+     * @param array  $bindParams 预处理绑定数据数组.
      * @param string $mode       主从模式(master|slave).
      *
      * @return PDOStatement|false
@@ -351,20 +356,22 @@ class Database
     protected function _doPrepareExecute($sql, $bindParams = array(), $mode = '')
     {
         $result = false;
-        $stmt   = $this->getLink($mode) ? $this->getLink($mode)->prepare($sql) : null;
+        $stmt   = $this->getLink($mode) ? $this->getLink($mode)->prepare($sql) : false;
         if (!empty($stmt)) {
             $start  = microtime(true);
             $result = $stmt->execute($bindParams);
             $end    = microtime(true);
-            $this->_recordSql(array(
-                'sql'    => $sql,
-                'mode'   => $mode,
-                'cost'   => $end - $start,
-                'link'   => &$this->_linkInfo,
-                'time'   => time(),
-                'method' => __FUNCTION__,
-                'params' => $bindParams,
-            ));
+            if ($this->_debug) {
+                $this->_recordSql(array(
+                    'sql'    => $sql,
+                    'mode'   => $mode,
+                    'cost'   => $end - $start,
+                    'link'   => &$this->_linkInfo,
+                    'time'   => time(),
+                    'method' => __FUNCTION__,
+                    'params' => $bindParams,
+                ));
+            }
             if ($result === false) {
                 $errorInfo = $stmt->errorInfo();
                 $this->_halt($errorInfo[2]);
@@ -383,22 +390,24 @@ class Database
      * @param string $sql  SQL.
      * @param string $mode 主从模式(master|slave).
      *
-     * @return int
+     * @return int|false
      */
     public function exec($sql, $mode = '')
     {
         $start  = microtime(true);
         $result = $this->getLink($mode) ? $this->getLink($mode)->exec($sql) : false;
         $end    = microtime(true);
-        $this->_recordSql(array(
-            'sql'    => $sql,
-            'mode'   => $mode,
-            'cost'   => $end - $start,
-            'link'   => &$this->_linkInfo,
-            'time'   => time(),
-            'method' => __FUNCTION__,
-            'params' => array(),
-        ));
+        if ($this->_debug) {
+            $this->_recordSql(array(
+                'sql'    => $sql,
+                'mode'   => $mode,
+                'cost'   => $end - $start,
+                'link'   => &$this->_linkInfo,
+                'time'   => time(),
+                'method' => __FUNCTION__,
+                'params' => array(),
+            ));
+        }
         if($result === false){
             $this->_halt();
         }
@@ -406,34 +415,40 @@ class Database
     }
 
     /**
-     * 开启事务
+     * 开启事务(必需在主库上执行)
+     *
+     * @return bool
      */
     public function beginTransaction()
     {
-        return $this->getLink('master') ? $this->getLink('master')->beginTransaction() : null;
+        return $this->getLink('master') ? $this->getLink('master')->beginTransaction() : false;
     }
 
     /**
-     * 回滚事务操作，当commit之后该操作无效
+     * 回滚事务操作，当commit之后该操作无效(必需在主库上执行).
+     *
      * @return bool
      */
     public function rollBack()
     {
-        return $this->getLink('master') ? $this->getLink('master')->rollBack() : null;
+        return $this->getLink('master') ? $this->getLink('master')->rollBack() : false;
     }
 
     /**
-     * 提交事务操作
+     * 提交事务操作(必需在主库上执行).
+     *
+     * @return bool
      */
     public function commit()
     {
-        return $this->getLink('master') ? $this->getLink('master')->commit() : null;
+        return $this->getLink('master') ? $this->getLink('master')->commit() : false;
     }
 
     /**
      * 取得结果集中行的数目。
      *
      * @param  PDOStatement $result 数据库操作结果资源
+     *
      * @return int
      */
     public function rows(\PDOStatement &$result)
@@ -442,9 +457,11 @@ class Database
     }
 
     /**
-     * 从结果集中取得一行作为关联数组，或数字数组，或二者兼有。
+     * 从结果集中取得一行作为关联数组，及数字数组，二者兼有。
+     * @link http://php.net/manual/en/pdostatement.fetch.php
      *
-     * @param  PDOStatement $result 数据库操作结果资源
+     * @param  PDOStatement $result 数据库操作结果资源.
+     *
      * @return array
      */
     public function fetchArray(\PDOStatement &$result)
@@ -454,8 +471,9 @@ class Database
 
     /**
      * 从结果集中取得一行作为关联数组。
+     * @link http://php.net/manual/en/pdostatement.fetch.php
      *
-     * @param  PDOStatement $result 数据库操作结果资源
+     * @param  PDOStatement $result 数据库操作结果资源.
      * @return array
      */
     public function fetchAssoc(\PDOStatement &$result)
@@ -466,6 +484,7 @@ class Database
     /**
      * 从结果集中取得一行作为枚举数组。
      * 每个结果的列储存在一个数组的单元中，偏移量从0开始。
+     * @link http://php.net/manual/en/pdostatement.fetch.php
      *
      * @param  PDOStatement $result 数据库操作结果资源
      * @return array
@@ -488,7 +507,8 @@ class Database
     }
 
     /**
-     * 返回上一次执行insert操作产生的ID
+     * 返回上一次执行insert操作产生的ID.
+     * 注意：在MySQL中，只有当主键为自增字段时返回值>0，否则返回值为0。
      *
      * @return int
      */
@@ -500,6 +520,7 @@ class Database
     /**
      * 关闭数据库连接。
      *
+     * @return void
      */
     public function close()
     {
@@ -508,10 +529,10 @@ class Database
     }
 
     /**
-     * 获取SQL返回的一条记录(SQL只获取一条记录)
+     * 获取SQL返回的一条记录(SQL只获取一条记录关联数组)
      *
      * @param string $sql        SQL.
-     * @param array  $bindParams 绑定数据数组.
+     * @param array  $bindParams 预处理绑定数据数组.
      *
      * @return array
      */
@@ -532,7 +553,7 @@ class Database
      * 返回查询的结果列表，列表索引从0开始，每一项为一个数组。
      *
      * @param string $sql        SQL.
-     * @param array  $bindParams 绑定数据数组.
+     * @param array  $bindParams 预处理绑定数据数组.
      *
      * @return array
      */
@@ -552,7 +573,7 @@ class Database
      * 返回查询的记录数。
      *
      * @param string $sql        SQL.
-     * @param array  $bindParams 绑定数据数组.
+     * @param array  $bindParams 预处理绑定数据数组.
      *
      * @return int
      */
@@ -569,10 +590,7 @@ class Database
     }
 
     /**
-     * 根据条件获得一条字段的值.
-     *
-    /**
-     * 根据条件获得一条记录。
+     * 根据条件获得一条字段的值。
      *
      * @param mixed   $tables         查询表名(可以查询多张表).
      * @param string  $field          查询字段.
@@ -679,8 +697,6 @@ class Database
     /**
      * 格式化表名语句.
      *
-     * @todo 处理表名为关键字的情况，需要添加反引号
-     *
      * @param mixed $tables 查询数据表.
      *
      * @return string
@@ -745,7 +761,7 @@ class Database
             return $newCondition;
         }
 
-        // 支持条件变量直接传字符串(不推荐)，例如:
+        // (不推荐)支持条件变量直接传字符串，例如:
         // "name='john' and age>18"
         if (!is_array($conditions)) {
             $newCondition[0] = $conditions;
@@ -765,11 +781,16 @@ class Database
             return $newCondition;
         }
 
-        // 多个条件组成一个大的条件数组(用第一个元素是否是数组来判断，正常单条件应当是字符串)，这时需要拆开一个一个递归处理
+        // 多个条件组成一个大的条件数组(用第一个元素是否是数组来判断，正常单条件应当是字符串)，这时需要拆开一个一个递归处理，
+        // 支持条件语句中带and或者or
         // 例如：
         // array(
         //     array('name=?', 'john'),
         //     array('age>?',  18),
+        // );
+        // array(
+        //     array('name=?',     'john'),
+        //     array('or name=?',  'johnson'),
         // );
         if (is_array($conditions) && is_array($conditions[0])) {
             foreach ($conditions as $k => $v) {
@@ -793,14 +814,14 @@ class Database
             return $newCondition;
         }
 
-        // 数组只有1个元素，是字符串条件，字符串中包含查询条件和值(未使用预处理，不推荐)，例如：
+        // (不推荐)数组只有1个元素，是字符串条件，字符串中包含查询条件和值，例如：
         // array("name='john' and age > 18")
         if (is_array($conditions) && isset($conditions[0]) && !isset($conditions[1])) {
             $newCondition[0] = $conditions[0];
             return $newCondition;
         }
 
-        // 支持单数组的条件查询方式(预处理变量放在一个数组中，第一个是条件字符串，其他的是预处理变量)，例如：
+        // (推荐)支持单数组的条件查询方式(预处理变量放在一个数组中，第一个是条件字符串，其他的是预处理变量)，例如：
         // array('name=? and age > ?', 'john', 18)
         if (is_array($conditions) && isset($conditions[0]) && isset($conditions[1]) && !is_array($conditions[1])) {
             $tempCondition = array(
@@ -851,7 +872,7 @@ class Database
             $groupByStr = 'GROUP BY ';
             if (is_array($groupBy)) {
                 foreach ($groupBy as $v) {
-                    $groupByStr .= "`{$v}`,";
+                    $groupByStr .= "{$v},";
                 }
                 $groupByStr = rtrim($groupByStr, ',');
             } else {
@@ -919,7 +940,7 @@ class Database
     {
         if (!empty($data)) {
             foreach ($data as $key => $value) {
-                $keys[]   = "`$key`";
+                $keys[]   = "$key";
                 $values[] = ":{$key}";
             }
             $keyStr    = implode(',', $keys);
@@ -928,12 +949,12 @@ class Database
             $updateStr = '';
             if ($option == 'update') {
                 foreach ($data as $key => $value) {
-                    $updates[] = "`$key`=:{$key}";
+                    $updates[] = "{$key}=:{$key}";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
             }
-            $sql = "{$operator} INTO `{$table}`({$keyStr}) VALUES({$valueStr}){$updateStr}";
+            $sql = "{$operator} INTO {$table}({$keyStr}) VALUES({$valueStr}){$updateStr}";
             return $this->prepareExecute($sql, $data, 'master');
         }
     }
@@ -965,13 +986,13 @@ class Database
             $valueStr    = '';
             $updateStr   = '';
             foreach ($keys as $key){
-                $filedStr .= "`{$key}`,";
+                $filedStr .= "{$key},";
                 $valueStr .= '?,';
             }
             // insert update 操作
             if ($option == 'update') {
                 foreach ($keys as $key){
-                    $updates[] = "`$key`=VALUES(`{$key}`)";
+                    $updates[] = "{$key}=VALUES({$key})";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
@@ -991,7 +1012,7 @@ class Database
                 $insertStr .= "({$valueStr}),";
                 if ((++$index) % $perCount == 0) {
                     $insertStr = rtrim($insertStr, ',');
-                    $insertSql = "{$operator} INTO `{$table}`({$filedStr}) VALUES{$insertStr}{$updateStr}";
+                    $insertSql = "{$operator} INTO {$table}({$filedStr}) VALUES{$insertStr}{$updateStr}";
                     $this->prepareExecute($insertSql, $insertArray, 'master');
                     $insertStr   = '';
                     $insertArray = array();
@@ -1000,7 +1021,7 @@ class Database
             // 插入最后剩余不满$perCount的数据
             if (!empty($insertStr)) {
                 $insertStr = rtrim($insertStr, ',');
-                $insertSql = "{$operator} INTO `{$table}`({$filedStr}) VALUES{$insertStr}{$updateStr}";
+                $insertSql = "{$operator} INTO {$table}({$filedStr}) VALUES{$insertStr}{$updateStr}";
                 $this->prepareExecute($insertSql, $insertArray, 'master');
             }
             return true;
@@ -1077,7 +1098,7 @@ class Database
                 // 全部转成以position的预处理，以方便处理
                 $index = 0;
                 foreach ($data as $key => $value) {
-                    $sets[]         = "`{$key}`=?";
+                    $sets[]         = "{$key}=?";
                     $data[$index++] = $value;
                     unset($data[$key]);
                 }
@@ -1091,7 +1112,7 @@ class Database
                 $conditionStr  = empty($newConditions[0]) ? '' : "WHERE {$newConditions[0]}";
                 $data          = $newConditions[1];
             }
-            $sql  = "UPDATE `{$table}` SET {$setStr} {$conditionStr}";
+            $sql  = "UPDATE {$table} SET {$setStr} {$conditionStr}";
             return $this->prepareExecute($sql, $data, 'master');
         }
         return false;
@@ -1154,7 +1175,7 @@ class Database
      * 获取表字段列表，构成数组返回.
      *
      * @param string    $table             表名.
-     * @param mixed     $filtFields        需要过滤的字段列表(可以是字符串-用逗号分隔，也可以是数组).
+     * @param mixed     $filtFields        需要过滤的字段列表(可以是字符串用逗号分隔，也可以是数组).
      * @param bool|true $withoutPrimaryKey 是否去掉主键字段.
      *
      * @return array
@@ -1176,7 +1197,7 @@ class Database
             }
             // 是否需要过滤该字段
             if (in_array($row['Field'], $filtFieldArray)) {
-
+                continue;
             }
             $fileds[] = $row['Field'];
         }
@@ -1227,7 +1248,7 @@ class Database
      * @param array  $data   关联数组.
      * @param string $option 插入选项.
      *
-     * @return false|PDOStatement
+     * @return PDOStatement|false
      */
     public function mysqlFiltInsert($table, array $data, $option = '')
     {
@@ -1241,7 +1262,7 @@ class Database
      * @param array  $data       关联数组.
      * @param mixed  $conditions SQL的操作条件.
      *
-     * @return false|PDOStatement
+     * @return PDOStatement|false
      */
     public function mysqlFiltUpdate($table, array $data, $conditions)
     {
@@ -1254,7 +1275,7 @@ class Database
      * @param string $table      表名称.
      * @param array  $data       关联数组.
      *
-     * @return false|PDOStatement
+     * @return PDOStatement|false
      */
     public function mysqlFiltSave($table, $data)
     {
