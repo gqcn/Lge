@@ -28,9 +28,9 @@ class Database
     protected static $_typeToReserveChars = array(
         'mysql'  => '`',
         'pgsql'  => '"',
-        'mssql'  => '',
-        'sqlite' => '',
-        'oracle' => '',
+        'mssql'  => '[]',
+        'sqlite' => '`',
+        'oracle' => '"',
     );
 
 
@@ -153,16 +153,28 @@ class Database
 
     /**
      * 根据配置判断数据库使用的保留操作字段字符是什么。
+     *
+     * @param bool $left 该字符是否放于左边.
+     *
      * @return string
      */
-    private function _getReserveChar()
+    private function _getReserveChar($left = true)
     {
         if (isset($this->_options['master'])) {
             $option = $this->_options['master'][0];
         } else {
             $option = &$this->_options;
         }
-        return self::$_typeToReserveChars[$option['type']];
+        $char = '';
+        if (isset(self::$_typeToReserveChars[$option['type']])) {
+            $reserveChar = self::$_typeToReserveChars[$option['type']];
+            if (strlen($reserveChar) > 1 && $left == false) {
+                $char = $reserveChar[1];
+            } else {
+                $char = $reserveChar;
+            }
+        }
+        return $char;
     }
 
     /**
@@ -960,9 +972,10 @@ class Database
     public function insert($table, array $data, $option = '')
     {
         if (!empty($data)) {
-            $char = $this->_getReserveChar();
+            $charLeft  = $this->_getReserveChar();
+            $charRight = $this->_getReserveChar(false);
             foreach ($data as $key => $value) {
-                $keys[]   = $char.$key.$char;
+                $keys[]   = $charLeft.$key.$charRight;
                 $values[] = ":{$key}";
             }
             $keyStr    = implode(',', $keys);
@@ -971,7 +984,7 @@ class Database
             $updateStr = '';
             if ($option == 'update') {
                 foreach ($data as $key => $value) {
-                    $updates[] = "{$char}{$key}{$char}=:{$key}";
+                    $updates[] = "{$charLeft}{$key}{$charRight}=:{$key}";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
@@ -1007,15 +1020,16 @@ class Database
             $filedStr  = '';
             $valueStr  = '';
             $updateStr = '';
-            $char      = $this->_getReserveChar();
+            $charLeft  = $this->_getReserveChar();
+            $charRight = $this->_getReserveChar(false);
             foreach ($keys as $key){
-                $filedStr .= "{$char}{$key}{$char},";
+                $filedStr .= "{$charLeft}{$key}{$charRight},";
                 $valueStr .= '?,';
             }
             // insert update 操作
             if ($option == 'update') {
                 foreach ($keys as $key){
-                    $updates[] = "{$char}{$key}{$char}=VALUES({$key})";
+                    $updates[] = "{$charLeft}{$key}{$charRight}=VALUES({$key})";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
@@ -1119,10 +1133,11 @@ class Database
         if (!empty($data)) {
             if (is_array($data)) {
                 // 全部转成以position的预处理，以方便处理
-                $index = 0;
-                $char  = $this->_getReserveChar();
+                $index     = 0;
+                $charLeft  = $this->_getReserveChar();
+                $charRight = $this->_getReserveChar(false);
                 foreach ($data as $key => $value) {
-                    $sets[]         = "{$char}{$key}{$char}=?";
+                    $sets[]         = "{$charLeft}{$key}{$charRight}=?";
                     $data[$index++] = $value;
                     unset($data[$key]);
                 }
