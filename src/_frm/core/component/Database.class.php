@@ -24,9 +24,14 @@ class Database
     protected $_halt       	= true;    // 当数据库错误发生时停止执行并显示错误
     protected $_error    	= null;    // 最新一次错误
     protected $_mode     	= null;    // 执行模式(master|slave)
-    protected $_reserveChar = '';      // 保留字的分隔字符(当字段带有关键字时，用以做区分)
-    protected $_result   	= null;    // 每次查询返回的PDOStatement对象(废弃)
-    protected $_retryCount 	= 0;       // 当数据库错误发生时重试连接次数(废弃)
+    // 数据库类型对应的保留字操作符(当字段带有关键字时，用以做区分)
+    protected static $_typeToReserveChars = array(
+        'mysql'  => '`',
+        'pgsql'  => '"',
+        'mssql'  => '',
+        'sqlite' => '',
+        'oracle' => '',
+    );
 
 
     /**
@@ -66,7 +71,7 @@ class Database
             $this->_link     = null;
             $this->_linkInfo = null;
             if (!empty($this->_links[$mode])) {
-                $this->_link = $this->_links[$mode]['link'];
+                $this->_link     = $this->_links[$mode]['link'];
                 $this->_linkInfo = $this->_links[$mode]['linkinfo'];
             } else {
                 $option = $this->_getOptionFromListByPriority($this->_options[$mode]);
@@ -79,7 +84,7 @@ class Database
          */
         if (empty($this->_link)) {
             if (empty($option)) {
-                $option = $this->_options;
+                $option = &$this->_options;
             }
             try {
                 if (empty($this->_linkInfo)) {
@@ -92,13 +97,11 @@ class Database
                                 if (!empty($option['charset'])) {
                                     $charsetStr = ";charset={$option['charset']}";
                                 }
-                                $this->_linkInfo    = "mysql:host={$option['host']};port={$option['port']};dbname={$option['database']}{$charsetStr}";
-                                $this->_reserveChar = '`';
+                                $this->_linkInfo = "mysql:host={$option['host']};port={$option['port']};dbname={$option['database']}{$charsetStr}";
                                 break;
 
                             case 'pgsql':
-                                $this->_linkInfo    = "pgsql:host={$option['host']};port={$option['port']};dbname={$option['database']}";
-                                $this->_reserveChar = '"';
+                                $this->_linkInfo = "pgsql:host={$option['host']};port={$option['port']};dbname={$option['database']}";
                                 break;
 
                             case 'sqlite':
@@ -149,7 +152,21 @@ class Database
     }
 
     /**
-     * 主从复制根据配置项的优先级确定使用哪个配置项.
+     * 根据配置判断数据库使用的保留操作字段字符是什么。
+     * @return string
+     */
+    private function _getReserveChar()
+    {
+        if (isset($this->_options['master'])) {
+            $option = $this->_options['master'][0];
+        } else {
+            $option = &$this->_options;
+        }
+        return self::$_typeToReserveChars[$option['type']];
+    }
+
+    /**
+     * 数据库主从架构根据配置项的优先级确定使用哪个配置项.
      *
      * @param array $options 配置项列表.
      *
@@ -162,8 +179,8 @@ class Database
         $totalCount = 0;
         foreach ($options as $k => $v) {
             if (isset($v['priority'])) {
-                $priority    = $v['priority']*100;
-                $totalCount += $priority;
+                $priority           = $v['priority']*100;
+                $totalCount        += $priority;
                 $options[$k]['min'] = $index;
                 $options[$k]['max'] = $index + $priority;
                 $index              = $totalCount + 1;
@@ -943,8 +960,9 @@ class Database
     public function insert($table, array $data, $option = '')
     {
         if (!empty($data)) {
+            $char = $this->_getReserveChar();
             foreach ($data as $key => $value) {
-                $keys[]   = $this->_reserveChar.$key.$this->_reserveChar;
+                $keys[]   = $char.$key.$char;
                 $values[] = ":{$key}";
             }
             $keyStr    = implode(',', $keys);
@@ -953,7 +971,7 @@ class Database
             $updateStr = '';
             if ($option == 'update') {
                 foreach ($data as $key => $value) {
-                    $updates[] = "{$this->_reserveChar}{$key}{$this->_reserveChar}=:{$key}";
+                    $updates[] = "{$char}{$key}{$char}=:{$key}";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
@@ -985,18 +1003,19 @@ class Database
                     return false;
                 }
             }
-            $keys        = array_keys($firstItem);
-            $filedStr    = '';
-            $valueStr    = '';
-            $updateStr   = '';
+            $keys      = array_keys($firstItem);
+            $filedStr  = '';
+            $valueStr  = '';
+            $updateStr = '';
+            $char      = $this->_getReserveChar();
             foreach ($keys as $key){
-                $filedStr .= "{$this->_reserveChar}{$key}{$this->_reserveChar},";
+                $filedStr .= "{$char}{$key}{$char},";
                 $valueStr .= '?,';
             }
             // insert update 操作
             if ($option == 'update') {
                 foreach ($keys as $key){
-                    $updates[] = "{$this->_reserveChar}{$key}{$this->_reserveChar}=VALUES({$key})";
+                    $updates[] = "{$char}{$key}{$char}=VALUES({$key})";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
@@ -1101,8 +1120,9 @@ class Database
             if (is_array($data)) {
                 // 全部转成以position的预处理，以方便处理
                 $index = 0;
+                $char  = $this->_getReserveChar();
                 foreach ($data as $key => $value) {
-                    $sets[]         = "{$this->_reserveChar}{$key}{$this->_reserveChar}=?";
+                    $sets[]         = "{$char}{$key}{$char}=?";
                     $data[$index++] = $value;
                     unset($data[$key]);
                 }
