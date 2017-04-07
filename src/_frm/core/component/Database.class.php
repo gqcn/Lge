@@ -24,7 +24,7 @@ class Database
     protected $_halt       	= true;    // 当数据库错误发生时停止执行并显示错误
     protected $_error    	= null;    // 最新一次错误
     protected $_mode     	= null;    // 执行模式(master|slave)
-    protected $_reserveChar = '';      // 保留字的分隔字符(当字段或者表名带有关键字时，用以做区分)
+    protected $_reserveChar = '';      // 保留字的分隔字符(当字段带有关键字时，用以做区分)
     protected $_result   	= null;    // 每次查询返回的PDOStatement对象(废弃)
     protected $_retryCount 	= 0;       // 当数据库错误发生时重试连接次数(废弃)
 
