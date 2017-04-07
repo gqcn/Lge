@@ -24,6 +24,7 @@ class Database
     protected $_halt       	= true;    // 当数据库错误发生时停止执行并显示错误
     protected $_error    	= null;    // 最新一次错误
     protected $_mode     	= null;    // 执行模式(master|slave)
+    protected $_reserveChar = '';      // 保留字的分隔字符(当字段或者表名带有关键字时，用以做区分)
     protected $_result   	= null;    // 每次查询返回的PDOStatement对象(废弃)
     protected $_retryCount 	= 0;       // 当数据库错误发生时重试连接次数(废弃)
 
@@ -91,11 +92,13 @@ class Database
                                 if (!empty($option['charset'])) {
                                     $charsetStr = ";charset={$option['charset']}";
                                 }
-                                $this->_linkInfo = "mysql:host={$option['host']};port={$option['port']};dbname={$option['database']}{$charsetStr}";
+                                $this->_linkInfo    = "mysql:host={$option['host']};port={$option['port']};dbname={$option['database']}{$charsetStr}";
+                                $this->_reserveChar = '`';
                                 break;
 
                             case 'pgsql':
-                                $this->_linkInfo = "pgsql:host={$option['host']};port={$option['port']};dbname={$option['database']}";
+                                $this->_linkInfo    = "pgsql:host={$option['host']};port={$option['port']};dbname={$option['database']}";
+                                $this->_reserveChar = '"';
                                 break;
 
                             case 'sqlite':
@@ -672,14 +675,15 @@ class Database
 
     /**
      * 根据条件查询记录数。
-     * @param  string $table      表名.
-     * @param  mixed  $conditions 条件数组.
-     * @param  mixed  $groupBy    分组.
-     * @param  mixed  $fields     用于获得数量用到的字段.
+     * @param mixed  $tables     查询表名(可以查询多张表).
+     * @param mixed  $conditions 条件数组.
+     * @param mixed  $groupBy    分组.
+     * @param mixed  $fields     用于获得数量用到的字段.
      * @return int
      */
-    public function count($table, $conditions = array(), $groupBy = array(), $fields = array())
+    public function count($tables, $conditions = array(), $groupBy = array(), $fields = array())
     {
+        $tableStr      = $this->_formatTables($tables);
         $newConditions = $this->_formatCondition($conditions);
         $conditionStr  = empty($newConditions[0]) ? '' : "WHERE {$newConditions[0]}";
         $groupByStr    = $this->_formatGroupBy($groupBy);
@@ -687,7 +691,7 @@ class Database
         if (empty($fieldsStr) || $fieldsStr == '*') {
             $fieldsStr = 'COUNT(1)';
         }
-        $sql = "SELECT {$fieldsStr} FROM {$table} {$conditionStr} {$groupByStr}";
+        $sql = "SELECT {$fieldsStr} FROM {$tableStr} {$conditionStr} {$groupByStr}";
         if (!empty($groupByStr)) {
             $sql = "SELECT COUNT(1) FROM ({$sql}) count_alias";
         }
@@ -940,7 +944,7 @@ class Database
     {
         if (!empty($data)) {
             foreach ($data as $key => $value) {
-                $keys[]   = "$key";
+                $keys[]   = $this->_reserveChar.$key.$this->_reserveChar;
                 $values[] = ":{$key}";
             }
             $keyStr    = implode(',', $keys);
@@ -949,7 +953,7 @@ class Database
             $updateStr = '';
             if ($option == 'update') {
                 foreach ($data as $key => $value) {
-                    $updates[] = "{$key}=:{$key}";
+                    $updates[] = "{$this->_reserveChar}{$key}{$this->_reserveChar}=:{$key}";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
@@ -986,13 +990,13 @@ class Database
             $valueStr    = '';
             $updateStr   = '';
             foreach ($keys as $key){
-                $filedStr .= "{$key},";
+                $filedStr .= "{$this->_reserveChar}{$key}{$this->_reserveChar},";
                 $valueStr .= '?,';
             }
             // insert update 操作
             if ($option == 'update') {
                 foreach ($keys as $key){
-                    $updates[] = "{$key}=VALUES({$key})";
+                    $updates[] = "{$this->_reserveChar}{$key}{$this->_reserveChar}=VALUES({$key})";
                 }
                 $updateStr = implode(',', $updates);
                 $updateStr = " ON DUPLICATE KEY UPDATE {$updateStr}";
@@ -1098,7 +1102,7 @@ class Database
                 // 全部转成以position的预处理，以方便处理
                 $index = 0;
                 foreach ($data as $key => $value) {
-                    $sets[]         = "{$key}=?";
+                    $sets[]         = "{$this->_reserveChar}{$key}{$this->_reserveChar}=?";
                     $data[$index++] = $value;
                     unset($data[$key]);
                 }
