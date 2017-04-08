@@ -22,7 +22,7 @@ class Lib_Network_Ssh
 
     public function __construct ($host, $port, $user, $pass) {
         if (!function_exists('ssh2_connect')) {
-            $this->log("error:ssh2 extension not installed!\n");
+            $this->log("ssh2 extension not installed!\n");
             exit();
         }
 
@@ -266,6 +266,6 @@ class Lib_Network_Ssh
      */
     public function log($content)
     {
-        echo trim($content)."\n";
+        echo 'Lib_SSH: '.trim($content)."\n";
     }
 }
