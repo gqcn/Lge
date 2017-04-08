@@ -23,7 +23,7 @@ class Lib_ClientAgent
          * 注意判断的顺序很重要.
          */
         $agent = $_SERVER["HTTP_USER_AGENT"];
-        if(strpos($agent, "MicroMessenger")) {
+        if (strpos($agent, "MicroMessenger")) {
             $type = 'weixin';
         } else if(strpos($agent, "MSIE")) {
             $type = 'ie';

@@ -206,9 +206,11 @@ class Core
 
         // SESSION缓存管理(使用memcache缓存控制，不处理默认采用文件存储SESSION)
         if (defined('L_SESSION_STORAGE') && L_SESSION_STORAGE == 'memcache') {
-            $config      = Config::get();
+            $config      = Config::getFile();
             $memcacheKey = L_SESSION_MEMCACHE_KEY;
-            if (!empty($config['MemcacheServer'][$memcacheKey])) {
+            if (empty($config['MemcacheServer'][$memcacheKey])) {
+                exception('You configured using memcache to store SESSION values, but no memcache configures found in configuration');
+            } else {
                 $sessionSavePath = '';
                 foreach ($config['MemcacheServer'][$memcacheKey] as $v) {
                     $sessionSavePath .= "{$v[0]}:{$v[1]},";
@@ -351,9 +353,9 @@ class Core
             $sys = self::$sys;
             $ctl = self::$ctl;
             if ((php_sapi_name() == 'cli')) {
-                echo "Error: It could not find controller file for '{$sys}::{$ctl}'".PHP_EOL;
+                echo "Error: No controller file found for '{$sys}::{$ctl}'".PHP_EOL;
             } else {
-                header("status: 404 Cannot find controller file for '{$sys}::{$ctl}'");
+                header("status: 404 No controller file found for '{$sys}::{$ctl}'");
             }
             exception("exit");
         }
@@ -522,21 +524,6 @@ class Core
         if (!empty(self::$ctlObj)) {
             self::_onControllerShutDown();
         }
-        /**
-         * 捕获最后一次错误.
-         * 由于实现了 defaultErrorHandler 方法，所有的错误都会被自动处理，因此没必要再记录最后一条错误，会造成报错重复。
-         */
-        /*
-        $error = error_get_last();
-        if (!empty($error)) {
-            $errorStr  = "{$error['message']} in {$error['file']}({$error['line']})";
-            $backtrace = self::_getBacktraceString();
-            if (!empty($backtrace)) {
-                $errorStr .= PHP_EOL.$backtrace;
-            }
-            Logger::log($errorStr, 'error', Logger::phpErrorNo2LoggerNo($error['type']));
-        }
-        */
     }
 
     /**
@@ -605,10 +592,10 @@ class Core
                 } catch (\Exception $e) {
                     // 什么都不做，防止基础组件错误
                 }
-                // 显示换行控制
+                // 显示换行控制：在cli模式下将br切换为\n
                 if (php_sapi_name() != 'cli') {
                     $message = nl2br($message);
-                }//
+                }
                 echo $message."\n";
                 exit();
                 break;

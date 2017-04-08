@@ -24,7 +24,7 @@ class Lib_Network_Http
     private $_proxyPort;
     private $_proxyUser;
     private $_proxyPass;
-    private $_certificate; //SSL证书
+    private $_certificate;            // SSL证书
     private $_browserMode    = false; // 浏览器模式, cookie会伴随着整个请求流程,并且请求会自动保存返回的cookie
     private $_connectTimeout = 0;     // 连接超时时间
     
@@ -62,9 +62,9 @@ class Lib_Network_Http
      *
      * @param array $headers 例如: 
      * array (
-        "user_agent" => "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6 (.NET CLR 3.5.30729)",
-        "language"   => "en-us,en;q=0.5"
-        ),
+            "user_agent" => "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6 (.NET CLR 3.5.30729)",
+            "language"   => "en-us,en;q=0.5"
+       ),
      */
     public function setHeaders($headers)
     {

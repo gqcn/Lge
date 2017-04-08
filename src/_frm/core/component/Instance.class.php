@@ -32,7 +32,7 @@ class Instance
         $key  = '_OBJ_DATABASE_'.$name;
         $obj  = &Data::get($key);
         if (empty($obj)) {
-            $conf = &Config::get();
+            $conf = &Config::getFile();
             if (isset($conf['DataBase'][$name])) {
                 $config = $conf['DataBase'][$name];
                 if (is_array($config)) {
@@ -59,7 +59,7 @@ class Instance
         $key  = "_OBJ_MEMCACHED_{$name}";
         $obj  = &Data::get($key);
         if (empty($obj)) {
-            $conf = &Config::get();
+            $conf = &Config::getFile();
             if (isset($conf['MemcacheServer'][$name])) {
                 $config = $conf['MemcacheServer'][$name];
                 $obj    = new \Memcached();
@@ -78,7 +78,7 @@ class Instance
      *
      * @param string $name 配置项名称.
      *
-     * @return MemcacheServer
+     * @return Redis
      */
     public static function redis($name = 'default')
     {
@@ -88,7 +88,7 @@ class Instance
             $key  = "_OBJ_REDIS_{$name}";
             $obj  = &Data::get($key);
             if (empty($obj)) {
-                $conf = &Config::get();
+                $conf = &Config::getFile();
                 if (isset($conf['RedisServer'][$name])) {
                     $config       = $conf['RedisServer'][$name];
                     $obj          = new \Redis();
@@ -130,7 +130,7 @@ class Instance
         $key  = "_OBJ_COOKIE";
         $obj  = &Data::get($key);
         if (empty($obj)) {
-            $conf = &Config::get();
+            $conf = &Config::getFile();
             if (isset($conf['Cookie'])) {
                 require_once(__DIR__.'/Cookie.class.php');
                 $config = $conf['Cookie'];
@@ -158,7 +158,7 @@ class Instance
             $key  = "_OBJ_GEARMAN_{$name}";
             $obj  = &Data::get($key);
             if (empty($obj)) {
-                $conf = &Config::get();
+                $conf = &Config::getFile();
                 if (isset($conf['Gearman'][$name])) {
                     $obj = new \GearmanClient();
                     $obj->addServer($conf['Gearman'][$name]['host'], $conf['Gearman'][$name]['port']);

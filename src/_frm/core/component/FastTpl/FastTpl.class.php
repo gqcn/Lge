@@ -41,12 +41,11 @@ class FastTpl
 		'tpl_ext'         => 'tpl',          // 扩展名(安全原因，不能让传入模板带后缀)
         "tpl_dir"         => '',             // 模板存放目录
         "cache_dir"       => '',             // 缓存目录
-    	'totally_php'     => false,          // 是否使用PHP模板(模板不使用自定义标签，完全使用PHP，不需要解析，直接包含)
+    	'totally_php'     => false,          // 是否使用PHP模板(模板不使用自定义标签，完全使用PHP，不需要解析，直接包含，解析效率会高很多)
         "plugin_dirs"     => array(),        // 插件目录列表，用于自动加载插件时的搜索
-        "debug"           => false,          // 是否开发调试
 		'php_enabled'     => true,           // 是否允许PHP代码嵌入
 		'check_update'    => true,           // 是否每次都更新生成缓存文件
-		'checksum'        => 'FastTpl v1.2', // 生成缓存文件需要的校验字符串
+		'checksum'        => 'FastTpl v1.5', // 生成缓存文件需要的校验字符串
 		'max_tpl_count'   => 50,             // 允许模板嵌套的最大数量(防止死循环嵌套)
 		'max_for_loop'    => 10000,          // 允许循环的最大次数(防止死循环)
         'filter_keywords' => array(          // 过滤关键字，这些关键字不能出现在模板的{}之中(include除外)
@@ -139,7 +138,8 @@ class FastTpl
             @chmod($this->options['cache_dir'], 0777);
         }
         if (!empty($this->options['cache_dir']) && !is_writable($this->options['cache_dir'])) {
-            $this->_exception('缓存目录不可写!');
+            // 缓存目录不可写
+            exception('Cache folder is not writable by current process user');
         }
         // 默认插件目录
         $this->options['plugin_dirs'][] = __DIR__.'/plugin/';
@@ -280,11 +280,13 @@ class FastTpl
     {
         static $parsedCount;
         if (++$parsedCount > $this->options['max_tpl_count']) {
-            $this->_exception("模板解析数量最多支持{$this->options['max_tpl_count']}个!");
+            // 模板解析数量最多支持{$this->options['max_tpl_count']}个
+            exception("Max tpl number({$this->options['max_tpl_count']}) exceeded");
         }
         $tplPath = $this->_getTplPath($file);
         if ($tplPath == false) {
-            $this->_exception("{$file}.{$this->options['tpl_ext']} 模板文件不存在!");
+            // 模板文件不存在
+            exception("Tpl file not found:{$file}.{$this->options['tpl_ext']}");
         } else if (!empty($this->options['totally_php'])) {
             return $tplPath;
         } else if (isset($this->_parsedTpl[$tplPath])) {
@@ -310,12 +312,6 @@ class FastTpl
                 }
                 file_put_contents($parsedTplPath, $content);
                 chmod($parsedTplPath, 0777);
-
-                /*
-                if ($this->options['debug']) {
-                    echo $content;
-                }
-                */
             }
             $this->_parsedTpl[$tplPath] = $parsedTplPath;
             return $parsedTplPath;
@@ -420,10 +416,12 @@ class FastTpl
                     if (isset($match[1])) {
                         $result = $this->_checkContent($match[1]);
                         if ($result !== true) {
-                            $this->_exception("{$html} 编写不符合模板规范 - {$result} !");
+                            // $html} 编写不符合模板规范 - {$result}
+                            exception("Invalid tag usage: {$html}");
                         }
                     } else {
-                        $this->_exception("{$html} 编写不符合模板规范 - 参数不完整!");
+                        // {$html} 编写不符合模板规范 - 参数不完整
+                        exception("Invalid tag usage, incomplete params: {$html}");
                     }
                     switch ($tag) {
                         case 'variable':
@@ -449,7 +447,8 @@ class FastTpl
                                 $index  = trim($match[3]);
                                 $return = "{$index} = -1; foreach ({$match[2]} as {$match[4]} => {$match[5]}) {{$index}++;";
                             } else {
-                                $this->_exception("{$html} 编写不符合模板规范 - 缺少foreach循环必要参数!");
+                                // {$html} 编写不符合模板规范 - 缺少foreach循环必要参数
+                                exception("Invalid tag usage, incomplete foreach params: {$html}");
                             }
                             break;
                             
@@ -458,7 +457,8 @@ class FastTpl
                                 $loop    = '$_tmp'.(microtime(true)*10000).rand(0, 9999);
                                 $return  = "{$loop} = 0; for ({$match[2]} = {$match[3]}; {$match[2]} <= {$match[4]}; {$match[2]} += {$match[5]}) { if (++{$loop} > {$this->options['max_for_loop']}) { echo '最大循环次数不能超过{$this->options['max_for_loop']}!'; }";
                             } else {
-                                $this->_exception("{$html} 编写不符合模板规范 - 缺少for循环必要参数!");
+                                // {$html} 编写不符合模板规范 - 缺少for循环必要参数
+                                exception("Invalid tag usage, incomplete for params: {$html}");
                             }
                             break;
                             
@@ -624,16 +624,5 @@ class FastTpl
 
         return true;
     }
-    
-    /**
-     * 抛异常.
-     * 
-     * @param string $message 异常信息.
-     * 
-     * @return Exception
-     */
-    private function _exception($message)
-    {
-        throw new \Exception($message);
-    }
+
 }

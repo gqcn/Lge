@@ -131,26 +131,17 @@ return array(
 //        'default' => array(
 //            // IP、端口、权重
 //            array('127.0.0.1', 11211, 100),
+//            array('127.0.0.2', 11211, 100),
 //        ),
     ),
-    
-    /**
-     * Gearman配置(可选)
-     */
-    'Gearman' => array (
-//        'default' => array(
-//            'host' => '127.0.0.1',
-//            'port' => '4730',
-//        ),
-    ),
-    
+
     /**
      * COOKIE配置项(可选)
      */
     'Cookie' => array(
-        'path'    => '/',
-        'domain'  => '',  // 格式为“.xxx.com”，如果为空，那么默认获取当前一级域名
-        'expire'  => 86400 * 7,
-        'authkey' => 'Lge',
+        'path'    => '/',       // Ｃookie path
+        'domain'  => '',        // 如果为空，那么默认获取当前一级域名(注意“.xxx.com”和“xxx.com”格式的区别)
+        'expire'  => 86400 * 7, // Cookie默认保存时间
+        'authkey' => 'Lge',     // Cookie加密键值
     ),
 );

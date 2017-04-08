@@ -8,12 +8,12 @@ if (!defined('LGE')) {
 /**
  *
  * 分页类。
+ * 注意：如果需要自定义分页展示内容，可以继承该分页类，然后覆盖show方法；或者使用正则匹配修改默认show方法返回的内容。
  *
  * 使用方式：
-    $page = new Lib_Page(array('total' => $totalSize, 'perpage' => $perPage));
-    $page = $page->show($type);
+ * $page = new Lib_Page(array('total' => $totalSize, 'perpage' => $perPage));
+ * $page = $page->show($type);
  *
- * 如果需要自定义分页展示内容，可以继承该分页类，然后覆盖show方法。
  *
 */
 class Lib_Page

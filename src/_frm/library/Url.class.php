@@ -6,7 +6,7 @@ if (!defined('LGE')) {
 }
 
 /**
- * Url管理类.
+ * URL管理类，用于解析处理URL相关数据.
  * 
  * @author john
  */

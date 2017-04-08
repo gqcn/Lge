@@ -13,7 +13,7 @@ if (!defined('LGE')) {
 class Lib_Utility
 {
     /**
-     * 获得关键字的进程数量.
+     * Linux下获得关键字的进程数量.
      *
      * @param string $key 关键字.
      *

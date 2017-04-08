@@ -288,4 +288,3 @@ class Lib_Image_Utility
 		imagedestroy($groundIm);
 	}
 }
-?>

@@ -29,9 +29,9 @@ class Logger
      * 日志的记录级别(当级别满足以下条件时记录，不满足则过滤)
      */
     const LOG_LEVEL_ALL     = 0x0FFF; // self::EMERG | self::ALERT | self::CRIT | self::ERROR | self::WARNING | self::NOTICE | self::INFO | self::DEBUG;
-    const LOG_LEVEL_DEV     = self::LOG_LEVEL_ALL;
     const LOG_LEVEL_PROD    = 0x0F8F; // LOG_LEVEL_ALL ^ self::WARNING ^ self::NOTICE ^ self::DEBUG;
     const LOG_LEVEL_STAGING = self::LOG_LEVEL_PROD;
+    const LOG_LEVEL_DEV     = self::LOG_LEVEL_ALL;
     const LOG_LEVEL_NONE    = 0;
 
     /**
@@ -75,7 +75,7 @@ class Logger
     private static $_options = array();
 
     /**
-     * 缓存的日志内容数组.
+     * 缓存的日志内容数组(缓存日志后一次性写入用以降低IO操作).
      * @var array
      */
     private static $_messages = array();
@@ -201,7 +201,7 @@ class Logger
     }
 
     /**
-     * 日志写入数据库.
+     * 日志写入数据库(固定数据库格式，不建议使用).
      *
      * @param string  $message  日志内容.
      * @param string  $category 日志类别.
@@ -421,7 +421,7 @@ class Logger
     {
         $result = false;
         if (empty(self::$_options)) {
-            $config = Config::get();
+            $config = Config::getFile();
             if (!empty($config['Logger'])) {
                 self::setOptions($config['Logger']);
                 $result = true;

@@ -49,7 +49,7 @@ class BaseModelTable extends Base
         if (empty($this->table)) {
             throw new \Exception('Table model not initialed, empty table set!');
         } else {
-            $config = Config::get();
+            $config = Config::getFile();
             if (!empty($config['DataBase'][$dbConfigName])
                 && !empty($config['DataBase'][$dbConfigName]['prefix'])) {
                 $prefix      = $config['DataBase'][$dbConfigName]['prefix'];

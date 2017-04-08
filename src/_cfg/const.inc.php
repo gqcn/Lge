@@ -5,11 +5,10 @@
  * @author John<john@johnx.cn>
  */
 // 是否开启调试模式(如果关闭，那么程序错误将不会显示在界面上，但是依旧会写入错误日志中)
+// 框架某些功能会依赖于调试模式的判断，因此如果是线上环境请设置为０
 define('L_DEBUG',                       1);
 // 错误提示级别(当DEBUG为1时启用，用于设定程序开发时的错误信息显示级别)
 define('L_ERROR_LEVEL_FOR_DEBUG',       E_ALL);
-// 当前部署环境(该变量为用户自定义，用于用户自定义程序的处理，一般为dev, staging, product)
-define('L_DEPLOYMENT',                  'dev');
 // 项目根目录
 define('L_ROOT_PATH',                   __DIR__.'/../');
 // 指向使用的框架目录

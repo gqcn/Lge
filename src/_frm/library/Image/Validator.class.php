@@ -6,11 +6,10 @@ if (!defined('LGE')) {
 }
 
 /**
- * 图片验证码类
- * @example 
- * require_once('ValiImage.class.php');
- * $valiImage = new ValiImage();
- * $valiImage->createImage();
+ * 简单的图片验证码生成类。
+ * 使用示例：
+ * $image = new Lib_Image_Validator();
+ * $image->createImage();
  */
 
 class Lib_Image_Validator
@@ -43,6 +42,9 @@ class Lib_Image_Validator
         $this->noiseLine  = 3;
         $this->distortion = false;
         $this->showBorder = false;
+        if (!function_exists('imagettftext')) {
+            exception('GD library not found!');
+        }
     }
 
     /**
@@ -267,11 +269,11 @@ class Lib_Image_Validator
     }
 
     /**
-     * 生成验证码图片
+     * 生成验证码图片，注意直接输出的时图片的内容.
      *
      * @return binary
      */
-    public function createImage(){
+    public function createImage() {
         $this->initImage(); //创建基本图片
         $this->createText(); //输出验证码字符
         //扭曲文字
