@@ -47,7 +47,7 @@ class BaseModelTable extends Base
         }
         // 判断变量是否定义
         if (empty($this->table)) {
-            throw new \Exception('Table model not initialed, empty table set!');
+            exception('Table model not initialed, empty table name!');
         } else {
             $config = Config::getFile();
             if (!empty($config['DataBase'][$dbConfigName])

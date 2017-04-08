@@ -37,7 +37,7 @@ return array(
             'port'     => '3306',      // 数据库端口
             'type'     => 'mysql',     // 数据库类型(mysql|pgsql|sqlite|oracle|mssql)
             'charset'  => 'utf8',      // 数据库编码
-            'prefix'   => '',          // 表名前缀，当使用Instance::table操作数据表时可简写表名，这个时候缩略表名应当以'_'符号开头
+            'prefix'   => '',          // 表名前缀，这个时候缩略表名应当以'_'符号开头
             'database' => '',          // 数据库名称
             'linkinfo' => '',          // 可自定义PDO数据库连接信息，主要用于操作type项不支持，但PDO支持的数据库类型
         ),
