@@ -35,5 +35,5 @@
     1. 框架使用文档请参考 /doc/Lge.pdf；
     2. 代码示例请参考 Lge_Playard 项目；
     3. 框架使用文档没有完整说明框架提供的每个类的用法，请自行查看 /_frm/core/component 及 /_frm/library 下的源代码；
-    4. 其他说明请见链接：<http://johng.cn/lge/>
+    4. 其他说明请见链接：[http://johng.cn/lge](http://johng.cn/lge)
 
