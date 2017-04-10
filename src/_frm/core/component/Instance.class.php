@@ -20,14 +20,13 @@ class Instance
 {
 
     /**
-     * 根据DB配置项名称获得单例对象.
+     * 根据DB配置项名称获得单例对象，同一个数据库配置在同一请求进程中只保留一个单例对象(只保留一个数据库链接).
      *
-     * @param string $name   数据库配置项名称.
-     * @param array  $dbConf 数据库配置数组(可自定义传递配置信息获取数据库操作实例).
+     * @param string $name 数据库配置项名称.
      *
      * @return Database
      */
-    public static function database($name = 'default', array $dbConf = array())
+    public static function database($name = 'default')
     {
         $key  = '_OBJ_DATABASE_'.$name;
         $obj  = &Data::get($key);

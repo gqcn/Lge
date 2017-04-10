@@ -17,13 +17,15 @@ class Database
     protected $_options     = array(); // 连接参数
     protected $_debug    	= true;    // 是否调试，在调试状态下，类会记录很多有用的调试信息(例如SQL执行语句及执行时间等等)
     protected $_sqls     	= array(); // 执行过的SQL语句列表，包含执行时间
-    protected $_maxSqlCount	= 1000;    // 记录执行的SQL的最大大小，调试模式下防止内存占用
     protected $_link     	= null;    // 当前对象建立数据库连接后保存的连接
     protected $_links    	= array(); // 用于主从连接时，用于存放主从两个连接(主从模式下，该对象会根据权重随机选用两个配置进行操作，所以同一个数据库对象中最多只存放主从两个连接)
     protected $_linkInfo 	= null;    // PDO连接信息
     protected $_halt       	= true;    // 当数据库错误发生时停止执行并显示错误
     protected $_error    	= null;    // 最新一次错误
     protected $_mode     	= null;    // 执行模式(master|slave)
+    protected $_maxRecordSqlCount = 1000;  // 记录执行的SQL的最大大小，调试模式下防止内存占用
+    protected $_latestLinkTime    = 0;     // 最近创建链接时的时间戳
+    protected $_maxWaitTimeout    = 10;    // 数据库链接最大空闲时间，默认为10秒，超过则重新连接
     // 数据库类型对应的保留字操作符(当字段带有关键字时，用以做区分)
     protected static $_typeToReserveChars = array(
         'mysql'  => '`',
@@ -57,16 +59,21 @@ class Database
      */
     public function getLink($mode = '')
     {
-        $option = array();
-
+        // 数据库重连机制
+        $currentTime = time();
+        if ($currentTime - $this->_latestLinkTime > $this->_maxWaitTimeout) {
+            $this->_link     = null;
+            $this->_linkInfo = null;
+        }
+        $this->_latestLinkTime = $currentTime;
         // 成员变量的优先级更高
         if (!empty($this->_mode)) {
             $mode = $this->_mode;
         }
-
         /**
          * 主从连接优先进行判断.
          */
+        $option = array();
         if (!empty($mode) && !empty($this->_options[$mode])) {
             $this->_link     = null;
             $this->_linkInfo = null;
@@ -285,7 +292,7 @@ class Database
      */
     public function setMaxRecordedSqlCount($count)
     {
-        $this->_maxSqlCount = $count;
+        $this->_maxRecordSqlCount = $count;
     }
 
     /**
@@ -953,7 +960,7 @@ class Database
         static $sqlDropIndex = 0;
 
         $this->_sqls[] = $data;
-        if (++ $sqlCount > $this->_maxSqlCount) {
+        if (++ $sqlCount > $this->_maxRecordSqlCount) {
             unset($this->_sqls[$sqlDropIndex]);
             $sqlCount --;
             $sqlDropIndex ++;
