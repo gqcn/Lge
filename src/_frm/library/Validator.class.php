@@ -57,6 +57,7 @@ if (!defined('LGE')) {
     different          格式：different:field               说明：参数值不能与field参数的值相同
     in                 格式：in:foo,bar,...                说明：参数值应该在foo,bar,...中
     not_in             格式：not_in:foo,bar,...            说明：参数值不应该在foo,bar,...中
+    regex              格式：regex:pattern                 说明：参数值应当满足正则匹配规则pattern(使用preg_match判断)
 
  * @author John
  */
@@ -93,7 +94,7 @@ class Lib_Validator
         'different'         => '字段值不合法',
         'in'                => '字段值不合法',
         'not_in'            => '字段值不合法',
-
+        'regex'             => '字段值不合法',
     );
 
     /**
@@ -105,11 +106,12 @@ class Lib_Validator
     /**
      * 根据规则验证数组，如果返回值为空那么表示满足规则，否则返回值为错误信息数组.
      *
-     * @param array $data  数据数组.
-     * @param array $rules 规则数组.
+     * @param array $data            数据数组.
+     * @param array $rules           规则数组.
+     * @param bool  $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
      * @return array
      */
-    public static function check(array $data, array $rules) {
+    public static function check(array $data, array $rules, $returnWhenError = false) {
         $result             = array();
         self::$_currentData = $data;
         foreach ($rules as $key => $rule) {
@@ -117,6 +119,9 @@ class Lib_Validator
                 $r = self::checkRule($data[$key], $rule);
                 if (!empty($r)) {
                     $result[$key] = $r;
+                    if ($returnWhenError) {
+                        break;
+                    }
                 }
             }
         }
@@ -126,11 +131,12 @@ class Lib_Validator
     /**
      * 根据单条规则验证数值，如果返回值为空那么表示满足规则，否则返回值为错误信息数组.
      *
-     * @param mixed $value 数值.
-     * @param mixed $rule  规则.
+     * @param mixed $value           数值.
+     * @param mixed $rule            规则.
+     * @param bool  $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
      * @return array
      */
-    private static function checkRule($value, $rule) {
+    private static function checkRule($value, $rule, $returnWhenError = false) {
         $result   = array();
         $messages = array();
         if (is_array($rule)) {
@@ -224,6 +230,11 @@ class Lib_Validator
                 // 字段值不应当在指定范围中
                 case 'not_in':
                     $ruleMatch = !in_array($value, explode(',', $ruleAttr));
+                    break;
+
+                // 自定义正则判断
+                case 'regex':
+                    $ruleMatch = preg_match($ruleAttr, $value);
                     break;
 
                 /*
@@ -369,6 +380,11 @@ class Lib_Validator
                 } else {
                     $result[$ruleName] = isset($messages[$ruleName]) ? $messages[$ruleName] : self::$defaultMessages[$ruleName];
                 }
+            }
+
+            // 是否在错误产生的时候停止检测
+            if (!empty($result) && $returnWhenError) {
+                break;
             }
         }
         return $result;
