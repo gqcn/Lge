@@ -75,13 +75,13 @@ class Database
          */
         $option = array();
         if (!empty($mode) && !empty($this->_options[$mode])) {
-            $this->_link     = null;
-            $this->_linkInfo = null;
             if (!empty($this->_links[$mode])) {
                 $this->_link     = $this->_links[$mode]['link'];
                 $this->_linkInfo = $this->_links[$mode]['linkinfo'];
             } else {
-                $option = $this->_getOptionFromListByPriority($this->_options[$mode]);
+                $this->_link     = null;
+                $this->_linkInfo = null;
+                $option          = $this->_getOptionFromListByPriority($this->_options[$mode]);
             }
         }
 
@@ -563,8 +563,14 @@ class Database
      */
     public function close()
     {
-        $this->_link  = null;
-        $this->_links = array();
+        if (!empty($this->_links) && is_array($this->_links)) {
+            foreach ($this->_links as $k => $v) {
+                $this->_links[$k] = null;
+            }
+        }
+        $this->_link     = null;
+        $this->_links    = null;
+        $this->_linkInfo = null;
     }
 
     /**
