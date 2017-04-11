@@ -22,7 +22,21 @@ class Base
      * 构造函数
      */
     public function __construct()
-    {    }
+    {
+        $mapping = array(
+            // PHP内置全局变量封装
+            '_get'     => '_GET',
+            '_post'    => '_POST',
+            '_env'     => '_ENV',
+            '_files'   => '_FILES',
+            '_request' => '_REQUEST',
+            '_input'   => '_INPUT',
+            '_cookie'  => '_COOKIE',
+            '_server'  => '_SERVER',
+            '_globals' => '_GLOBALS',
+            '_session' => '_SESSION',
+        );
+    }
     
     /**
      * 获得实例.
@@ -68,6 +82,7 @@ class Base
             // PHP内置全局变量封装
             '_get'     => '_GET',
             '_post'    => '_POST',
+            '_env'     => '_ENV',
             '_files'   => '_FILES',
         	'_request' => '_REQUEST',
         	'_input'   => '_INPUT',

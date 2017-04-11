@@ -120,4 +120,30 @@ class Plugin_String
        }
     }
 
+    /**
+     * 从字符串中间向两边隐藏字符(主要用于姓名、手机号、邮箱地址、身份证号等的隐藏)，支持utf-8中文，支持email格式。
+     *
+     * @param string  $str     需要隐藏的字符串。
+     * @param integer $percent 中间隐藏的百分比。
+     * @param string  $hide    使用的隐藏字符。
+     * @return mixed
+     */
+    public function hideStr($str, $percent = 50, $hide = '*'){
+        if (strpos($str, '@')) {
+            $email = explode('@', $str);
+            $str   = $email[0];
+        }
+        $length     = mb_strlen($str, 'utf-8');
+        $mid        = floor($length/2);
+        $hideLength = floor($length*($percent/100));
+        $start      = (int)$mid - floor($hideLength/2);
+        $hideStr    = '';
+        for($i = 0; $i < $hideLength; $i++){
+            $hideStr .= $hide;
+        }
+        if(!empty($email[1])){
+            $str .= '@'.$email[1];
+        }
+        return substr_replace($str, $hideStr, $start, $hideLength);
+    }
 }
