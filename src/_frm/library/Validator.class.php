@@ -168,10 +168,18 @@ class Lib_Validator
         } else {
             $ruleString = $rule;
         }
-        if (preg_match("/(regex:\/.+\/\w*)/", $ruleString, $ruleStringMatch)) {
-            $tempString  = preg_replace("/(regex:\/.+\/\w*)/", '', $ruleString);
-            $ruleArray   = explode('|', $tempString);
-            $ruleArray[] = $ruleStringMatch[1];
+        // 处理自定义正则匹配，需要保证自定义错误提示信息的索引位置与规则字符串的位置一致
+        if (preg_match_all("/(regex:\/.+?\/\w*)/", $ruleString, $ruleStringMatch)) {
+            $replaces = array();
+            foreach ($ruleStringMatch[1] as $k => $v) {
+                $replaces[$k] = "__##__{$k}";
+            }
+            $tempString = str_replace($ruleStringMatch[1], $replaces, $ruleString);
+            $ruleArray  = explode('|', $tempString);
+            $searches   = array_values($replaces);
+            foreach ($ruleArray as $k => $v) {
+                $ruleArray[$k] = str_replace($searches, $ruleStringMatch[1], $v);
+            }
         } else {
             $ruleArray   = explode('|', $ruleString);
         }
