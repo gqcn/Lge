@@ -106,23 +106,43 @@ class Lib_Validator
     /**
      * 根据规则验证数组，如果返回值为空那么表示满足规则，否则返回值为错误信息数组.
      *
-     * @param array $data            数据数组.
-     * @param array $rules           规则数组.
-     * @param bool  $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
-     * @return array
+     * @param array   $data            数据数组.
+     * @param array   $rules           规则数组.
+     * @param integer $returnErrorType 返回错误的类型(
+     *     0：保持字段及规则名称的三级关联数组；
+     *     1：仅返回错误信息，构成数组返回；
+     *     2：仅返回错误信息，如果$returnWhenError为true或者仅有一条错误时，返回错误字符串；
+     * ).
+     * @param bool    $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
+     * @return array|string
      */
-    public static function check(array $data, array $rules, $returnWhenError = false) {
+    public static function check(array $data, array $rules, $returnErrorType = 0, $returnWhenError = false) {
         $result             = array();
         self::$_currentData = $data;
         foreach ($rules as $key => $rule) {
             if (isset($data[$key])) {
-                $r = self::checkRule($data[$key], $rule);
+                $r = self::checkRule($data[$key], $rule, $returnWhenError);
                 if (!empty($r)) {
                     $result[$key] = $r;
                     if ($returnWhenError) {
                         break;
                     }
                 }
+            }
+        }
+        if (!empty($result) && $returnErrorType > 0) {
+            $tempArray = array();
+            foreach ($result as $field => $item) {
+                if (is_array($item)) {
+                    foreach ($item as $k => $v) {
+                        $tempArray[] = $v;
+                    }
+                }
+            }
+            if ($returnErrorType == 2 && count($tempArray) == 1) {
+                $result = $tempArray[0];
+            } else {
+                $result = $tempArray;
             }
         }
         return $result;
@@ -148,13 +168,25 @@ class Lib_Validator
         } else {
             $ruleString = $rule;
         }
-        $ruleArray = explode('|', $ruleString);
+        if (preg_match("/(regex:\/.+\/\w*)/", $ruleString, $ruleStringMatch)) {
+            $tempString  = preg_replace("/(regex:\/.+\/\w*)/", '', $ruleString);
+            $ruleArray   = explode('|', $tempString);
+            $ruleArray[] = $ruleStringMatch[1];
+        } else {
+            $ruleArray   = explode('|', $ruleString);
+        }
         foreach ($ruleArray as $ruleIndex => $ruleKey) {
+            if (empty($ruleKey)) {
+                continue;
+            }
             $ruleMatch   = true;
             $ruleMessage = '';
-            $tmpArray    = explode(':', $ruleKey);
-            $ruleName    = isset($tmpArray[0]) ? $tmpArray[0] : null;
-            $ruleAttr    = isset($tmpArray[1]) ? $tmpArray[1] : null;
+            preg_match("/^(\w+):{0,1}(.*)/", $ruleKey, $ruleKeyMatch);
+            $ruleName = isset($ruleKeyMatch[1]) ? $ruleKeyMatch[1] : null;
+            $ruleAttr = isset($ruleKeyMatch[2]) ? $ruleKeyMatch[2] : null;
+            if (empty($ruleName)) {
+                continue;
+            }
             switch ($ruleName) {
                 // 必须字段
                 case 'required':
@@ -370,6 +402,10 @@ class Lib_Validator
                 case 'ip':      $ruleMatch = filter_var($value, FILTER_VALIDATE_IP)      !== false; break;
                 // MAC地址
                 case 'mac':     $ruleMatch = filter_var($value, FILTER_VALIDATE_MAC)     !== false; break;
+
+                default:
+                    exception('Invalid rule name:'.$ruleName);
+                    break;
             }
             // 错误信息判断
             if (!empty($ruleMessage)) {
