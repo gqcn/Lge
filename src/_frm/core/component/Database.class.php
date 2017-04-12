@@ -167,14 +167,10 @@ class Database
      */
     private function _getReserveChar($left = true)
     {
-        if (isset($this->_options['master'])) {
-            $option = $this->_options['master'][0];
-        } else {
-            $option = &$this->_options;
-        }
         $char = '';
-        if (isset(self::$_typeToReserveChars[$option['type']])) {
-            $reserveChar = self::$_typeToReserveChars[$option['type']];
+        $type = $this->_getDbType();
+        if (isset(self::$_typeToReserveChars[$type])) {
+            $reserveChar = self::$_typeToReserveChars[$type];
             if (strlen($reserveChar) > 1 && $left == false) {
                 $char = $reserveChar[1];
             } else {
@@ -182,6 +178,21 @@ class Database
             }
         }
         return $char;
+    }
+
+    /**
+     * 获取当前操作的数据库类型。
+     *
+     * @return string|null
+     */
+    private function _getDbType()
+    {
+        if (isset($this->_options['master'])) {
+            $option = $this->_options['master'][0];
+        } else {
+            $option = &$this->_options;
+        }
+        return isset($option['type']) ? $option['type'] : null;
     }
 
     /**
@@ -696,7 +707,28 @@ class Database
         $groupByStr    = $this->_formatGroupBy($groupBy);
         $orderByStr    = $this->_formatOrderBy($orderBy);
         $conditionStr  = empty($newConditions[0]) ? '' : "WHERE {$newConditions[0]}";
+        $databaseType  = $this->_getDbType();
         $sql           = "SELECT {$fieldsStr} FROM {$tableStr} {$conditionStr} {$groupByStr} {$orderByStr} {$limitStr}";
+        if (!empty($limitStr)) {
+            // 不同数据库下分页查询的差异
+            switch ($databaseType) {
+                case 'oracle':
+                    $max = $first + $limit;
+                    $sql = "SELECT * FROM ( SELECT A.*, ROWNUM RN FROM (
+                            SELECT {$fieldsStr} FROM {$tableStr} {$conditionStr} {$groupByStr} {$orderByStr}
+                        ) A 
+                        WHERE ROWNUM <= {$max}) WHERE RN >= {$first}";
+                    break;
+
+                case 'mssql':
+                    $max = $first + $limit;
+                    $sql = "WITH TempTable AS (
+                                SELECT {$fieldsStr} FROM {$tableStr} {$conditionStr} {$groupByStr} {$orderByStr}
+                            ) SELECT *, ROW_NUMBER() OVER ({$orderByStr}) AS row FROM TempTable WHERE row>={$first} and row<={$max}";
+                    break;
+            }
+        }
+
         if (!empty($arrayKey)) {
             $result = $this->query($sql, $newConditions[1], 'slave');
             if (!empty($result)) {
