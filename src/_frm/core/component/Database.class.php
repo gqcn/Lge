@@ -1182,8 +1182,12 @@ class Database
                 $charLeft  = $this->_getReserveChar();
                 $charRight = $this->_getReserveChar(false);
                 foreach ($data as $key => $value) {
-                    $sets[]         = "{$charLeft}{$key}{$charRight}=?";
-                    $data[$index++] = $value;
+                    if (is_string($key)) {
+                        $sets[]         = "{$charLeft}{$key}{$charRight}=?";
+                        $data[$index++] = $value;
+                    } else {
+                        $sets[]         = "{$value}";
+                    }
                     unset($data[$key]);
                 }
                 $setStr        = implode(',', $sets);
