@@ -156,7 +156,7 @@ class Lib_Validator
      * @param bool  $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
      * @return array
      */
-    private static function checkRule($value, $rule, $returnWhenError = false) {
+    public static function checkRule($value, $rule, $returnWhenError = false) {
         $result   = array();
         $messages = array();
         if (is_array($rule)) {
@@ -283,10 +283,10 @@ class Lib_Validator
                  * 联通：130、131、132、155、156、185、186、176(4G)、145(上网卡)；
                  * 电信：133、153、180、181、189 、177(4G)；
                  * 卫星通信：  1349
-                 * 虚拟运营商：170
+                 * 虚拟运营商：170,173
                  */
                 case 'phone':
-                    $ruleMatch = preg_match('#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,6,7,8]{1}\d{8}$|^18[\d]{9}$#', $value) ? true : false;
+                    $ruleMatch = preg_match('#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,3,6,7,8]{1}\d{8}$|^18[\d]{9}$#', $value) ? true : false;
                     break;
 
                 // 长度范围
