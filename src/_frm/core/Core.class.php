@@ -570,7 +570,7 @@ class Core
      * 
      * @return void
      */
-    public static function defaultExceptionHandler(\Exception $e)
+    public static function defaultExceptionHandler($e)
     {
         $message = $e->getMessage();
         switch ($message) {
