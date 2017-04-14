@@ -38,29 +38,29 @@ class FastTpl
      * @var array
      */
     public $options = array(
-		'tpl_ext'         => 'tpl',          // 扩展名(安全原因，不能让传入模板带后缀)
+        'tpl_ext'         => 'tpl',          // 扩展名(安全原因，不能让传入模板带后缀)
         "tpl_dir"         => '',             // 模板存放目录
         "cache_dir"       => '',             // 缓存目录
-    	'totally_php'     => false,          // 是否使用PHP模板(模板不使用自定义标签，完全使用PHP，不需要解析，直接包含，解析效率会高很多)
+        'totally_php'     => false,          // 是否使用PHP模板(模板不使用自定义标签，完全使用PHP，不需要解析，直接包含，解析效率会高很多)
         "plugin_dirs"     => array(),        // 插件目录列表，用于自动加载插件时的搜索
-		'php_enabled'     => true,           // 是否允许PHP代码嵌入
-		'check_update'    => true,           // 是否每次都更新生成缓存文件
-		'checksum'        => 'FastTpl v1.5', // 生成缓存文件需要的校验字符串
-		'max_tpl_count'   => 50,             // 允许模板嵌套的最大数量(防止死循环嵌套)
-		'max_for_loop'    => 10000,          // 允许循环的最大次数(防止死循环)
+        'php_enabled'     => true,           // 是否允许PHP代码嵌入
+        'check_update'    => true,           // 是否每次都更新生成缓存文件
+        'checksum'        => 'FastTpl v1.5', // 生成缓存文件需要的校验字符串
+        'max_tpl_count'   => 50,             // 允许模板嵌套的最大数量(防止死循环嵌套)
+        'max_for_loop'    => 10000,          // 允许循环的最大次数(防止死循环)
         'filter_keywords' => array(          // 过滤关键字，这些关键字不能出现在模板的{}之中(include除外)
-        	'\$\$',
-        	'\$\(',
-        	'\$\[',
-        	'\$\{',
-        	'this',
+            '\$\$',
+            '\$\(',
+            '\$\[',
+            '\$\{',
+            'this',
             'eval',
             'exit',
             'global',
             'include',
             'include_once',
             'new',
-            'require', 	
+            'require',
             'require_once', 
             'exception',
             'php_user_filter',
@@ -70,7 +70,7 @@ class FastTpl
             'directory',
             'self',
             'parent',
-        	'__DIR__',
+            '__DIR__',
             '__FILE__',
             '__LINE__',
             '__FUNCTION__', 
@@ -95,9 +95,9 @@ class FastTpl
      * @var array
      */
     public $tags    = array(
-    	'variable'      => array('({\$[^=]+?})',        '{(\$[^=]+?)}'),
-    	'assign'        => array('({\$.+?=.+?})',       '{((\$.+?)=(.+?))}'),
-    	'if'            => array('({if\s+.*?})',        '{if\s+(.*?)}'),
+        'variable'      => array('({\$[^=]+?})',        '{(\$[^=]+?)}'),
+        'assign'        => array('({\$.+?=.+?})',       '{((\$.+?)=(.+?))}'),
+        'if'            => array('({if\s+.*?})',        '{if\s+(.*?)}'),
         'elseif'        => array('({elseif\s+.*?})',    '{elseif\s+(.*?)}'),
         'else'          => array('({else})',            '{else}'),
         'if_close'      => array('({\/if})',            '{\/if}'),
@@ -105,7 +105,7 @@ class FastTpl
         'foreach_close' => array('({\/foreach})',       '{\/foreach}'),
         'for'           => array('({for\s+.*?})',       '{for\s+(name\s*=(.*?)\s+min\s*=(.*?)\s+max\s*=(.*?)\s+step\s*=(.*?))}'),
         'for_close'     => array('({\/for})',           '{\/for}'),
-    	'include'       => array('({include\s+(.*?)})', '{include\s+(.*?)}'),
+        'include'       => array('({include\s+(.*?)})', '{include\s+(.*?)}'),
 
     );
     
@@ -182,26 +182,26 @@ class FastTpl
      */
     public function clearCache()
     {
-    	$dirs = array($this->options['cache_dir']);
-    	while (true) {
-    		foreach ($dirs as $k => $dir) {
-    		    $files = scandir($dir);
-	    		foreach ($files as $file) {
-	    			if ($file == '.' || $file == '..') {
-	    				continue;
-	    			}
-	    			$filePath = $dir.$file;
-	    			if (is_dir($filePath)) {
-	    				$dirs[] = $filePath.'/';
-	    			} else {
-	    				@unlink($filePath);
-	    			}
-	    		}
-    		}
-    		if (empty($dirs)) {
-    			break;
-    		}
-    	}
+        $dirs = array($this->options['cache_dir']);
+        while (true) {
+            foreach ($dirs as $k => $dir) {
+                $files = scandir($dir);
+                foreach ($files as $file) {
+                    if ($file == '.' || $file == '..') {
+                        continue;
+                    }
+                    $filePath = $dir.$file;
+                    if (is_dir($filePath)) {
+                        $dirs[] = $filePath.'/';
+                    } else {
+                        @unlink($filePath);
+                    }
+                }
+            }
+            if (empty($dirs)) {
+                break;
+            }
+        }
     }
 
     /**
@@ -307,7 +307,7 @@ class FastTpl
                 // 缓存文件处理
                 $dirPath = substr($parsedTplPath, 0, strrpos($parsedTplPath, '/'));
                 if (!file_exists($dirPath)) {
-                	mkdir($dirPath, 0777, true);
+                    mkdir($dirPath, 0777, true);
                     chmod($dirPath, 0777);
                 }
                 file_put_contents($parsedTplPath, $content);
@@ -432,8 +432,8 @@ class FastTpl
                             $op1    = trim($match[2]);
                             $op2    = trim($match[3]);
                             $return = "{$op1} = {$op2};";
-                        	break;
-                        	
+                            break;
+
                         case 'if':
                             $return = "if ({$match[1]}) {";
                             break;
@@ -537,11 +537,11 @@ class FastTpl
      */
     private function _getParsedTplPath($file)
     {
-    	$parsedTplPath = false;
-    	$tplPath       = realpath("{$this->options['tpl_dir']}{$file}.{$this->options['tpl_ext']}");
-    	if ($tplPath) {
-    		$parsedTplPath = $this->options['cache_dir'].$file.'.'.md5("{$tplPath}_{$this->options['checksum']}").'.ftpl.php';
-    	}
+        $parsedTplPath = false;
+        $tplPath       = realpath("{$this->options['tpl_dir']}{$file}.{$this->options['tpl_ext']}");
+        if ($tplPath) {
+            $parsedTplPath = $this->options['cache_dir'].$file.'.'.md5("{$tplPath}_{$this->options['checksum']}").'.ftpl.php';
+        }
         return $parsedTplPath;
     }
     

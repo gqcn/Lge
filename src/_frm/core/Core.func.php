@@ -7,7 +7,7 @@ namespace Lge;
  * @author John
  */
 if (!defined('LGE')) {
-	exit('Include Permission Denied!');
+    exit('Include Permission Denied!');
 }
 
 /**
@@ -46,7 +46,7 @@ function sessionStarted()
  */
 function strAddSlashes($str)
 {
-	return get_magic_quotes_gpc() ? $str : addslashes($str);
+    return get_magic_quotes_gpc() ? $str : addslashes($str);
 }
 
 /**
@@ -58,16 +58,16 @@ function strAddSlashes($str)
  */
 function arrayAddSlashes($array, $strict = false)
 {
-	if(!get_magic_quotes_gpc() || $strict){
-		foreach ($array as $k => $v) {
-		    if(is_array($v)){
-		        $array[$k] = arrayAddSlashes($v);
-		    }else{
-		        $array[$k] = addslashes($v);
-		    }
-		}
-	}
-	return $array;
+    if(!get_magic_quotes_gpc() || $strict){
+        foreach ($array as $k => $v) {
+            if(is_array($v)){
+                $array[$k] = arrayAddSlashes($v);
+            }else{
+                $array[$k] = addslashes($v);
+            }
+        }
+    }
+    return $array;
 }
 
 /**
@@ -79,14 +79,14 @@ function arrayAddSlashes($array, $strict = false)
  */
 function arrayTrim($array)
 {
-	foreach ($array as $k => $v) {
-	    if(is_array($v)){
-	        $array[$k] = arrayTrim($v);
-	    }else{
-	        $array[$k] = isset($v) ? trim($v) : null;
-	    }
-	}
-	return $array;
+    foreach ($array as $k => $v) {
+        if(is_array($v)){
+            $array[$k] = arrayTrim($v);
+        }else{
+            $array[$k] = isset($v) ? trim($v) : null;
+        }
+    }
+    return $array;
 }
 
 /**
@@ -103,19 +103,19 @@ function arrayTrimAndSlashes($array, $strictAddSlashes = false)
     if (!isset($magicQuotes)) {
         $magicQuotes = get_magic_quotes_gpc();
     }
-	foreach ($array as $k => $v) {
-	    if (is_array($v)) {
-	        $array[$k] = arrayTrimAndSlashes($v, $strictAddSlashes);
-	    } else {
-	        $v = trim($v);
-	        if ($strictAddSlashes) {
-	            $array[$k] = addslashes($v);
-	        } else {
-	            $array[$k] = $magicQuotes ? $v : addslashes($v);
-	        }
-	    }
-	}
-	return $array;
+    foreach ($array as $k => $v) {
+        if (is_array($v)) {
+            $array[$k] = arrayTrimAndSlashes($v, $strictAddSlashes);
+        } else {
+            $v = trim($v);
+            if ($strictAddSlashes) {
+                $array[$k] = addslashes($v);
+            } else {
+                $array[$k] = $magicQuotes ? $v : addslashes($v);
+            }
+        }
+    }
+    return $array;
 }
 
 /**
@@ -126,7 +126,7 @@ function arrayTrimAndSlashes($array, $strictAddSlashes = false)
  */
 function strStripSlashes($str)
 {
-	return get_magic_quotes_gpc() ? stripslashes($str) : $str;
+    return get_magic_quotes_gpc() ? stripslashes($str) : $str;
 }
 
 /**
@@ -138,10 +138,10 @@ function strStripSlashes($str)
  */
 function arrayStripSlashes($array, $strict = false)
 {
-	if(get_magic_quotes_gpc() || $strict){
-		foreach ($array as $k => $v) {
-			$array[$k] = stripslashes($v);
-		}
-	}
-	return $array;
+    if(get_magic_quotes_gpc() || $strict){
+        foreach ($array as $k => $v) {
+            $array[$k] = stripslashes($v);
+        }
+    }
+    return $array;
 }

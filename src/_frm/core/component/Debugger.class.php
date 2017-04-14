@@ -2,7 +2,7 @@
 namespace Lge;
 
 if (!defined('LGE')) {
-	exit('Include Permission Denied!');
+    exit('Include Permission Denied!');
 }
 
 /**

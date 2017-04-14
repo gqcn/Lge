@@ -2,7 +2,7 @@
 namespace Lge;
 
 if (!defined('LGE')) {
-	exit('Include Permission Denied!');
+    exit('Include Permission Denied!');
 }
 
 /**
@@ -54,14 +54,14 @@ class Base
         return self::$_instances[$className];
     }
     
-	/**
-	 * 魔术方法，不定义组件成员变量，需要的时候再初始化。
-	 * 注意：只要调用过一次，该类对象则含有了该成员属性，再次调用属性时不会进入该魔法方法。
+    /**
+     * 魔术方法，不定义组件成员变量，需要的时候再初始化。
+     * 注意：只要调用过一次，该类对象则含有了该成员属性，再次调用属性时不会进入该魔法方法。
      *
-	 * @param  string $name 变量名称.
+     * @param  string $name 变量名称.
      *
-	 * @return mixed
-	 */
+     * @return mixed
+     */
     public function &__get($name)
     {
         $mapping = array(
@@ -70,12 +70,12 @@ class Base
             '_post'    => '_POST',
             '_env'     => '_ENV',
             '_files'   => '_FILES',
-        	'_request' => '_REQUEST',
-        	'_input'   => '_INPUT',
+            '_request' => '_REQUEST',
+            '_input'   => '_INPUT',
             '_cookie'  => '_COOKIE',
-        	'_server'  => '_SERVER',
+            '_server'  => '_SERVER',
             '_globals' => '_GLOBALS',
-        	'_session' => '_SESSION',
+            '_session' => '_SESSION',
         );
         if (isset($mapping[$name])) {
             $this->$name = &Data::get($mapping[$name]);

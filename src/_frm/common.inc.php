@@ -17,7 +17,10 @@ if (!defined('LGE')) {
 }
 // 是否开启调试模式
 if (!defined('L_DEBUG')) {
-    define('L_DEBUG',     1);
+    define('L_DEBUG',   1);
+}
+if (!defined('L_ERROR_LEVEL_FOR_DEBUG')) {
+    define('L_ERROR_LEVEL_FOR_DEBUG', E_ALL ^ E_NOTICE ^ E_WARNING ^ E_DEPRECATED);
 }
 // 系统根目录文件系统绝对路径
 if (!defined('L_ROOT_PATH')) {

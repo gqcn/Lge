@@ -297,13 +297,12 @@ class Core
 
         // 固定模板参数设置(模板引擎只对请求有效)
         self::$tplOptions   = array(
-            'tpl_ext'       => 'tpl',
-            "tpl_dir"       => L_ROOT_PATH.'system/'.self::$sys.'/template/',
-            "cache_dir"     => L_ROOT_PATH.'cache/compile/'.self::$sys.'/',
-            "debug"         => (L_DEBUG == 1),
-            'check_update'  => (L_DEBUG == 1),
-            'totally_php'   => false,
-            'php_enabled'   => true,
+            'tpl_ext'       => 'tpl', // 模板文件的扩展名
+            "tpl_dir"       => L_ROOT_PATH.'system/'.self::$sys.'/template/', // 模板文件的存放目录(绝对路径)
+            "cache_dir"     => L_ROOT_PATH.'cache/compile/'.self::$sys.'/',   // 模板文件的缓存目录(绝对路径)
+            'check_update'  => (L_DEBUG == 1),  // 是否每次请求都检查模板文件更新(是否关闭缓存功能)
+            'totally_php'   => false,           // 是否使用纯PHP文件模板功能(PHP模板模式)
+            'php_enabled'   => true,            // 是否在模板中支持PHP标签(混合标签模式)
         );
 
         // 包含扩展应用的加载文件
