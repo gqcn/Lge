@@ -44,17 +44,17 @@ class Lib_Network_Ssh
             if ($this->conn = ssh2_connect($this->host, $this->port)) {
                 $this->log("authenticating to {$this->host}:{$this->port}");
                 if (!ssh2_auth_password($this->conn, $this->user, $this->pass)) {
-                    throw new \Exception("unable to authenticate to {$this->host}:{$this->port}");
+                    exception("unable to authenticate to {$this->host}:{$this->port}");
                 }
             } else {
-                throw new \Exception("unable to connect to {$this->host}:{$this->port}");
+                exception("unable to connect to {$this->host}:{$this->port}");
             }
         }
     }
 
     /**
      * 上传本地文件到远程服务器地址.
-     * 注意文件大小：由于采用的是 file_get_contents 读取文件内容，因此会很占内存。
+     * 注意文件大小：由于采用的是 file_get_contents 读取文件内容，因此会很占内存，不能传输大文件。
      * @todo 优化读写效率，采用分块形式读写
      *
      * @param string  $localFile  本地文件路径.
@@ -69,27 +69,17 @@ class Lib_Network_Ssh
         $this->_init();
 
         if (!is_file($localFile)) {
-            throw new \Exception("local file {$localFile} does not exist");
+            exception("local file {$localFile} does not exist");
         }
         $this->log("sending file {$localFile} to {$remoteFile}");
 
         $sftp       = ssh2_sftp($this->conn);
         $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'w');
-        if(empty($sftpStream)) {
-            if (!@ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision)) {
-                throw new \Exception("could not open remote file: {$remoteFile}");
-            } else {
-                return true;
-            }
+        if (!@ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision)) {
+            exception("could not open remote file: {$remoteFile}");
+        } else {
+            return true;
         }
-
-        $dataToSend = @file_get_contents($localFile);
-        if (@fwrite($sftpStream, $dataToSend) === false) {
-            throw new \Exception("could not send data from file: $localFile.");
-        }
-        @fclose($sftpStream);
-        $this->log("sending file {$localFile} as {$remoteFile} succeeded");
-        return true;
     }
 
     /**
@@ -118,14 +108,14 @@ class Lib_Network_Ssh
      * @return string
      * @throws \Exception
      */
-    public function cmd($cmd)
+    public function syncCmd($cmd)
     {
         $this->_init();
 
         $this->log($cmd);
         $this->stream = ssh2_exec($this->conn, $cmd);
         if (false === $this->stream ) {
-            throw new \Exception("unable to execute command:{$cmd}");
+            exception("unable to execute command:{$cmd}");
         }
         stream_set_blocking($this->stream, 1);
         stream_set_timeout($this->stream,  $this->streamTimeout);
@@ -146,7 +136,7 @@ class Lib_Network_Ssh
      *
      * @throws \Exception
      */
-    public function shellCmd($cmds = array())
+    public function asyncCmd($cmds = array())
     {
         $this->_init();
 
@@ -180,23 +170,20 @@ class Lib_Network_Ssh
             $cmd = trim($cmd, ';');
             if ($interactive) {
                 // 作为交互式输入数据，不能对命令做修改
-                $this->log('case 1:'.$cmd);
                 $shellCmd = $cmd.PHP_EOL;
                 fwrite($this->shellStream, $shellCmd);
             } else {
-                $this->log('case 2:'.$cmd);
-                $shellCmd  = "{$cmd};echo '##end##';".PHP_EOL;
+                $shellCmd  = "{$cmd} && echo '##end##';".PHP_EOL;
                 fwrite($this->shellStream, $shellCmd);
             }
             // 命令超时时间
             $cmdTimeoutEndTime  = time() + $intervalTimeout;
             while(true) {
-                // 100毫秒
-                usleep(100000);
                 $line = fgets($this->shellStream);
-                if (!empty($line)) {
+                if (empty($line)) {
+                    usleep(100000);
+                } else {
                     $this->log($line);
-                    // 判断命令是否结束(如果是交互式命令，这里不起作用)
                     if (trim($line) == '##end##') {
                         break;
                     }
@@ -213,16 +200,6 @@ class Lib_Network_Ssh
     }
 
     /**
-     * 最后一条日志信息.
-     *
-     * @return mixed
-     */
-    public function getLastLog()
-    {
-        return $this->lastLog;
-    }
-
-    /**
      * 判断远程文件是否存在.
      *
      * @param  string $path 远程文件绝对路径.
@@ -234,7 +211,7 @@ class Lib_Network_Ssh
     {
         $this->_init();
 
-        $output = $this->cmd("[ -f {$path} ] && echo 1; || echo 0;");
+        $output = $this->syncCmd("[ -f {$path} ] && echo 1; || echo 0;");
         return (bool)trim($output);
     }
 
@@ -248,10 +225,8 @@ class Lib_Network_Ssh
         $this->_init();
 
         if (function_exists('ssh2_disconnect')) {
-            // if disconnect function is available call it..
-            ssh2_disconnect($this->conn);
+            @ssh2_disconnect($this->conn);
         } else {
-            // if no disconnect func is available, close conn, unset var
             @fclose($this->conn);
             $this->conn = null;
         }
@@ -266,6 +241,6 @@ class Lib_Network_Ssh
      */
     public function log($content)
     {
-        echo 'Lib_SSH: '.trim($content)."\n";
+        echo 'Lge_SSH2: '.trim($content)."\n";
     }
 }
