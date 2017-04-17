@@ -12,7 +12,7 @@ if(!defined('LGE')){
  * 2、如果是ssh push那么应当保证客户端与服务端已经通过ssh的authorized_keys授权，或者，安装sshpass工具，并在配置文件中对服务器指定密码；
  * 2、在项目根目录下执行；
  */
-class Controller_GitDeploy extends BaseController
+class Controller_Gitdeploy extends BaseController
 {
     public function index()
     {

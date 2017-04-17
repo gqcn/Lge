@@ -15,7 +15,7 @@ class Controller_Phar extends BaseController
      * 生成框架phar包，目录为/lib/lge.phar.
      */
     public function index() {
-        $phar = new \Phar('lge.phar');
+        $phar = new \Phar(L_ROOT_PATH.'/../lib/lge.phar');
         $phar->buildFromDirectory(L_ROOT_PATH.'_frm');
         $phar->compressFiles(\Phar::GZ);
         $phar->stopBuffering();
