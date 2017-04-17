@@ -5,6 +5,7 @@
 .orig
 .swp
 .idea/
+log/
 gitpush.sh
 src/cache/
 !src/cache/.keep

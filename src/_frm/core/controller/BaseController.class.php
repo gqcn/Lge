@@ -26,7 +26,7 @@ class BaseController extends Base
             Core::$act = $this->actMap[Core::$act];
         }
         // 判断是否开启session
-        if($this->startSession){
+        if ($this->startSession && php_sapi_name() != 'cli') {
             $this->startSession();
         }
     }

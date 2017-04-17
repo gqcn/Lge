@@ -21,9 +21,9 @@ class Template
     // 模板引擎参数
     private $_tplOptions = array(
         'tpl_ext'       => 'tpl.htm',
-        "tpl_dir"       => '',
-        "cache_dir"     => '',
-        "debug"         => true,
+        'tpl_dir'       => '',
+        'cache_dir'     => '',
+        'debug'         => true,
         'php_enabled'   => false,
         'totally_php'   => false,
         'check_update'  => true,
@@ -191,6 +191,5 @@ class Template
         include(__DIR__."/../component/FastTpl/FastTpl.class.php");
         $this->_tpl = new FastTpl($this->_tplOptions);            
     }
-    
-    
+
 }
