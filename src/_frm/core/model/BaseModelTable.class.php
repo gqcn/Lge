@@ -128,7 +128,7 @@ class BaseModelTable extends Base
     {
         return $this->db->select($this->table, $fields, $conditions, $groupBy, $orderBy, $first, $limit, $arrayKey);
     }
-    
+
     /**
      * 根据条件获得一条记录。
      *
@@ -150,7 +150,7 @@ class BaseModelTable extends Base
         }
         return $result;
     }
-    
+
     /**
      * 根据条件获得一条字段的值.
      *
@@ -173,15 +173,15 @@ class BaseModelTable extends Base
         }
         return $val;
     }
-    
+
     /**
      * 添加记录，并返回添加记录的ID，失败返回false.
      * 注意：如果主键为非自增ID，那么成功会返回0，因此判断返回值是否为false来判断是否执行成功.
-     * 
+     *
      * @param  array   $data          写入的数据.
      * @param  mixed   $option        选项(replace:同记录替换, update:同记录更新, ignore:同记录忽略, 默认直接写入)
      * @param  boolean $getInsertedId 获取插入的主键ID(存在自动增加主键时有用).
-     * 
+     *
      * @return int|false
      */
     public function insert(array $data, $option = '', $getInsertedId = true)
@@ -197,14 +197,14 @@ class BaseModelTable extends Base
             return false;
         }
     }
-    
+
     /**
      * 批量添加记录，并返回添加记录的ID，失败返回false.
-     * 
+     *
      * @param  array   $list
      * @param  integer $perCount
      * @param  mixed   $option   选项(replace:同记录替换, update:同记录更新, ignore:同记录忽略, 默认直接写入)
-     * 
+     *
      * @return boolean
      */
     public function batchInsert(array $list, $perCount = 10, $option = '')
@@ -237,10 +237,10 @@ class BaseModelTable extends Base
     {
         return $this->batchInsert($list, $perCount, 'update');
     }
-    
+
     /**
      * 更新记录.
-     * 
+     *
      * @param  mixed  $data       更新数据.
      * @param  mixed  $conditions 更新条件.
      *
