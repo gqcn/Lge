@@ -14,18 +14,18 @@ if (!defined('LGE')) {
  */
 class Database
 {
-    protected $_options     = array(); // 连接参数
+    protected $_options      = array(); // 连接参数
     protected $_debug        = true;    // 是否调试，在调试状态下，类会记录很多有用的调试信息(例如SQL执行语句及执行时间等等)
     protected $_sqls         = array(); // 执行过的SQL语句列表，包含执行时间
     protected $_link         = null;    // 当前对象建立数据库连接后保存的连接
     protected $_links        = array(); // 用于主从连接时，用于存放主从两个连接(主从模式下，该对象会根据权重随机选用两个配置进行操作，所以同一个数据库对象中最多只存放主从两个连接)
     protected $_linkInfo     = null;    // PDO连接信息
-    protected $_halt           = true;    // 当数据库错误发生时停止执行并显示错误
+    protected $_halt         = true;    // 当数据库错误发生时停止执行并显示错误
     protected $_error        = null;    // 最新一次错误
     protected $_mode         = null;    // 执行模式(master|slave)
-    protected $_maxRecordSqlCount = 1000;  // 记录执行的SQL的最大大小，调试模式下防止内存占用
-    protected $_latestLinkTime    = 0;     // 最近创建链接时的时间戳
-    protected $_maxWaitTimeout    = 10;    // 数据库链接最大空闲时间，默认为10秒，超过则重新连接
+    protected $_reconnectionCount    = 0;     // 重连次数(整个数据库连接最多执行3次，失败后最多执行2次)
+    protected $_maxReconnectionCount = 3;     // 当连接服务器失败，或者操作超时时的重连最大尝试次数
+    protected $_maxRecordSqlCount    = 1000;  // 记录执行的SQL的最大大小，调试模式下防止内存占用
     // 数据库类型对应的保留字操作符(当字段带有关键字时，用以做区分)
     protected static $_typeToReserveChars = array(
         'mysql'  => '`',
@@ -34,8 +34,7 @@ class Database
         'sqlite' => '`',
         'oracle' => '"',
     );
-
-
+    
     /**
      *
      * 构造函数只保存所需变量.
@@ -59,13 +58,6 @@ class Database
      */
     public function getLink($mode = '')
     {
-        // 数据库重连机制
-        $currentTime = time();
-        if ($currentTime - $this->_latestLinkTime > $this->_maxWaitTimeout) {
-            $this->_link     = null;
-            $this->_linkInfo = null;
-        }
-        $this->_latestLinkTime = $currentTime;
         // 成员变量的优先级更高
         if (!empty($this->_mode)) {
             $mode = $this->_mode;
@@ -144,6 +136,7 @@ class Database
             } catch (\Exception $e) {
                 $this->_halt($e->getMessage());
             }
+            $this->_reconnectionCount++;
         }
 
         /**
@@ -356,7 +349,40 @@ class Database
             ));
         }
         if ($result === false) {
+            if ($this->_checkReconnection()) {
+                return $this->query($sql, $bindParams, $mode);
+            }
             $this->_halt();
+        }
+        return $result;
+    }
+
+    /**
+     * 判断是否需要数据库重连，当sql语句执行失败时调用。
+     *
+     * @param array $errorInfo 错误信息数组.
+     * @return bool
+     */
+    private function _checkReconnection(array $errorInfo = array()) {
+        $result    = false;
+        $errorCode = 0;
+        if (empty($errorInfo) && !empty($this->_link)) {
+            $errorInfo = $this->_link->errorInfo();
+            $errorCode = $errorInfo[1];
+        }
+        // 错误代码检测
+        switch ($this->_getDbType()) {
+            case 'mysql':
+                if (in_array($errorCode, array(2003, 2006))) {
+                    $result = true;
+                }
+                break;
+        }
+        // 知否能够执行重连
+        if ($result) {
+            if ($this->_reconnectionCount < $this->_maxReconnectionCount) {
+                $this->close();
+            }
         }
         return $result;
     }
@@ -424,7 +450,10 @@ class Database
             }
             if ($result === false) {
                 $errorInfo = $stmt->errorInfo();
-                $this->_halt($errorInfo[2]);
+                if ($this->_checkReconnection()) {
+                    return $this->_doPrepareExecute($sql, $bindParams, $mode);
+                }
+                $this->_halt(implode(', ', $errorInfo));
             } else {
                 $result = $stmt;
             }
@@ -459,6 +488,9 @@ class Database
             ));
         }
         if($result === false){
+            if ($this->_checkReconnection()) {
+                return $this->exec($sql, $mode);
+            }
             $this->_halt();
         }
         return $result;
@@ -1230,7 +1262,7 @@ class Database
     {
         if (empty($error) && !empty($this->_link)) {
             $array = $this->_link->errorInfo();
-            $error = $array[2];
+            $error = implode(', ', $array);
         }
         if (!empty($error)) {
             if ($this->_halt) {
