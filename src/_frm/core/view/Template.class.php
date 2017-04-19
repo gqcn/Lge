@@ -173,6 +173,9 @@ class Template
     /**
      * 显示模板。
      *
+     * @param string $tpl 模板名称(不带扩展名)
+     *
+     * @return void
      */
     public function display($tpl)
     {
