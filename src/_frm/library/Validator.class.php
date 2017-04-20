@@ -35,10 +35,18 @@ if (!defined('LGE')) {
     required_if        格式：required_if:field,value,...   说明：必需参数(当给定字段值与所给任意值相等时)
     required_with      格式：required_with:foo,bar,...     说明：必需参数(当所给定任意字段值不为空时)
     required_with_all  格式：required_with_all:foo,bar,... 说明：必须参数(当所给定所有字段值都不为空时)
-    date               格式：date                          说明：参数日期类型(使用strtotime进行判断)
+    date               格式：date                          说明：参数日期类型(使用strtotime进行判断)，例如：2017-04-20, 20170420, 2017.04.20
     date_format        格式：date_format:format            说明：判断日期是否为制定格式，format为PHP标准的日期格式
-    email              格式：email                         说明：邮件
+    email              格式：email                         说明：EMAIL邮箱地址
     phone              格式：phone                         说明：手机号
+    telephone          格式：telephone                     说明：国内座机电话号码，"XXXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"、"XXXXXXXX"
+    passport           格式：passport                      说明：通用帐号规则(字母开头，只能包含字母、数字和下划线，长度在6~18之间)
+    password           格式：password                      说明：通用密码(任意可见字符，长度在6~18之间)
+    password2          格式：password2                     说明：中等强度密码(在弱密码的基础上，必须包含大小写字母和数字)
+    password3          格式：password3                     说明：强等强度密码(在弱密码的基础上，必须包含大小写字母、数字和特殊字符)
+    postcode           格式：id_number                     说明：中国邮政编码
+    id_number          格式：id_number                     说明：公民身份证号码
+    qq                 格式：qq                            说明：腾讯QQ号码
     ip                 格式：ip                            说明：IP地址(IPv4|IPv6)
     mac                格式：mac                           说明：MAC地址
     url                格式：url                           说明：URL
@@ -76,6 +84,14 @@ class Lib_Validator
         'date_format'       => '日期格式不正确',
         'email'             => '邮箱地址格式不正确',
         'phone'             => '手机号码格式不正确',
+        'telephone'         => '电话号码格式不正确',
+        'passport'          => '账号格式不合法，必需以字母开头，只能包含字母、数字和下划线，长度在6~18之间',
+        'password'          => '密码格式不合法，密码格式为任意6-18位的可见字符',
+        'password2'         => '密码格式不合法，密码格式为任意6-18位的可见字符，必须包含大小写字母和数字',
+        'password3'         => '密码格式不合法，密码格式为任意6-18位的可见字符，必须包含大小写字母、数字和特殊字符',
+        'postcode'          => '邮政编码不正确',
+        'id_number'         => '身份证号码不正确',
+        'qq'                => 'QQ号码格式不正确',
         'ip'                => 'IP地址格式不正确',
         'mac'               => 'MAC地址格式不正确',
         'url'               => 'URL地址格式不正确',
@@ -274,7 +290,11 @@ class Lib_Validator
 
                 // 自定义正则判断
                 case 'regex':
-                    $ruleMatch = preg_match($ruleAttr, $value);
+                    if (filter_var($value, FILTER_VALIDATE_REGEXP)) {
+                        $ruleMatch = preg_match($ruleAttr, $value);
+                    } else {
+                        exception('正则表达式格式不正确');
+                    }
                     break;
 
                 /*
@@ -283,10 +303,87 @@ class Lib_Validator
                  * 联通：130、131、132、155、156、185、186、176(4G)、145(上网卡)；
                  * 电信：133、153、180、181、189 、177(4G)；
                  * 卫星通信：  1349
-                 * 虚拟运营商：170,173
+                 * 虚拟运营商：170、173
                  */
                 case 'phone':
                     $ruleMatch = preg_match('#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,3,6,7,8]{1}\d{8}$|^18[\d]{9}$#', $value) ? true : false;
+                    break;
+
+                /**
+                 * 国内座机电话号码："XXXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"、"XXXXXXXX"
+                 */
+                case 'telephone':
+                    $ruleMatch = preg_match('/^((\d{3,4})|\d{3,4}-)?\d{7,8}$/', $value) ? true : false;
+                    break;
+
+                // 腾讯QQ号，从10000开始
+                case 'qq':
+                    $ruleMatch = preg_match('/^[1-9][0-9]{4,}$/', $value) ? true : false;
+                    break;
+
+                // 中国邮政编码
+                case 'postcode':
+                    $ruleMatch = preg_match('/^[1-9]\d{5}$/', $value) ? true : false;
+                    break;
+
+                /*
+                    公民身份证号
+                    xxxxxx yyyy MM dd 375 0     十八位
+                    xxxxxx   yy MM dd  75 0     十五位
+
+                    地区：[1-9]\d{5}
+                    年的前两位：(18|19|([23]\d))      1800-2399
+                    年的后两位：\d{2}
+                    月份：((0[1-9])|(10|11|12))
+                    天数：(([0-2][1-9])|10|20|30|31) 闰年不能禁止29+
+
+                    三位顺序码：\d{3}
+                    两位顺序码：\d{2}
+                    校验码：   [0-9Xx]
+
+                    十八位：^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$
+                    十五位：^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$
+
+                    总：
+                    (^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)
+                 */
+                case 'id_number':
+                    $ruleMatch = preg_match('/(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/', $value) ? true : false;
+                    break;
+
+                // 通用帐号规则(字母开头，只能包含字母、数字和下划线，长度在6~18之间)
+                case 'passport':
+                    $ruleMatch = preg_match('/^[a-zA-Z]{1}\w{5,17}$/', $value) ? true : false;
+                    break;
+
+                // 通用密码(任意可见字符，长度在6~18之间)
+                case 'password':
+                    $ruleMatch = preg_match('/^[\w\S]{6,18}$/', $value) ? true : false;
+                    break;
+
+                // 中等强度密码(在弱密码的基础上，必须包含大小写字母和数字)
+                case 'password2':
+                    if (preg_match('/^[\w\S]{6,18}$/', $value)
+                        && preg_match('/[a-z]+/', $value)
+                        && preg_match('/[A-Z]+/', $value)
+                        && preg_match('/\d+/', $value)) {
+                        $ruleMatch = true;
+                    } else {
+                        $ruleMatch = false;
+                    }
+                    break;
+
+                // 强等强度密码(在弱密码的基础上，必须包含大小写字母、数字和特殊字符)
+                case 'password3':
+                    if (preg_match('/^[\w\S]{6,18}$/', $value)
+                        && preg_match('/[a-z]+/', $value)
+                        && preg_match('/[A-Z]+/', $value)
+                        && preg_match('/\d+/', $value)
+                        && preg_match('/\S+/', $value)){
+                        $ruleMatch = true;
+                    } else {
+                        $ruleMatch = false;
+                    }
                     break;
 
                 // 长度范围
