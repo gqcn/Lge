@@ -341,9 +341,9 @@ class Database
             $this->_recordSql(array(
                 'sql'    => $sql,
                 'mode'   => $mode,
-                'cost'   => $end - $start,
+                'cost'   => number_format($end - $start, 6),
                 'link'   => &$this->_linkInfo,
-                'time'   => time(),
+                'time'   => microtime(true),
                 'method' => __FUNCTION__,
                 'params' => $bindParams,
             ));
@@ -441,9 +441,9 @@ class Database
                 $this->_recordSql(array(
                     'sql'    => $sql,
                     'mode'   => $mode,
-                    'cost'   => $end - $start,
+                    'cost'   => number_format($end - $start, 6),
                     'link'   => &$this->_linkInfo,
-                    'time'   => time(),
+                    'time'   => microtime(true),
                     'method' => __FUNCTION__,
                     'params' => $bindParams,
                 ));
@@ -480,9 +480,9 @@ class Database
             $this->_recordSql(array(
                 'sql'    => $sql,
                 'mode'   => $mode,
-                'cost'   => $end - $start,
+                'cost'   => number_format($end - $start, 6),
                 'link'   => &$this->_linkInfo,
-                'time'   => time(),
+                'time'   => microtime(true),
                 'method' => __FUNCTION__,
                 'params' => array(),
             ));
