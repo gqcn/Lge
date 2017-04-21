@@ -10,7 +10,14 @@ if(!defined('LGE')){
  * 使用说明：
  * 1、项目客户端应当已经保存密码;
  * 2、如果是ssh push那么应当保证客户端与服务端已经通过ssh的authorized_keys授权，或者，安装sshpass工具，并在配置文件中对服务器指定密码；
- * 2、在项目根目录下执行；
+ * 3、在项目根目录下执行；
+ * 配置文件格式如下：
+ *
+ * array(
+ *     '配置项名称' => array(
+ *          array('服务器地址', '默认push分支名称', 'ssh push用户对应的服务器密码(非必须)')
+ *     ),
+ * );
  */
 class Controller_Gitdeploy extends BaseController
 {

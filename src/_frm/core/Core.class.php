@@ -118,6 +118,12 @@ class Core
     public static $tplOptions    = array();
 
     /**
+     * 是否将默认的错误输出到logger处理。
+     * @var bool
+     */
+    public static $errorToLogger = false;
+
+    /**
      * 类自动加载搜索目录(根据类名中的'_'符号进行分级查找).
      *
      * @var array
@@ -543,7 +549,7 @@ class Core
             return false;
         }
 
-        if (Logger::initOptions(false)) {
+        if (self::$errorToLogger && Logger::initOptions(false)) {
             $levelNo   = Logger::phpErrorNo2LoggerNo($errorNo);
             $errorStr  = "{$errorStr} in {$errorFile}({$errorLine})";
             $backtrace = self::_getBacktraceString();
@@ -582,14 +588,16 @@ class Core
                 if (!headers_sent()) {
                     header("Content-Type: text/html; charset=utf-8");
                 }
-                try {
-                    $backtrace = self::formatBacktrace($e->getTrace());
-                    if (!empty($backtrace)) {
-                        $message .= PHP_EOL.$backtrace;
+                if (self::$errorToLogger) {
+                    try {
+                        $backtrace = self::formatBacktrace($e->getTrace());
+                        if (!empty($backtrace)) {
+                            $message .= PHP_EOL.$backtrace;
+                        }
+                        Logger::log($message, 'exception', Logger::ERROR);
+                    } catch (\Exception $e) {
+                        // 什么都不做，防止基础组件错误
                     }
-                    Logger::log($message, 'exception', Logger::ERROR);
-                } catch (\Exception $e) {
-                    // 什么都不做，防止基础组件错误
                 }
                 // 显示换行控制：在cli模式下将br切换为\n
                 if (php_sapi_name() != 'cli') {
