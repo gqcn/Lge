@@ -1,10 +1,4 @@
 <?php
-namespace Lge;
-
-if(!defined('LGE')){
-    exit('Include Permission Denied!');
-}
-
 /**
  * Git方式自动部署程序到服务器。
  * 使用说明：
@@ -18,9 +12,27 @@ if(!defined('LGE')){
  *          array('服务器地址', '默认push分支名称', 'ssh push用户对应的服务器密码(非必须)')
  *     ),
  * );
+ *
+ * @author john
+ */
+
+namespace Lge;
+
+if (!defined('LGE')) {
+    exit('Include Permission Denied!');
+}
+
+/**
+ * Git方式自动部署.
  */
 class Controller_Gitdeploy extends BaseController
 {
+
+    /**
+     * 入口函数.
+     *
+     * @return void
+     */
     public function index()
     {
         $pwd = $this->_server['PWD'];
@@ -65,8 +77,10 @@ class Controller_Gitdeploy extends BaseController
     /**
      * 检查目标服务器是否已经初始化。
      *
-     * @param string $resp   版本库地址。
-     * @param string $pass   服务器SSH密码。
+     * @param string $resp 版本库地址。
+     * @param string $pass 服务器SSH密码。
+     *
+     * @return void
      */
     private function _checkAndInitGitRepoForRemoteServer($resp, $pass)
     {
@@ -94,6 +108,8 @@ class Controller_Gitdeploy extends BaseController
      * @param string $resp   版本库地址。
      * @param string $branch 分支名称。
      * @param string $pass   服务器SSH密码。
+     *
+     * @return void
      */
     private function _checkAndChangeRemoteRepoToSpecifiedBranch($resp, $branch, $pass)
     {
@@ -111,7 +127,9 @@ class Controller_Gitdeploy extends BaseController
 
     /**
      * 解析版本库，将ssh的版本库解析为用户账号、地址、端口、路径的形式。
+     *
      * @param string $resp 版本库地址。
+     *
      * @return array
      */
     private function _parseRepository($resp)
