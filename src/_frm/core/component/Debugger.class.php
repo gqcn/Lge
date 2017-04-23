@@ -37,7 +37,7 @@ class Debugger
         $queries       = array();
         $totalCostTime = 0;
         foreach ($detailedInfo['data_vars'] as $key => $obj) {
-            if (strpos($key, '_OBJ_DATABASE_') !== false) {
+            if (strpos($key, 'lge_database') !== false) {
                 $result = $obj->getQueriedSqls();
                 foreach ($result as $item) {
                     $queries[]      = $item;

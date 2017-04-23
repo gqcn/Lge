@@ -1,4 +1,13 @@
 <?php
+/**
+ * 单例/单态模式，单例对象生成器。
+ * 主要功能：
+ * 1、封装框架核心组件单例实例对象；
+ * 2、支持注册/获取自定义单例对象(依赖注入)；
+ *
+ * @author john
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -6,18 +15,47 @@ if (!defined('LGE')) {
 }
 
 /**
- * 单例/单态模式，单例对象生成器。
- * 主要功能，生成框架所支持的相关组件实例对象。
- * 目前内置进入框架所支持的组件有：(根据项目需求可不断完善追加支持组件)
- * 数据库
- * 缓存服务器
- * 模板引擎
- * Cookie对象
- *
- * @author John
+ * 单例对象工厂.
  */
 class Instance
 {
+
+    /**
+     * 向工厂注册单例对象。
+     *
+     * @param string $key 对象注册名称.
+     * @param mixed  $obj 注册对象实例.
+     *
+     * @return void
+     */
+    public static function set($key, $obj)
+    {
+        Data::set(self::_formatKey($key), $obj);
+    }
+
+    /**
+     * 获得注册的单例对象。
+     *
+     * @param string $key 对象注册名称.
+     *
+     * @return mixed
+     */
+    public static function &get($key)
+    {
+        return Data::get(self::_formatKey($key));
+    }
+
+    /**
+     * 格式化键值名称.
+     *
+     * @param string $key 对象注册名称.
+     *
+     * @return string
+     */
+    private static function _formatKey($key)
+    {
+        return "_lge_instance_{$key}";
+    }
 
     /**
      * 根据DB配置项名称获得单例对象，同一个数据库配置在同一请求进程中只保留一个单例对象(只保留一个数据库链接).
@@ -28,18 +66,17 @@ class Instance
      */
     public static function database($name = 'default')
     {
-        $key  = '_OBJ_DATABASE_'.$name;
-        $obj  = &Data::get($key);
+        $key = "lge_database_{$name}";
+        $obj = &self::get($key);
         if (empty($obj)) {
-            $conf = &Config::getFile();
-            if (isset($conf['DataBase'][$name])) {
-                $config = $conf['DataBase'][$name];
-                if (is_array($config)) {
-                    require_once(__DIR__.'/Database.class.php');
-                    $obj = new Database($config);
-                    $obj->setDebug(L_DEBUG);
-                    Data::set($key, $obj);
-                }
+            $config = Config::getValue("DataBase.{$name}");
+            if (!empty($config) && is_array($config)) {
+                require_once(__DIR__.'/Database.class.php');
+                $obj = new Database($config);
+                $obj->setDebug(L_DEBUG);
+                self::set($key, $obj);
+            } else {
+                exception("Database configuration for '{$name}' not found!");
             }
         }
         return $obj;
@@ -47,53 +84,54 @@ class Instance
     
     /**
      * 根据Memcached配置项名称获得单例对象.
-     * 文档参考：http://php.net/manual/en/book.memcached.php
+     * 文档参考：http://php.net/manual/en/book.memcached.php。
      *
      * @param string $name 配置项名称.
      *
-     * @return Memcached
+     * @return \Memcached
      */
     public static function memcached($name = 'default')
     {
-        $key  = "_OBJ_MEMCACHED_{$name}";
-        $obj  = &Data::get($key);
-        if (empty($obj)) {
-            $conf = &Config::getFile();
-            if (isset($conf['MemcacheServer'][$name])) {
-                $config = $conf['MemcacheServer'][$name];
-                $obj    = new \Memcached();
-                $obj->addServers($config);
-                Data::set($key, $obj);
-            } else {
-                exception("Memcache Server configuration for '{$name}' not found!");
+        if (!class_exists('Memcached')) {
+            exception("Class 'Memcached' not found!");
+        } else {
+            $key = "lge_memcached_{$name}";
+            $obj = &self::get($key);
+            if (empty($obj)) {
+                $config = Config::getValue("MemcacheServer.{$name}");
+                if (!empty($config)) {
+                    $obj = new \Memcached();
+                    $obj->addServers($config);
+                    self::set($key, $obj);
+                } else {
+                    exception("Memcache Server configuration for '{$name}' not found!");
+                }
             }
+            return $obj;
         }
-        return $obj;
     }
-
     
     /**
      * 根据Redis配置项名称获得单例对象.
      *
      * @param string $name 配置项名称.
      *
-     * @return Redis
+     * @return \Redis
      */
     public static function redis($name = 'default')
     {
         if (!class_exists('Redis')) {
             exception("Class 'Redis' not found!");
         } else {
-            $key  = "_OBJ_REDIS_{$name}";
-            $obj  = &Data::get($key);
+            $key = "lge_redis_{$name}";
+            $obj = &self::get($key);
             if (empty($obj)) {
-                $conf = &Config::getFile();
-                if (isset($conf['RedisServer'][$name])) {
-                    $config       = $conf['RedisServer'][$name];
-                    $obj          = new \Redis();
+                $config = Config::getValue("RedisServer.{$name}");
+                if (!empty($config)) {
+                    $obj = new \Redis();
                     $obj->open($config['host'], $config['port'], 0);
                     $obj->select($config['db']);
-                    Data::set($key, $obj);
+                    self::set($key, $obj);
                 } else {
                     exception("Redis Server configuration for '{$name}' not found!");
                 }
@@ -109,12 +147,12 @@ class Instance
      */
     public static function template()
     {
-        $key  = "_OBJ_TEMPLATE";
-        $obj  = &Data::get($key);
+        $key = "lge_template";
+        $obj = &self::get($key);
         if (empty($obj)) {
             require_once(__DIR__.'/../view/Template.class.php');
             $obj = new Template();
-            Data::set($key, $obj);
+            self::set($key, $obj);
         }
         return $obj;
     }
@@ -126,49 +164,21 @@ class Instance
      */
     public static function cookie()
     {
-        $key  = "_OBJ_COOKIE";
-        $obj  = &Data::get($key);
+        $key = "lge_cookie";
+        $obj = &self::get($key);
         if (empty($obj)) {
-            $conf = &Config::getFile();
-            if (isset($conf['Cookie'])) {
+            $config = Config::getValue('Cookie');
+            if (!empty($config)) {
                 require_once(__DIR__.'/Cookie.class.php');
-                $config = $conf['Cookie'];
-                $obj    = new Cookie($config['path'], $config['domain'], $config['expire'], $config['authkey']);
-                Data::set($key, $obj);
+                $obj = new Cookie($config['path'], $config['domain'], $config['expire'], $config['authkey']);
+                self::set($key, $obj);
             } else {
                 exception("Cookie configuration not found!");
             }
         }
         return $obj;
     }
-    
-    /**
-     * 获得Gearman单例对象.
-     * 
-     * @param string $name 配置项名称.
-     * 
-     * @return GearmanClient
-     */
-    public static function gearman($name = 'default')
-    {
-        if (class_exists('GearmanClient')) {
-            exception("Class 'GearmanClient' not found!");
-        } else {
-            $key  = "_OBJ_GEARMAN_{$name}";
-            $obj  = &Data::get($key);
-            if (empty($obj)) {
-                $conf = &Config::getFile();
-                if (isset($conf['Gearman'][$name])) {
-                    $obj = new \GearmanClient();
-                    $obj->addServer($conf['Gearman'][$name]['host'], $conf['Gearman'][$name]['port']);
-                } else {
-                    exception("RedisServer configuration '{$name}' not found!");
-                }
-            }
-            return $obj;
-        }
-    }
-    
+
     /**
      * 获得对象的方法，请使用该方法获得对象.
      *
@@ -181,4 +191,5 @@ class Instance
     {
         return BaseModelTable::getInstance($table, $dbConfigName);
     }
+
 }

@@ -1,4 +1,10 @@
 <?php
+/**
+ * 配置管理类，主要管理配置文件(_cfg以及exten下的_cfg目录下*.inc.php规则的配置文件)。
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -6,21 +12,21 @@ if (!defined('LGE')) {
 }
 
 /**
- * 配置管理类，主要管理配置文件(_cfg以及exten下的_cfg目录下*.inc.php规则的配置文件)。
- *
- * @author John
+ * 配置管理类
  */
 class Config
 {
+
     /**
      * 读取配置项内容.
      *
      * @param string $key    配置项名称，使用‘.’号表示层级关系.
      * @param string $name   配置文件名称(不包含'.inc.php'，支持目录结构).
-     * @param miaxed $system 获取子站点的配置(如果是true，那么获取当前请求的子站点，否则获取指定的子站点配置).
+     * @param mixed  $system 获取子站点的配置(如果是true，那么获取当前请求的子站点，否则获取指定的子站点配置).
+     *
      * @return mixed
      */
-    static public function get($key, $name = 'config', $system = null)
+    public static function get($key, $name = 'config', $system = null)
     {
         return self::getValue($key, $name, $system);
     }
@@ -30,10 +36,11 @@ class Config
      *
      * @param string $key    配置项名称，使用‘.’号表示层级关系.
      * @param string $name   配置文件名称(不包含'.inc.php'，支持目录结构).
-     * @param miaxed $system 获取子站点的配置(如果是true，那么获取当前请求的子站点，否则获取指定的子站点配置).
+     * @param mixed  $system 获取子站点的配置(如果是true，那么获取当前请求的子站点，否则获取指定的子站点配置).
+     *
      * @return mixed
      */
-    static public function getValue($key, $name = 'config', $system = null)
+    public static function getValue($key, $name = 'config', $system = null)
     {
         $config    = &self::getFile($name, $system);
         $keyArray  = explode('.', $key);
@@ -52,10 +59,11 @@ class Config
      * 读取配置文件.
      *
      * @param string $name   配置文件名称(不包含'.inc.php'，支持目录结构).
-     * @param miaxed $system 获取子站点的配置(如果是true，那么获取当前请求的子站点，否则获取指定的子站点配置).
+     * @param mixed  $system 获取子站点的配置(如果是true，那么获取当前请求的子站点，否则获取指定的子站点配置).
+     *
      * @return mixed
      */
-    static public function &getFile($name = 'config', $system = null)
+    public static function &getFile($name = 'config', $system = null)
     {
         if (!empty($system)) {
             if ($system === true) {
@@ -79,11 +87,13 @@ class Config
     /**
      * 写入自定义的配置文件内容.
      *
-     * @param array  $config
-     * @param string $name
-     * @param string $system
+     * @param array  $config 配置文件数据数组。
+     * @param string $name   配置文件名称
+     * @param string $system 子站点名称
+     *
+     * @return void
      */
-    static public function set(array $config, $name = 'config', $system = null)
+    public static function set(array $config, $name = 'config', $system = null)
     {
         $dataKey = self::_getCacheKey($name, $system);
         Data::set($dataKey, $config);
@@ -92,13 +102,15 @@ class Config
     /**
      * 获取缓存的Key。
      *
-     * @param string $name
-     * @param string $system
+     * @param string $name   配置文件名称
+     * @param string $system 子站点名称
+     *
      * @return string
      */
-    static private function _getCacheKey($name = 'config', $system = null)
+    private static function _getCacheKey($name = 'config', $system = null)
     {
         $dataKey  = "_Configure_{$name}_{$system}";
         return $dataKey;
     }
+
 }
