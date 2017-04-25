@@ -1,7 +1,7 @@
 <?php
 namespace Lge;
 
-if(!defined('LGE')){
+if (!defined('LGE')) {
     exit('Include Permission Denied!');
 }
 
