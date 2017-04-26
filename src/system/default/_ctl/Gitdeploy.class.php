@@ -79,18 +79,14 @@ class Controller_Gitdeploy extends BaseController
     /**
      * 检测git push提交结果，并根据结果判断是否执行成功。
      *
-     * @param array $pushResult 提交结果
+     * @param string $pushResult 提交结果
      *
      * @return void
      */
-    private function _checkPushResult(array $pushResult)
+    private function _checkPushResult($pushResult)
     {
-        if (empty($pushResult['error'])) {
-            if (!empty($pushResult['output'])) {
-                echo $pushResult['output'];
-            }
-        } else {
-            echo $pushResult['error'].PHP_EOL;
+        echo $pushResult;
+        if (preg_match('/(\W+error\W+)|(\W+fatal\W+)/i', $pushResult)) {
             echo <<<MM
 *******************************************************************************
 ********* ERROR OCCURRED: Please check and fix it before next push ************
@@ -107,7 +103,7 @@ MM;
      *
      * @param string $cmd Linux命令
      *
-     * @return array
+     * @return string
      */
     private function _exeCmd($cmd)
     {
@@ -124,10 +120,9 @@ MM;
         fclose($pipes[1]);
         fclose($pipes[2]);
         proc_close($process);
-        return array(
-            'output' => $output,
-            'error'  => $error,
-        );
+        $result  = empty($output) ? '' : $output;
+        $result .= empty($error) ? '' : $error;
+        return $result;
     }
 
     /**
