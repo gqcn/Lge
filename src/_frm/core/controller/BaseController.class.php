@@ -1,4 +1,10 @@
 <?php
+/**
+ * 业务层处理APP的基类，主要执行一些基本的APP操作，特别是一些通用的APP处理。
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -6,9 +12,7 @@ if (!defined('LGE')) {
 }
 
 /**
- * 业务层处理APP的基类，主要执行一些基本的APP操作，特别是一些通用的APP处理。
- *
- * @author John
+ * 业务层处理APP的基类。
 */
 class BaseController extends Base
 {
@@ -18,8 +22,10 @@ class BaseController extends Base
 
     /**
      * 派生类可覆盖以增强构造函数功能.
+     * @return void
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         // 将参数act转换为真实act
         if (isset($this->actMap[Core::$act])) {
@@ -35,9 +41,12 @@ class BaseController extends Base
      * 开启SESSION。
      * 注意如果要使用缓存的话。
      * 派生类可覆盖以实现自定义的session处理功能.
+     *
+     * @return void
      */
-    public function startSession() {
-        if(isset($this->sessionID)){
+    public function startSession()
+    {
+        if (isset($this->sessionID)) {
             session_id($this->sessionID);
         }
         if (!sessionStarted()) {
@@ -47,7 +56,7 @@ class BaseController extends Base
     
     /**
      * 对象入口函数
-     *
+     * @return void
      */
     public function run()
     {
@@ -119,4 +128,5 @@ class BaseController extends Base
         Instance::template()->assigns($assigns);
         Instance::template()->display($tpl);
     }
+
 }

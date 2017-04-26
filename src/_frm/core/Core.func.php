@@ -15,6 +15,7 @@ if (!defined('LGE')) {
  * 抛出一个异常(主要拿给框架进行后续处理).
  *
  * @param string $string 异常信息
+ *
  * @return void
  * @throws \Exception 异常
  */
@@ -25,12 +26,13 @@ function exception($string)
 
 /**
  * 判断session是否已经开启.
+ *
  * @return boolean
  */
 function sessionStarted()
 {
-    if ( php_sapi_name() !== 'cli' ) {
-        if ( version_compare(phpversion(), '5.4.0', '>=') ) {
+    if (php_sapi_name() !== 'cli') {
+        if (version_compare(phpversion(), '5.4.0', '>=')) {
             return session_status() === PHP_SESSION_ACTIVE ? true : false;
         } else {
             return session_id() === '' ? false : true;
@@ -43,6 +45,7 @@ function sessionStarted()
  * 转义GET、POST、COOKIE传递的值，判断魔法引用进行处理。
  *
  * @param string $str 字符串
+ *
  * @return string
  */
 function strAddSlashes($str)
@@ -55,6 +58,7 @@ function strAddSlashes($str)
  *
  * @param  array   $array  数据数组
  * @param  boolean $strict 强制转义，不管有没魔法引用
+ *
  * @return array
  */
 function arrayAddSlashes(array $array, $strict = false)
@@ -73,17 +77,17 @@ function arrayAddSlashes(array $array, $strict = false)
 
 /**
  * 对数组中的元素执行trim处理,如果元素也是数组,那么递归处理.
- * 
+ *
  * @param array $array 数组.
- * 
+ *
  * @return array
  */
-function arrayTrim($array)
+function arrayTrim(array $array)
 {
     foreach ($array as $k => $v) {
-        if(is_array($v)){
+        if (is_array($v)) {
             $array[$k] = arrayTrim($v);
-        }else{
+        } else {
             $array[$k] = isset($v) ? trim($v) : null;
         }
     }
@@ -92,13 +96,13 @@ function arrayTrim($array)
 
 /**
  * 对数组中的元素执行转义和trim处理.
- * 
- * @param array   $array 数组.
+ *
+ * @param array   $array            数组.
  * @param boolean $strictAddSlashes 是否强制添加slashes.
- * 
+ *
  * @return array
  */
-function arrayTrimAndSlashes($array, $strictAddSlashes = false)
+function arrayTrimAndSlashes(array $array, $strictAddSlashes = false)
 {
     static $magicQuotes = null;
     if (!isset($magicQuotes)) {
@@ -122,7 +126,8 @@ function arrayTrimAndSlashes($array, $strictAddSlashes = false)
 /**
  * 去除GET、POST、COOKIE的转义，判断魔法引用进行处理。
  *
- * @param  string $str
+ * @param string $str 字符串
+ *
  * @return string
  */
 function strStripSlashes($str)
@@ -133,13 +138,14 @@ function strStripSlashes($str)
 /**
  * 去除GET、POST、COOKIE的魔法引用转义，判断魔法引用进行处理。
  *
- * @param  array   $array
+ * @param  array   $array  数据数组
  * @param  boolean $strict 强制反转义，不管有没魔法引用
+ *
  * @return array
  */
-function arrayStripSlashes($array, $strict = false)
+function arrayStripSlashes(array $array, $strict = false)
 {
-    if(get_magic_quotes_gpc() || $strict){
+    if (get_magic_quotes_gpc() || $strict) {
         foreach ($array as $k => $v) {
             $array[$k] = stripslashes($v);
         }

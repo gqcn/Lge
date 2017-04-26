@@ -1,4 +1,10 @@
 <?php
+/**
+ * 数据模型封装基类，该基类主要是对于特定数据库的操作封装。
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -6,9 +12,7 @@ if (!defined('LGE')) {
 }
 
 /**
- * 数据模型封装基类，该基类主要是对于特定数据库的操作封装。
- *
- * @author John
+ * 数据模型封装基类
  */
 class BaseModelTable extends Base
 {
@@ -33,11 +37,11 @@ class BaseModelTable extends Base
 
     /**
      * 数据表对象构造函数.
-     * 
+     *
      * @param string $table        表名.
      * @param string $dbConfigName 数据库配置名称.
-     * 
-     * @throws Exception
+     *
+     * @throws \Exception 异常
      */
     public function __construct($table = '', $dbConfigName = 'default')
     {
@@ -69,13 +73,13 @@ class BaseModelTable extends Base
 
     /**
      * 获得对象的方法，请使用该方法获得对象.
-     * 
+     *
      * @param mixed  $table        表名.
      * @param string $dbConfigName 数据库配置名称.
-     * 
+     *
      * @return BaseModelTable
      */
-    public static function getInstance ($table = '', $dbConfigName = 'default')
+    public static function getInstance($table = '', $dbConfigName = 'default')
     {
         if (is_array($table)) {
             $table = implode(' ', $table);
@@ -97,7 +101,7 @@ class BaseModelTable extends Base
      * @param  mixed $groupBy   分组.
      * @param  mixed $fields    用于获得数量用到的字段.
      *
-     * @return int
+     * @return integer
      */
     public function getCount($condition = array(), $groupBy = array(), $fields = array())
     {
@@ -108,13 +112,13 @@ class BaseModelTable extends Base
      *
      * 查询记录。
      *
-     * @param mixed  $fields          查询字段.
-     * @param mixed  $conditions      查询条件.
-     * @param mixed  $groupBy         分组.
-     * @param mixed  $orderBy         排序.
-     * @param int    $first           分页起始.
-     * @param int    $limit           查询条数.
-     * @param string $arrayKey        作为返回数组的主键的字段名.
+     * @param mixed   $fields     查询字段.
+     * @param mixed   $conditions 查询条件.
+     * @param mixed   $groupBy    分组.
+     * @param mixed   $orderBy    排序.
+     * @param integer $first      分页起始.
+     * @param integer $limit      查询条数.
+     * @param string  $arrayKey   作为返回数组的主键的字段名.
      *
      * @return array
      */
@@ -132,10 +136,10 @@ class BaseModelTable extends Base
     /**
      * 根据条件获得一条记录。
      *
-     * @param mixed  $fields          查询字段.
-     * @param mixed  $conditions      查询条件.
-     * @param mixed  $groupBy         分组.
-     * @param mixed  $orderBy         排序.
+     * @param mixed $fields     查询字段.
+     * @param mixed $conditions 查询条件.
+     * @param mixed $groupBy    分组.
+     * @param mixed $orderBy    排序.
      *
      * @return array
      */
@@ -154,10 +158,10 @@ class BaseModelTable extends Base
     /**
      * 根据条件获得一条字段的值.
      *
-     * @param string  $field          查询字段.
-     * @param mixed   $conditions     查询条件.
-     * @param mixed   $groupBy        分组.
-     * @param mixed   $orderBy        排序.
+     * @param string $field      查询字段.
+     * @param mixed  $conditions 查询条件.
+     * @param mixed  $groupBy    分组.
+     * @param mixed  $orderBy    排序.
      *
      * @return string
      */
@@ -169,7 +173,7 @@ class BaseModelTable extends Base
         $val = null;
         $one = $this->getOne($field, $conditions, $groupBy, $orderBy);
         if (!empty($one)) {
-            list($_, $val) = each($one);
+            list($key, $val) = each($one);
         }
         return $val;
     }
@@ -182,7 +186,7 @@ class BaseModelTable extends Base
      * @param  mixed   $option        选项(replace:同记录替换, update:同记录更新, ignore:同记录忽略, 默认直接写入)
      * @param  boolean $getInsertedId 获取插入的主键ID(存在自动增加主键时有用).
      *
-     * @return int|false
+     * @return integer|false
      */
     public function insert(array $data, $option = '', $getInsertedId = true)
     {
@@ -218,7 +222,7 @@ class BaseModelTable extends Base
      * @param  array   $data          写入的数据.
      * @param  boolean $getInsertedId 获取插入的主键ID(存在自动增加主键时有用).
      *
-     * @return int|false
+     * @return integer|false
      */
     public function save(array $data, $getInsertedId = false)
     {
@@ -241,8 +245,8 @@ class BaseModelTable extends Base
     /**
      * 更新记录.
      *
-     * @param  mixed  $data       更新数据.
-     * @param  mixed  $conditions 更新条件.
+     * @param  mixed $data       更新数据.
+     * @param  mixed $conditions 更新条件.
      *
      * @return boolean
      */
@@ -255,7 +259,7 @@ class BaseModelTable extends Base
     /**
      * 删除记录.
      *
-     * @param  mixed  $conditions 更新条件.
+     * @param  mixed $conditions 更新条件.
      *
      * @return boolean
      */
@@ -274,8 +278,8 @@ class BaseModelTable extends Base
     /**
      * 获取表字段列表，构成数组返回.
      *
-     * @param mixed     $filtFields        需要过滤的字段列表(可以是字符串-用逗号分隔，也可以是数组).
-     * @param bool|true $withoutPrimaryKey 是否去掉主键字段.
+     * @param mixed        $filtFields        需要过滤的字段列表(可以是字符串-用逗号分隔，也可以是数组).
+     * @param boolean|true $withoutPrimaryKey 是否去掉主键字段.
      *
      * @return array
      */
@@ -306,8 +310,8 @@ class BaseModelTable extends Base
     /**
      * 获取过滤的表字段，构成字符串返回.
      *
-     * @param mixed     $filtFields        需要过滤的字段列表(可以是字符串-用逗号分隔，也可以是数组).
-     * @param bool|true $withoutPrimaryKey 是否去掉主键字段.
+     * @param mixed        $filtFields        需要过滤的字段列表(可以是字符串-用逗号分隔，也可以是数组).
+     * @param boolean|true $withoutPrimaryKey 是否去掉主键字段.
      *
      * @return string
      */
@@ -324,8 +328,8 @@ class BaseModelTable extends Base
     /**
      * 根据表字段过滤数组，数组键名不是表字段时，直接过滤掉。
      *
-     * @param  array     $data              数据数组.
-     * @param  bool|true $withoutPrimaryKey 是否去掉主键字段.
+     * @param  array        $data              数据数组.
+     * @param  boolean|true $withoutPrimaryKey 是否去掉主键字段.
      *
      * @return array
      */
@@ -357,8 +361,8 @@ class BaseModelTable extends Base
     /**
      * MySQL的过滤更新，内部调用mysqlFiltDataArray进行数组过滤.
      *
-     * @param array  $data       关联数组
-     * @param mixed  $conditions SQL的操作条件
+     * @param array $data       关联数组
+     * @param mixed $conditions SQL的操作条件
      *
      * @return false|PDOStatement
      */
@@ -372,10 +376,11 @@ class BaseModelTable extends Base
      *
      * @param array $data 关联数组.
      *
-     * @return int|false
+     * @return integer|false
      */
     public function mysqlFiltSave(array $data)
     {
         return $this->insert($this->mysqlFiltDataArray($data, false), 'update');
     }
+
 }

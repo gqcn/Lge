@@ -1,4 +1,10 @@
 <?php
+/**
+ * 所有类的基础类，提供了常用的基础组件封装：
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -6,13 +12,11 @@ if (!defined('LGE')) {
 }
 
 /**
- * 所有类的基础类，提供了常用的基础组件封装：
- *
- * @author John
+ * 所有类的基础类
  */
 class Base
 {
-    /**
+    /*
      * 单例模式.
      * 
      */
@@ -31,7 +35,7 @@ class Base
      */
     public static function instance()
     {
-        return self::instanceInternal(__CLASS__);
+        return self::_instanceInternal(__CLASS__);
     }
     
     /**
@@ -40,9 +44,9 @@ class Base
      * @param mixed $className 初始化的实例的名称.
      * @param array $params    初始化的实例需要的参数数组(必须是一个数组，里面存放各项参数).
      *
-     * @return Model
+     * @return Base
      */
-    protected static function instanceInternal($className, array $params = array())
+    protected static function _instanceInternal($className, array $params = array())
     {
         if (!isset(self::$_instances[$className])) {
             if (empty($params)) {
@@ -94,7 +98,9 @@ class Base
      *
      * @return void
      */
-    public function log($message, $category, $level = Logger::INFO) {
+    public function log($message, $category, $level = Logger::INFO)
+    {
         Logger::log($message, $category, $level);
     }
+
 }

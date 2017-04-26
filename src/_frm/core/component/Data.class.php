@@ -28,7 +28,6 @@ class Data
     /**
      * 根据键名获得数据项(返回成员变量引用)。
      * 内部对框架的一些组件进行了封装以及初始化。
-     * 
      * @param string $key 键名.
      *
      * @return mixed 没有找到对应的变量值则返回null
@@ -37,8 +36,8 @@ class Data
     {
         if (!isset(self::$_data[$key])) {
             // 框架组件判断
-            switch ($key){
-                /**
+            switch ($key) {
+                /*
                  * PHP内置全局变量封装
                  */
                 case '_GET':     self::$_data[$key] = &$_GET;                           break;
@@ -51,7 +50,7 @@ class Data
                 case '_SERVER':  self::$_data[$key] = &$_SERVER;                        break;
                 case '_GLOBALS': self::$_data[$key] = &$_GLOBALS;                       break;
                 case '_SESSION':
-                    /**
+                    /*
                      * 对于SESSION的封装比较特殊，因为必须在脚本最开始使用session_start初始化，这里需进行判断
                      */
                     if (sessionStarted() || php_sapi_name() == 'cli') {

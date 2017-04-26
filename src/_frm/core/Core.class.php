@@ -1,4 +1,12 @@
 <?php
+/**
+ * 框架执行流程引导类。
+ * 主要功能，获得控制器名称以及调用方法并初始化控制器，调用控制器相关方法。
+ * 注意文件路径区分大小写(必须使用绝对路径)，PHP类名称和函数名称不区分大小写。
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -7,10 +15,6 @@ if (!defined('LGE')) {
 
 /**
  * 框架执行流程引导类。
- * 主要功能，获得控制器名称以及调用方法并初始化控制器，调用控制器相关方法。
- * 注意文件路径区分大小写(必须使用绝对路径)，PHP类名称和函数名称不区分大小写。
- * 
- * @author John
  */
 class Core
 {
@@ -246,7 +250,7 @@ class Core
 
         // 默认控制器和执行方法判断
         if (php_sapi_name() != 'cli') {
-            /**
+            /*
              * 子域名判断子分站
              */
             if (L_SYSTEM_BY_SUBDOMAIN === true) {
@@ -492,7 +496,7 @@ class Core
      *
      * @return array
      */
-    public static function checkExtensions($functions = array(), $classes = array())
+    public static function checkExtensions(array $functions = array(), array $classes = array())
     {
         $result    = array(
             'installed'   => array(),
@@ -539,7 +543,7 @@ class Core
      * @param string  $errorFile 错误文件地址.
      * @param integer $errorLine 错误文件所在行.
      *
-     * @return void
+     * @return void|false
      */
     public static function defaultErrorHandler($errorNo, $errorStr, $errorFile, $errorLine)
     {
@@ -570,9 +574,9 @@ class Core
 
     /**
      * 默认异常处理回调函数.
-     * 
-     * @param Exception $e 异常信息.
-     * 
+     *
+     * @param mixed $e 异常信息.
+     *
      * @return void
      */
     public static function defaultExceptionHandler($e)
@@ -682,7 +686,7 @@ class Core
             $backTraceCallback = self::$backTraceCallback;
             if (is_string($backTraceCallback)) {
                 $backtrace = $backTraceCallback($backtrace);
-            } else if (is_array($backTraceCallback)) {
+            } elseif (is_array($backTraceCallback)) {
                 if (is_string($backTraceCallback[0])) {
                     $backtrace = $backTraceCallback[0]::$backTraceCallback[1]($backtrace);
                 } else {
@@ -699,10 +703,10 @@ class Core
                 foreach ($stack['args'] as $argIndex => $argValue) {
                     if (is_object($argValue)) {
                         $args[$argIndex] = get_class($argValue);
-                    } else if (is_array($argValue)) {
-                        $args[$argIndex] = 'Array'; //substr(print_r($argValue, true), 0, 32);
+                    } elseif (is_array($argValue)) {
+                        $args[$argIndex] = 'Array'; // substr(print_r($argValue, true), 0, 32);
                         // $args[$argIndex] = var_export($argValue, true);
-                    } else if (is_string($argValue)) {
+                    } elseif (is_string($argValue)) {
                         $args[$argIndex] = "'".substr($argValue, 0, 32).(strlen($argValue) > 32 ? '...' : '')."'";
                         // $args[$argIndex] = var_export($argValue, true);
                     } else {
@@ -728,4 +732,5 @@ class Core
         $output .= sprintf('#%1$d {main}', $index + 1);
         return $output.PHP_EOL;
     }
+
 }

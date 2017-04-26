@@ -1,4 +1,10 @@
 <?php
+/**
+ * 日志操作封装类.
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -306,7 +312,7 @@ class Logger
      * @param integer $level 错误码.
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception 异常
      */
     public static function levelNo2String($level)
     {
@@ -391,14 +397,14 @@ class Logger
      *
      * @return mixed
      */
-    public static function _filterLog($content)
+    private static function _filterLog($content)
     {
         if (isset(self::$_filterCallback)) {
             $callback       = null;
             $filterCallback = self::$_filterCallback;
             if (is_string($filterCallback)) {
                 $content = $filterCallback($content);
-            } else if (is_array($filterCallback)) {
+            } elseif (is_array($filterCallback)) {
                 if (is_string($filterCallback[0])) {
                     $content = $filterCallback[0]::$filterCallback[1]($content);
                 } else {
@@ -412,10 +418,10 @@ class Logger
     /**
      * 检查Logger是否有配置.
      *
-     * @param bool|true $throwException 当配置文件中没有日志项配置时是否抛异常.
+     * @param boolean|true $throwException 当配置文件中没有日志项配置时是否抛异常.
      *
-     * @return bool
-     * @throws Exception
+     * @return boolean
+     * @throws \Exception 异常
      */
     public static function initOptions($throwException = true)
     {
@@ -425,7 +431,7 @@ class Logger
             if (!empty($config['Logger'])) {
                 self::setOptions($config['Logger']);
                 $result = true;
-            } else if ($throwException) {
+            } elseif ($throwException) {
                 exception('No configuration for Logger is found!');
             }
         } else {
@@ -433,4 +439,5 @@ class Logger
         }
         return $result;
     }
+
 }

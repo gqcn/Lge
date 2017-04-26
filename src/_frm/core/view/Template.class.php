@@ -1,13 +1,17 @@
 <?php
+/**
+ * 模板管理类，实现模板引擎功能。
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
     exit('Include Permission Denied!');
 }
 /**
- * 模板管理类，实现模板引擎功能。
- *
- * @author John
+ * 模板管理类
  */
 class Template
 {
@@ -28,7 +32,10 @@ class Template
         'totally_php'   => false,
         'check_update'  => true,
     );
-    
+
+    /**
+     * Template constructor.
+     */
     public function __construct()
     {
         $this->_tplOptions = Core::$tplOptions;
@@ -36,10 +43,11 @@ class Template
     
     /**
      * 设置模板引擎参数.
-     * 
+     *
      * @param array $options 参数数组
+     * @return void
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $this->_tplOptions = $options;
         if (!empty($this->_tpl)) {
@@ -49,7 +57,7 @@ class Template
     
     /**
      * 获得模板引擎参数.
-     * 
+     *
      * @return array
      */
     public function &getOptions()
@@ -91,9 +99,9 @@ class Template
 
     /**
      * 添加插件目录.
-     * 
+     *
      * @param string $dirPath 插件目录绝对路径.
-     * 
+     *
      * @return void
      */
     public function addPluginDir($dirPath)
@@ -107,7 +115,8 @@ class Template
     /**
      * 设置模板编译文件存放目录。
      *
-     * @param string $compileDir
+     * @param string $compileDir 编译后的模板文件存放目录绝对路径
+     * @return void
      */
     public function setCompileDir($compileDir)
     {
@@ -120,7 +129,8 @@ class Template
     /**
      * 设置模板文件存放目录。
      *
-     * @param string $tplDir
+     * @param string $tplDir 模板文件存放目录绝对路径
+     * @return void
      */
     public function setTplDir($tplDir)
     {
@@ -132,9 +142,10 @@ class Template
     
     /**
      * 用数组形式为页面赋值，每个变量是数组的键值对。
-     * @param array $array
+     * @param array $array 键值对数组
+     * @return void
      */
-    public function assigns($array)
+    public function assigns(array $array)
     {
         if (empty($this->_tpl)) {
             $this->_init();
@@ -144,8 +155,9 @@ class Template
     
     /**
      * 页面赋值
-     * @param string $name
-     * @param mixed $value
+     * @param string $name  名称
+     * @param mixed  $value 赋值
+     * @return void
      */
     public function assign($name, $value)
     {
@@ -157,9 +169,9 @@ class Template
     
     /**
      * 获得模板解析后展示的内容.
-     * 
+     *
      * @param string $file 文件名(不带扩展名)
-     * 
+     *
      * @return string
      */
     public function getDisplayContent($file)
@@ -187,12 +199,12 @@ class Template
     
     /**
      * 初始化
-     *
+     * @return void
      */
     private function _init()
     {
         include(__DIR__."/../component/FastTpl/FastTpl.class.php");
-        $this->_tpl = new FastTpl($this->_tplOptions);            
+        $this->_tpl = new FastTpl($this->_tplOptions);
     }
 
 }

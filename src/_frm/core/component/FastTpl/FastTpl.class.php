@@ -2,7 +2,7 @@
 /**
  * 简单高效的模板引擎.
  * 7个标签，1个类，带有文件缓存功能，速度超级快。
- * 
+ *
  * 1. foreach:
  *     {foreach from=$array index=$index key=$key item=$item} {/foreach }
  * 2. for
@@ -20,7 +20,7 @@
  *     {include file.tpl }
  * 7. 注释
  *     {*注释*}
- * 
+ *
  * PHP代码支持
  *     <?php php代码，只有在设置允许的条件下才能使用 ?>
  *
@@ -63,7 +63,7 @@ class FastTpl
             'include_once',
             'new',
             'require',
-            'require_once', 
+            'require_once',
             'exception',
             'php_user_filter',
             'cfunction',
@@ -75,8 +75,8 @@ class FastTpl
             '__DIR__',
             '__FILE__',
             '__LINE__',
-            '__FUNCTION__', 
-            '__CLASS__', 
+            '__FUNCTION__',
+            '__CLASS__',
             '__METHOD__',
             '__NAMESPACE__',
             '__TRAIT__',
@@ -119,19 +119,26 @@ class FastTpl
     
     /**
      * 当前进程已解析过的模板文件.
-     * 
+     *
      * @var array
      */
     private $_parsedTpl = array();
     
     /**
      * 使用print_r打印的变量类型.
-     * 
+     *
      * @var array
      */
     private $_printrTypes = array('array', 'object', 'resource');
 
-    public function __construct($options)
+    /**
+     * FastTpl constructor.
+     *
+     * @param array $options 配置项
+     *
+     * @return void
+     */
+    public function __construct(array $options)
     {
         $this->setOptions($options);
         
@@ -149,12 +156,12 @@ class FastTpl
     
     /**
      * 设置模板参数.
-     * 
+     *
      * @param array $options 模板参数.
-     * 
+     *
      * @return void
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         foreach ($options as $k => $v) {
             if ($k == 'plugin_dirs') {
@@ -167,9 +174,9 @@ class FastTpl
     
     /**
      * 添加插件目录.
-     * 
+     *
      * @param string $dirPath 插件目录绝对路径.
-     * 
+     *
      * @return void
      */
     public function addPluginDir($dirPath)
@@ -179,7 +186,7 @@ class FastTpl
 
     /**
      * 清除所有模板缓存文件.
-     * 
+     *
      * @return void
      */
     public function clearCache()
@@ -208,10 +215,10 @@ class FastTpl
 
     /**
      * 模板变量设置.
-     * 
+     *
      * @param string $var   变量名称.
      * @param mixed  $value 变量内容.
-     * 
+     *
      * @return void
      */
     public function assign($var, $value)
@@ -221,12 +228,12 @@ class FastTpl
     
     /**
      * 模板变量设置.
-     * 
+     *
      * @param array $vars 模板变量.
-     * 
+     *
      * @return void
      */
-    public function assigns($vars)
+    public function assigns(array $vars)
     {
         foreach ($vars as $k => $v) {
             $this->vars[$k] = $v;
@@ -235,9 +242,9 @@ class FastTpl
     
     /**
      * 获得模板解析后展示的内容.
-     * 
+     *
      * @param string $file 文件名(不带扩展名)
-     * 
+     *
      * @return string
      */
     public function getDisplayContent($file)
@@ -261,9 +268,9 @@ class FastTpl
     
     /**
      * 显示模板, 缓冲功能以便在错误产生时不会把代码错误显示给用户.
-     * 
+     *
      * @param string $file 文件名(不带扩展名)
-     * 
+     *
      * @return void
      */
     public function display($file)
@@ -273,9 +280,9 @@ class FastTpl
     
     /**
      * 解析模板文件.
-     * 
+     *
      * @param string $file 文件名(不带扩展名)
-     * 
+     *
      * @return string
      */
     public function parseTpl($file)
@@ -289,11 +296,11 @@ class FastTpl
         if ($tplPath == false) {
             // 模板文件不存在
             exception("Tpl file not found:{$file}.{$this->options['tpl_ext']}");
-        } else if (!empty($this->options['totally_php'])) {
+        } elseif (!empty($this->options['totally_php'])) {
             return $tplPath;
-        } else if (isset($this->_parsedTpl[$tplPath])) {
+        } elseif (isset($this->_parsedTpl[$tplPath])) {
             return $this->_parsedTpl[$tplPath];
-        } else if ($this->_tplPathCheck($tplPath)) {
+        } elseif ($this->_tplPathCheck($tplPath)) {
             $parsedTplPath = $this->_getParsedTplPath($file);
 
             if ($this->options['check_update'] || !file_exists($parsedTplPath)) {
@@ -327,7 +334,7 @@ class FastTpl
      *
      * @return string
      */
-    public function parseCommentCallback($match)
+    public function parseCommentCallback(array $match)
     {
         $count = substr_count($match[0], "\n");
         $code  = '';
@@ -341,12 +348,12 @@ class FastTpl
 
     /**
      * PHP标签处理回调函数.
-     * 
+     *
      * @param array $match 标签内容匹配数组.
-     * 
+     *
      * @return string
      */
-    public function parsePhpCallback($match)
+    public function parsePhpCallback(array $match)
     {
         $return = $match[0];
         if (!empty($match[0][0]) && !empty($match[1])) {
@@ -361,7 +368,7 @@ class FastTpl
                     // 如果不允许执行PHP代码，那么过滤掉模板中的所有PHP代码
                     $return = "<?php echo '<?'; ?>{$phpContent}<?php echo '?>'; ?>";
                 }
-            } 
+            }
         }
 
         return $return;
@@ -369,12 +376,12 @@ class FastTpl
     
     /**
      * 模板解析标签处理回调函数.
-     * 
+     *
      * @param array $match 标签内容匹配数组.
-     * 
+     *
      * @return string
      */
-    public function parseTagCallback($match)
+    public function parseTagCallback(array $match)
     {
         $code  = false;
         $html  = $match[0];
@@ -389,10 +396,10 @@ class FastTpl
     
     /**
      * 处理标签内容.
-     * 
+     *
      * @param string $tag  标签.
      * @param string $html 标签内容.
-     * 
+     *
      * @return string
      */
     private function _parseTag($tag, $html)
@@ -414,7 +421,7 @@ class FastTpl
                 break;
                 
             default:
-                if(preg_match("/{$this->tags[$tag][1]}/sx", $html, $match)) {
+                if (preg_match("/{$this->tags[$tag][1]}/sx", $html, $match)) {
                     if (isset($match[1])) {
                         $result = $this->_checkContent($match[1]);
                         if ($result !== true) {
@@ -456,7 +463,7 @@ class FastTpl
                             
                         case 'for':
                             if (isset($match[2]) && isset($match[3]) && isset($match[4]) && isset($match[5])) {
-                                $loop    = '$_tmp'.(microtime(true)*10000).rand(0, 9999);
+                                $loop    = '$_tmp'.(microtime(true) * 10000).rand(0, 9999);
                                 $return  = "{$loop} = 0; for ({$match[2]} = {$match[3]}; {$match[2]} <= {$match[4]}; {$match[2]} += {$match[5]}) { if (++{$loop} > {$this->options['max_for_loop']}) { echo '最大循环次数不能超过{$this->options['max_for_loop']}!'; }";
                             } else {
                                 // {$html} 编写不符合模板规范 - 缺少for循环必要参数
@@ -507,9 +514,9 @@ class FastTpl
     
     /**
      * 检查模板路径安全性(是否在模板目录中).
-     * 
+     *
      * @param string $tplPath 模板绝对路径.
-     * 
+     *
      * @return boolean
      */
     private function _tplPathCheck($tplPath)
@@ -520,9 +527,9 @@ class FastTpl
     
     /**
      * 根据模板名称获得模板文件绝对路径.
-     * 
+     *
      * @param string $file 模板名称
-     * 
+     *
      * @return string | false
      */
     private function _getTplPath($file)
@@ -532,9 +539,9 @@ class FastTpl
     
     /**
      * 根据模板名称获得模板缓存文件绝对路径.
-     * 
+     *
      * @param string $file 模板名称
-     * 
+     *
      * @return string | false
      */
     private function _getParsedTplPath($file)
@@ -549,9 +556,9 @@ class FastTpl
     
     /**
      * 解析变量标签.
-     * 
-     * @param string $html
-     * 
+     *
+     * @param string $html 标签内容
+     *
      * @return string
      */
     private function _parseVar($html)
@@ -563,27 +570,27 @@ class FastTpl
     
     /**
      * 在模板中打印展示内容.
-     * 
+     *
      * @param mixed $var 变量
-     * 
+     *
      * @return void
      */
     private function _printVar($var)
     {
         if (isset($var)) {
             if (in_array(gettype($var), $this->_printrTypes)) {
-                print_r($var); 
+                print_r($var);
             } else {
-                echo $var; 
-            } 
+                echo $var;
+            }
         }
     }
     
     /**
      * 对{}中的内容进行安全检测。
-     * 
-     * @param string $html { }之间的内容.
-     * 
+     *
+     * @param string $html 包含在{ }之间的内容.
+     *
      * @return string | true
      */
     private function _checkContent($html)
@@ -595,7 +602,7 @@ class FastTpl
         }
         */
         
-        /**
+        /*
          * @todo 规避函数直接调用,正则是否能够更优化
          */
         /*

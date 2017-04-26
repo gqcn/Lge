@@ -1,4 +1,10 @@
 <?php
+/**
+ * 调试封装类.
+ *
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -7,14 +13,13 @@ if (!defined('LGE')) {
 
 /**
  * 调试封装类.
- *
- * @author John
  */
 class Debugger
 {
+
     /**
      * 获取详细的调试信息，注意有的信息必须要在调试开关(L_DEBUG=1)打开的情况下才能获取.
-     * 
+     *
      * @return array
      */
     public static function getDetailedInfo()
@@ -22,7 +27,7 @@ class Debugger
         $detailedInfo = array();
         
         // memory usage in MB
-        $detailedInfo['memory_used'] = round(memory_get_usage(true)/1024/1024, 2).' MB';
+        $detailedInfo['memory_used'] = round(memory_get_usage(true) / 1024 / 1024, 2).' MB';
         
         // global variables
         $detailedInfo['global_vars'] = $GLOBALS;
@@ -55,11 +60,12 @@ class Debugger
     
     /**
      * 展示详细的调试信息.
-     * 
+     *
      * @return void
      */
     public static function showDetailedInfo()
     {
         print_r(self::getDetailedInfo());
     }
+
 }

@@ -465,7 +465,6 @@ class Database
         return $result;
     }
 
-
     /**
      * 执行事务语句,返回受影响的记录数(该函数不支持预处理)。
      * 长用在事务处理操作中。
@@ -473,7 +472,7 @@ class Database
      * @param string $sql  SQL.
      * @param string $mode 主从模式(master|slave).
      *
-     * @return int|false
+     * @return integer|false
      */
     public function exec($sql, $mode = '')
     {
@@ -481,17 +480,19 @@ class Database
         $result = $this->getLink($mode) ? $this->getLink($mode)->exec($sql) : false;
         $end    = microtime(true);
         if ($this->_debug) {
-            $this->_recordSql(array(
-                'sql'    => $sql,
-                'mode'   => $mode,
-                'cost'   => number_format($end - $start, 6),
-                'link'   => &$this->_linkInfo,
-                'time'   => microtime(true),
-                'method' => __FUNCTION__,
-                'params' => array(),
-            ));
+            $this->_recordSql(
+                array(
+                    'sql'    => $sql,
+                    'mode'   => $mode,
+                    'cost'   => number_format($end - $start, 6),
+                    'link'   => &$this->_linkInfo,
+                    'time'   => microtime(true),
+                    'method' => __FUNCTION__,
+                    'params' => array(),
+                )
+            );
         }
-        if($result === false){
+        if ($result === false) {
             if ($this->_checkReconnection()) {
                 return $this->exec($sql, $mode);
             }
@@ -503,7 +504,7 @@ class Database
     /**
      * 开启事务(必需在主库上执行)
      *
-     * @return bool
+     * @return boolean
      */
     public function beginTransaction()
     {
@@ -513,7 +514,7 @@ class Database
     /**
      * 回滚事务操作，当commit之后该操作无效(必需在主库上执行).
      *
-     * @return bool
+     * @return boolean
      */
     public function rollBack()
     {
@@ -523,7 +524,7 @@ class Database
     /**
      * 提交事务操作(必需在主库上执行).
      *
-     * @return bool
+     * @return boolean
      */
     public function commit()
     {
@@ -535,7 +536,7 @@ class Database
      *
      * @param  \PDOStatement $result 数据库操作结果资源
      *
-     * @return int
+     * @return integer
      */
     public function rows(\PDOStatement &$result)
     {

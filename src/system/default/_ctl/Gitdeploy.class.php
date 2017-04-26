@@ -86,7 +86,7 @@ class Controller_Gitdeploy extends BaseController
     private function _checkPushResult($pushResult)
     {
         echo $pushResult;
-        if (preg_match('/(\W+error\W+)|(\W+fatal\W+)/i', $pushResult)) {
+        if (preg_match('/(error\W+)|(fatal\W+)/i', $pushResult)) {
             echo <<<MM
 *******************************************************************************
 ********* ERROR OCCURRED: Please check and fix it before next push ************
