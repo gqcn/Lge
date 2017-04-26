@@ -249,7 +249,6 @@ class FastTpl
      */
     public function getDisplayContent($file)
     {
-
         // 由于模板引擎对于代码的宽松性，这里屏蔽模板文件中的非严重错误信息
         $oldErrorReporting = ini_get('error_reporting');
         $newErrorReporting = E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE & ~E_USER_NOTICE & ~E_WARNING & ~E_USER_WARNING;
@@ -491,8 +490,7 @@ class FastTpl
                 break;
         }
         if (!empty($return)) {
-            // 自动加载对象检查(格式是特殊的"$_大写字母"开头,因此规避了不允许在模板标签中函数调用的问题)
-            // @todo 这里每次调用一个对象方法都会新new一个对象，对性能有一定损耗，后期需改进为单例
+            // 自动加载自定义对象检查(格式是特殊的"$_大写字母"开头,因此规避了不允许在模板标签中函数调用的问题)
             preg_match_all("/\\$(_[A-Z]{1}\w+?)\->.+?/sx", $return, $matches);
             if (!empty($matches[1])) {
                 $classes = array_unique($matches[1]);
@@ -569,7 +567,7 @@ class FastTpl
     }
     
     /**
-     * 在模板中打印展示内容.
+     * (用在模板解析中)在模板中打印展示内容.
      *
      * @param mixed $var 变量
      *
@@ -584,6 +582,18 @@ class FastTpl
                 echo $var;
             }
         }
+    }
+
+    /**
+     * 处理模板中的全局变量，防止代码注入(安全性处理)。
+     *
+     * @param string $html 模板代码
+     *
+     * @return string|false
+     */
+    private function _parseGlobalVar($html)
+    {
+        return preg_replace("/\$\_(GET|POST|COOKIE|SESSION)/", '', $html);
     }
     
     /**
