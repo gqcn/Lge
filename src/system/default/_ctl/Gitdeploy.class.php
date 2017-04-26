@@ -63,15 +63,71 @@ class Controller_Gitdeploy extends BaseController
                 }
                 echo ($k + 1).": {$resp} {$branch}\n";
                 if (empty($item[2])) {
-                    exec("git push {$resp} {$branch}");
+                    $pushResult = $this->_exeCmd("git push {$resp} {$branch}");
+                    $this->_checkPushResult($pushResult);
                 } else {
                     $this->_checkAndInitGitRepoForRemoteServer($resp, $item[2]);
-                    exec("sshpass -p {$item[2]} git push {$resp} {$branch}");
+                    $pushResult = $this->_exeCmd("sshpass -p {$item[2]} git push {$resp} {$branch}");
+                    $this->_checkPushResult($pushResult);
                     $this->_checkAndChangeRemoteRepoToSpecifiedBranch($resp, $branch, $item[2]);
                 }
                 echo "\n";
             }
         }
+    }
+
+    /**
+     * 检测git push提交结果，并根据结果判断是否执行成功。
+     *
+     * @param array $pushResult 提交结果
+     *
+     * @return void
+     */
+    private function _checkPushResult(array $pushResult)
+    {
+        if (empty($pushResult['error'])) {
+            if (!empty($pushResult['output'])) {
+                echo $pushResult['output'];
+            }
+        } else {
+            echo $pushResult['error'].PHP_EOL;
+            echo <<<MM
+*******************************************************************************
+********* ERROR OCCURRED: Please check and fix it before next push ************
+*******************************************************************************
+
+
+MM;
+            exception('exit');
+        }
+    }
+
+    /**
+     * 执行Linux命令，数组形式返回执行结果.
+     *
+     * @param string $cmd Linux命令
+     *
+     * @return array
+     */
+    private function _exeCmd($cmd)
+    {
+        // 这里使用proc_open替换shell_exec是为了防止标准错误直接输出到终端上
+        $descripts = array(
+            // 0 => array("pipe", "r"),
+            1 => array("pipe", "w"),
+            2 => array("pipe", "w"),
+        );
+        $process = proc_open($cmd, $descripts, $pipes);
+        $output  = stream_get_contents($pipes[1]);
+        $error   = stream_get_contents($pipes[2]);
+        // fclose($pipes[0]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($process);
+        return array(
+            'output' => $output,
+            'error'  => $error,
+        );
     }
 
     /**
@@ -86,18 +142,16 @@ class Controller_Gitdeploy extends BaseController
     {
         $parsed = $this->_parseRepository($resp);
         if (!empty($parsed)) {
-            $user   = $parsed['user'];
-            $host   = $parsed['host'];
-            $port   = $parsed['port'];
-            $path   = $parsed['path'];
-            $ssh    = new Lib_Network_Ssh($host, $port, $user, $pass);
-            $result = $ssh->syncCmd("if [ -d \"{$path}/.git\" ]; then echo 1; else echo 0; fi");
-            $result = trim($result);
-            if ($result == "0") {
-                // 如果服务器的git目录不存在那么初始化目录
-                $ssh->syncCmd("mkdir -p \"{$path}\" && cd \"{$path}\" && git init && git config receive.denyCurrentBranch ignore");
-                $ssh->sendFile($this->_getGitPostReceiveHookFilePath(), $path.'/.git/hooks/post-receive', 0777);
-                $ssh->disconnect();
+            $path = $parsed['path'];
+            $ssh  = $this->_getSshClientByResp($resp, $pass);
+            if (!empty($ssh)) {
+                $result = $ssh->syncCmd("if [ -d \"{$path}/.git\" ]; then echo 1; else echo 0; fi");
+                $result = trim($result);
+                if ($result == "0") {
+                    // 如果服务器的git目录不存在那么初始化目录
+                    $ssh->syncCmd("mkdir -p \"{$path}\" && cd \"{$path}\" && git init && git config receive.denyCurrentBranch ignore");
+                    $ssh->sendFile($this->_getGitPostReceiveHookFilePath(), $path.'/.git/hooks/post-receive', 0777);
+                }
             }
         }
     }
@@ -115,13 +169,11 @@ class Controller_Gitdeploy extends BaseController
     {
         $parsed = $this->_parseRepository($resp);
         if (!empty($parsed)) {
-            $user   = $parsed['user'];
-            $host   = $parsed['host'];
-            $port   = $parsed['port'];
-            $path   = $parsed['path'];
-            $ssh    = new Lib_Network_Ssh($host, $port, $user, $pass);
-            $ssh->syncCmd("cd \"{$path}\" && git checkout {$branch} -f");
-            $ssh->disconnect();
+            $path = $parsed['path'];
+            $ssh  = $this->_getSshClientByResp($resp, $pass);
+            if (!empty($ssh)) {
+                $ssh->syncCmd("cd \"{$path}\" && git checkout {$branch} -f");
+            }
         }
     }
 
@@ -134,7 +186,7 @@ class Controller_Gitdeploy extends BaseController
      */
     private function _parseRepository($resp)
     {
-        // 仓库格式形如： ssh://john@120.76.249.69//home/john/www/lge
+        // SSH仓库格式形如： ssh://john@120.76.249.69//home/john/www/lge
         $result = array();
         if (preg_match("/ssh:\/\/(.+?)@([^:]+):{0,1}(\d*)\/(\/.+)/", $resp, $match)) {
             $result['user'] = $match[1];
@@ -143,6 +195,31 @@ class Controller_Gitdeploy extends BaseController
             $result['path'] = rtrim($match[4], '/');
         }
         return $result;
+    }
+
+    /**
+     * 获得版本库服务器的SSH链接客户端。
+     *
+     * @param string $resp 版本库地址
+     * @param string $pass 版本库服务器SSH密码
+     *
+     * @return Lib_Network_Ssh|null
+     */
+    private function _getSshClientByResp($resp, $pass = null)
+    {
+        static $sshClients = array();
+        $parsed = $this->_parseRepository($resp);
+        if (!empty($parsed)) {
+            $user      = $parsed['user'];
+            $host      = $parsed['host'];
+            $port      = $parsed['port'];
+            $checkKey  = "{$user}@{$host}";
+            if (!isset($sshClients[$checkKey])) {
+                $sshClients[$checkKey] = new Lib_Network_Ssh($host, $port, $user, $pass);
+            }
+            return $sshClients[$checkKey];
+        }
+        return null;
     }
 
     /**
@@ -164,4 +241,5 @@ MM;
         }
         return $hookFilePath;
     }
+
 }

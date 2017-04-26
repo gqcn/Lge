@@ -32,23 +32,12 @@ class Controller_GitlabCodeSnifferHook extends BaseController
                 $result = shell_exec("git diff --name-only {$rawArray[0]} {$rawArray[1]}");
                 if (!empty($result)) {
                     $currentTime = date('YmdHis');
-                    $baseDirPath = "/tmp/lge-code-sniffer-{$currentTime}/";
+                    $baseDirPath = "/tmp/{$currentTime}-lge-code-sniffer/";
                     $files       = explode("\n", trim($result));
                     foreach ($files as $file) {
                         $type = Lib_FileSys::getFileType($file);
                         if ($type == 'php') {
-                            // 这里使用proc_open替换shell_exec是为了防止标准错误直接输出到终端上
-                            $descripts = array(
-                                // 0 => array("pipe", "r"),
-                                1 => array("pipe", "w"),
-                                2 => array("pipe", "w"),
-                            );
-                            $process = proc_open("git show {$rawArray[1]}:{$file}", $descripts, $pipes);
-                            $result  = stream_get_contents($pipes[1]);
-                            // fclose($pipes[0]);
-                            fclose($pipes[1]);
-                            fclose($pipes[2]);
-                            proc_close($process);
+                            $result = $this->_getGitFileContent($file, $rawArray[1]);
                             // 文件被删除，或者文件内容为空，则不需要检测
                             if (empty($result) || strcasecmp($result, 'null') == 0) {
                                 continue;
@@ -68,14 +57,17 @@ class Controller_GitlabCodeSnifferHook extends BaseController
                     // 执行代码检测
                     $result = '';
                     if (file_exists($baseDirPath)) {
-                        $result = shell_exec("phpcs {$baseDirPath}");
+                        $ignoreContent = $this->_getCSIgnoreContent();
+                        if (!empty($ignoreContent)) {
+                            file_put_contents("{$baseDirPath}.csignore", $ignoreContent);
+                        }
+                        $result = shell_exec("cd {$baseDirPath} && phpcs {$baseDirPath}");
                         $result = trim($result);
                     }
                     if (empty($result)) {
                         $exitCode = 0;
                     } else {
                         $exitCode = 1;
-                        $result   = str_replace($baseDirPath, '/', $result);
                         echo "======================================================================\n";
                         echo "======================= Code Sniffer Errors ==========================\n";
                         echo "======================================================================\n";
@@ -91,6 +83,40 @@ class Controller_GitlabCodeSnifferHook extends BaseController
             echo $e->getMessage().PHP_EOL;
         }
         exit($exitCode);
+    }
+
+    /**
+     * 获得code sniffer忽略文件内容.
+     *
+     * @return string
+     */
+    private function _getCSIgnoreContent()
+    {
+        return $this->_getGitFileContent('.csignore', 'HEAD');
+    }
+
+    /**
+     * 获得指定提交的文件内容.
+     *
+     * @param string $file   文件名称
+     * @param string $commit 提交版本号
+     * @return string
+     */
+    private function _getGitFileContent($file, $commit)
+    {
+        // 这里使用proc_open替换shell_exec是为了防止标准错误直接输出到终端上
+        $descripts = array(
+            // 0 => array("pipe", "r"),
+            1 => array("pipe", "w"),
+            2 => array("pipe", "w"),
+        );
+        $process = proc_open("git show {$commit}:{$file}", $descripts, $pipes);
+        $result  = stream_get_contents($pipes[1]);
+        // fclose($pipes[0]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($process);
+        return $result;
     }
 
 }

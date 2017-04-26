@@ -1,4 +1,10 @@
 <?php
+/**
+ * 数据库抽象层基类，子类必须定义抽象方法，这些方法是常用的数据库操作。
+ * 该基类已包含一些定义的公共继承方法。
+ * @author John
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -6,11 +12,7 @@ if (!defined('LGE')) {
 }
 
 /**
- * 数据库抽象层基类，子类必须定义抽象方法，这些方法是常用的数据库操作。
- * 该基类已包含一些定义的公共继承方法。
- *
- *
- * @author John
+ * 数据库抽象层基类
  */
 class Database
 {
@@ -429,7 +431,7 @@ class Database
      *
      * @return PDOStatement|false
      */
-    protected function _doPrepareExecute($sql, $bindParams = array(), $mode = '')
+    protected function _doPrepareExecute($sql, array $bindParams = array(), $mode = '')
     {
         $result = false;
         $stmt   = $this->getLink($mode) ? $this->getLink($mode)->prepare($sql) : false;
@@ -438,15 +440,17 @@ class Database
             $result = $stmt->execute($bindParams);
             $end    = microtime(true);
             if ($this->_debug) {
-                $this->_recordSql(array(
-                    'sql'    => $sql,
-                    'mode'   => $mode,
-                    'cost'   => number_format($end - $start, 6),
-                    'link'   => &$this->_linkInfo,
-                    'time'   => microtime(true),
-                    'method' => __FUNCTION__,
-                    'params' => $bindParams,
-                ));
+                $this->_recordSql(
+                    array(
+                        'sql'    => $sql,
+                        'mode'   => $mode,
+                        'cost'   => number_format($end - $start, 6),
+                        'link'   => &$this->_linkInfo,
+                        'time'   => microtime(true),
+                        'method' => __FUNCTION__,
+                        'params' => $bindParams,
+                    )
+                );
             }
             if ($result === false) {
                 $errorInfo = $stmt->errorInfo();
@@ -529,7 +533,7 @@ class Database
     /**
      * 取得结果集中行的数目。
      *
-     * @param  PDOStatement $result 数据库操作结果资源
+     * @param  \PDOStatement $result 数据库操作结果资源
      *
      * @return int
      */
@@ -542,7 +546,7 @@ class Database
      * 从结果集中取得一行作为关联数组，及数字数组，二者兼有。
      * @link http://php.net/manual/en/pdostatement.fetch.php
      *
-     * @param  PDOStatement $result 数据库操作结果资源.
+     * @param  \PDOStatement $result 数据库操作结果资源.
      *
      * @return array
      */
@@ -555,7 +559,7 @@ class Database
      * 从结果集中取得一行作为关联数组。
      * @link http://php.net/manual/en/pdostatement.fetch.php
      *
-     * @param  PDOStatement $result 数据库操作结果资源.
+     * @param  \PDOStatement $result 数据库操作结果资源.
      * @return array
      */
     public function fetchAssoc(\PDOStatement &$result)
@@ -568,7 +572,7 @@ class Database
      * 每个结果的列储存在一个数组的单元中，偏移量从0开始。
      * @link http://php.net/manual/en/pdostatement.fetch.php
      *
-     * @param  PDOStatement $result 数据库操作结果资源
+     * @param  \PDOStatement $result 数据库操作结果资源
      * @return array
      */
     public function fetchRow(\PDOStatement &$result)
@@ -579,7 +583,7 @@ class Database
     /**
      * 取得结果中指定字段的字段名。
      *
-     * @param  PDOStatement $result 数据库操作结果资源
+     * @param  \PDOStatement $result 数据库操作结果资源
      * @param  int          $index
      * @return string
      */
@@ -1078,7 +1082,7 @@ class Database
      * @param  array  $list     数据数组.
      * @param  int    $perCount 每批写入的数据数量(防止构建的SQL过长，必须分批).
      * @param  mixed  $option   选项(replace:同记录替换, update:同记录更新, ignore:同记录忽略, 默认直接写入)
-     * @return bool
+     * @return boolean
      */
     public function batchInsert($table, array $list, $perCount = 10, $option = '')
     {

@@ -199,10 +199,10 @@ class BaseModelTable extends Base
     }
 
     /**
-     * 批量添加记录，并返回添加记录的ID，失败返回false.
+     * 批量添加记录，成功返回true，失败返回false.
      *
-     * @param  array   $list
-     * @param  integer $perCount
+     * @param  array   $list     数据数组
+     * @param  integer $perCount 每次写入的数据量
      * @param  mixed   $option   选项(replace:同记录替换, update:同记录更新, ignore:同记录忽略, 默认直接写入)
      *
      * @return boolean
