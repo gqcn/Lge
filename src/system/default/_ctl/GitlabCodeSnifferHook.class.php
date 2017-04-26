@@ -58,10 +58,8 @@ class Controller_GitlabCodeSnifferHook extends BaseController
                     $result = '';
                     if (file_exists($baseDirPath)) {
                         $ignoreContent = $this->_getCSIgnoreContent();
-                        if (!empty($ignoreContent)) {
-                            file_put_contents("{$baseDirPath}.csignore", $ignoreContent);
-                        }
-                        $result = shell_exec("cd {$baseDirPath} && phpcs {$baseDirPath}");
+                        $ignore = empty($ignoreContent) ? "" : "--ignore={$ignoreContent}";
+                        $result = shell_exec("cd {$baseDirPath} && phpcs {$baseDirPath} {$ignore}");
                         $result = trim($result);
                     }
                     if (empty($result)) {
@@ -86,13 +84,19 @@ class Controller_GitlabCodeSnifferHook extends BaseController
     }
 
     /**
-     * 获得code sniffer忽略文件内容.
+     * 获得code sniffer忽略文件内容，并构建成phpcs --ignore=xxx 需要的参数返回.
      *
      * @return string
      */
     private function _getCSIgnoreContent()
     {
-        return $this->_getGitFileContent('.csignore', 'HEAD');
+        $result  = '';
+        $content = $this->_getGitFileContent('.csignore', 'HEAD');
+        if (!empty($content)) {
+            $array  = explode("\n", trim($content));
+            $result = implode(',', $array);
+        }
+        return $result;
     }
 
     /**
