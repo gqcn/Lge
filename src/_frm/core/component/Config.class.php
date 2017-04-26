@@ -42,9 +42,9 @@ class Config
      */
     public static function getValue($key, $name = 'config', $system = null)
     {
-        $config    = &self::getFile($name, $system);
+        $config    = self::getFile($name, $system);
         $keyArray  = explode('.', $key);
-        $result    = &$config;
+        $result    = $config;
         foreach ($keyArray as $v) {
             if (is_array($result) && isset($result[$v])) {
                 $result = $result[$v];
@@ -109,7 +109,7 @@ class Config
      */
     private static function _getCacheKey($name = 'config', $system = null)
     {
-        $dataKey  = "_Configure_{$name}_{$system}";
+        $dataKey  = "lge_configuration_{$name}_{$system}";
         return $dataKey;
     }
 

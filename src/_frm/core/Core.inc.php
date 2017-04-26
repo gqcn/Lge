@@ -1,4 +1,9 @@
 <?php
+/**
+ * 框架核心组件包含文件
+ * @author john
+ */
+
 // 核心类
 include(__DIR__.'/Core.func.php');  // 函数定义
 include(__DIR__.'/Core.class.php'); // 框架总管
@@ -16,22 +21,22 @@ include(__DIR__.'/model/BaseModelTable.class.php');
 include(__DIR__.'/module/BaseModule.class.php');
 include(__DIR__.'/controller/BaseController.class.php');
 
-/**
+/*
  * 设置默认的错误处理回调函数.
  */
 set_error_handler(array('\Lge\Core', 'defaultErrorHandler'));
 
-/**
+/*
  * 设置默认的异常处理回调函数.
  */
 set_exception_handler(array('\Lge\Core', 'defaultExceptionHandler'));
 
-/**
+/*
  * 类自动加载.
  */
 spl_autoload_register(array('\Lge\Core', 'classAutoloader'));
 
-/**
+/*
  * 框架初始化.
  */
 \Lge\Core::init();

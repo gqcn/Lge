@@ -1,11 +1,12 @@
 <?php
-namespace Lge;
-
 /**
  * 框架核心函数定义(为简化使用，并没有进行封装).
- * 
- * @author John
+ *
+ * @author john
  */
+
+namespace Lge;
+
 if (!defined('LGE')) {
     exit('Include Permission Denied!');
 }
@@ -14,7 +15,8 @@ if (!defined('LGE')) {
  * 抛出一个异常(主要拿给框架进行后续处理).
  *
  * @param string $string 异常信息
- * @throws Exception
+ * @return void
+ * @throws \Exception 异常
  */
 function exception($string)
 {
@@ -23,7 +25,6 @@ function exception($string)
 
 /**
  * 判断session是否已经开启.
- * 
  * @return boolean
  */
 function sessionStarted()
@@ -41,7 +42,7 @@ function sessionStarted()
 /**
  * 转义GET、POST、COOKIE传递的值，判断魔法引用进行处理。
  *
- * @param  string $str
+ * @param string $str 字符串
  * @return string
  */
 function strAddSlashes($str)
@@ -52,17 +53,17 @@ function strAddSlashes($str)
 /**
  * 转义GET、POST、COOKIE传递的值，判断魔法引用进行处理。
  *
- * @param  array   $array
+ * @param  array   $array  数据数组
  * @param  boolean $strict 强制转义，不管有没魔法引用
  * @return array
  */
-function arrayAddSlashes($array, $strict = false)
+function arrayAddSlashes(array $array, $strict = false)
 {
-    if(!get_magic_quotes_gpc() || $strict){
+    if (!get_magic_quotes_gpc() || $strict) {
         foreach ($array as $k => $v) {
-            if(is_array($v)){
+            if (is_array($v)) {
                 $array[$k] = arrayAddSlashes($v);
-            }else{
+            } else {
                 $array[$k] = addslashes($v);
             }
         }
