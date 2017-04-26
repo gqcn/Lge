@@ -50,46 +50,6 @@ class FastTpl
         'checksum'        => 'FastTpl v1.5', // 生成缓存文件需要的校验字符串
         'max_tpl_count'   => 50,             // 允许模板嵌套的最大数量(防止死循环嵌套)
         'max_for_loop'    => 10000,          // 允许循环的最大次数(防止死循环)
-        'filter_keywords' => array(          // 过滤关键字，这些关键字不能出现在模板的{}之中(include除外)
-            '\$\$',
-            '\$\(',
-            '\$\[',
-            '\$\{',
-            'this',
-            'eval',
-            'exit',
-            'global',
-            'include',
-            'include_once',
-            'new',
-            'require',
-            'require_once',
-            'exception',
-            'php_user_filter',
-            'cfunction',
-            'closure',
-            'stdClass',
-            'directory',
-            'self',
-            'parent',
-            '__DIR__',
-            '__FILE__',
-            '__LINE__',
-            '__FUNCTION__',
-            '__CLASS__',
-            '__METHOD__',
-            '__NAMESPACE__',
-            '__TRAIT__',
-            '_SERVER',
-            'GLOBALS',
-            '_GET',
-            '_POST',
-            '_FILES',
-            '_COOKIE',
-            '_SESSION',
-            '_REQUEST',
-            '_ENV',
-        ),
     );
 
     /**
@@ -141,7 +101,7 @@ class FastTpl
     public function __construct(array $options)
     {
         $this->setOptions($options);
-        
+        // 缓存目录权限判断
         if (!empty($this->options['cache_dir']) && !is_dir($this->options['cache_dir'])) {
             @mkdir($this->options['cache_dir'], 0777, true);
             @chmod($this->options['cache_dir'], 0777);
@@ -292,16 +252,15 @@ class FastTpl
             exception("Max tpl number({$this->options['max_tpl_count']}) exceeded");
         }
         $tplPath = $this->_getTplPath($file);
-        if ($tplPath == false) {
+        if ($tplPath === false) {
             // 模板文件不存在
-            exception("Tpl file not found:{$file}.{$this->options['tpl_ext']}");
+            exception("Tpl file not found:{$file}");
         } elseif (!empty($this->options['totally_php'])) {
             return $tplPath;
         } elseif (isset($this->_parsedTpl[$tplPath])) {
             return $this->_parsedTpl[$tplPath];
-        } elseif ($this->_tplPathCheck($tplPath)) {
+        } else {
             $parsedTplPath = $this->_getParsedTplPath($file);
-
             if ($this->options['check_update'] || !file_exists($parsedTplPath)) {
                 $content = file_get_contents($tplPath);
                 // 优先处理注释内容，由于注释内容比较复杂，并且出于性能考虑，因此优先处理
@@ -421,16 +380,6 @@ class FastTpl
                 
             default:
                 if (preg_match("/{$this->tags[$tag][1]}/sx", $html, $match)) {
-                    if (isset($match[1])) {
-                        $result = $this->_checkContent($match[1]);
-                        if ($result !== true) {
-                            // $html} 编写不符合模板规范 - {$result}
-                            exception("Invalid tag usage: {$html}");
-                        }
-                    } else {
-                        // {$html} 编写不符合模板规范 - 参数不完整
-                        exception("Invalid tag usage, incomplete params: {$html}");
-                    }
                     switch ($tag) {
                         case 'variable':
                             $return = $this->_parseVar($match[1]);
@@ -511,28 +460,32 @@ class FastTpl
     }
     
     /**
-     * 检查模板路径安全性(是否在模板目录中).
+     * 根据模板名称获得模板文件绝对路径。
+     * 注意：
+     * 模板文件参数支持不带后缀名和带后缀名，支持相对路径和绝对路径，但绝对路径容易产生安全问题，建议都采用相对路径形式。
      *
-     * @param string $tplPath 模板绝对路径.
-     *
-     * @return boolean
-     */
-    private function _tplPathCheck($tplPath)
-    {
-        // return (stripos(realpath($tplPath), realpath($this->options['tpl_dir'])) !== false);
-        return true;
-    }
-    
-    /**
-     * 根据模板名称获得模板文件绝对路径.
-     *
-     * @param string $file 模板名称
+     * @param string $file 模板文件名称
      *
      * @return string | false
      */
     private function _getTplPath($file)
     {
-        return realpath("{$this->options['tpl_dir']}{$file}.{$this->options['tpl_ext']}");
+        if (strpos($file, '.') !== false) {
+            $fileNames = array($file, $file.$this->options['tpl_ext']);
+        } else {
+            $fileNames = array($file.$this->options['tpl_ext'], $file);
+        }
+        foreach ($fileNames as $fileName) {
+            $filePath = $this->options['tpl_dir'].$fileName;
+            $realPath = realpath($filePath);
+            if (empty($realPath)) {
+                $realPath = realpath($fileName);
+            }
+            if (!empty($realPath)) {
+                break;
+            }
+        }
+        return $realPath;
     }
     
     /**
@@ -545,8 +498,8 @@ class FastTpl
     private function _getParsedTplPath($file)
     {
         $parsedTplPath = false;
-        $tplPath       = realpath("{$this->options['tpl_dir']}{$file}.{$this->options['tpl_ext']}");
-        if ($tplPath) {
+        $tplPath       = $this->_getTplPath($file);
+        if (!empty($tplPath)) {
             $parsedTplPath = $this->options['cache_dir'].$file.'.'.md5("{$tplPath}_{$this->options['checksum']}").'.ftpl.php';
         }
         return $parsedTplPath;
@@ -582,67 +535,6 @@ class FastTpl
                 echo $var;
             }
         }
-    }
-
-    /**
-     * 处理模板中的全局变量，防止代码注入(安全性处理)。
-     *
-     * @param string $html 模板代码
-     *
-     * @return string|false
-     */
-    private function _parseGlobalVar($html)
-    {
-        return preg_replace("/\$\_(GET|POST|COOKIE|SESSION)/", '', $html);
-    }
-    
-    /**
-     * 对{}中的内容进行安全检测。
-     *
-     * @param string $html 包含在{ }之间的内容.
-     *
-     * @return string | true
-     */
-    private function _checkContent($html)
-    {
-        /*
-        // 不能出现给变量的赋值操作
-        if(preg_match('/(\$+?[^\s<>\-\+=\*%\/]+\s*=\s*[^\s<>\-\+=\*%\/]+)/', $html, $match)) {
-            return "模板中不允许使用变量赋值操作";
-        }
-        */
-        
-        /*
-         * @todo 规避函数直接调用,正则是否能够更优化
-         */
-        /*
-        // 不能出现函数调用(可以允许出现特殊的对象方法调用,见上面扩展对象调用的格式判断)
-        if(preg_match_all('/[\w\d\_]+[\w\d\s\_\-\>\$]+\(.*?\)/', $html, $match)) {
-            if (isset($match[0])) {
-                foreach ($match[0] as $v) {
-                    if (!stripos($v, '->')) {
-                        return "模板中不允许函数的直接调用";
-                    }
-                }
-            }
-        }
-
-        // 不能出现的关键字
-        static $keywordsPattern;
-        if (empty($keywordsPattern)) {
-            $keywordsPattern = '('.implode('|', $this->options['filter_keywords']).')';
-        }
-        if(preg_match($keywordsPattern, $html, $match)) {
-            static $keywordsString;
-            if (empty($keywordsString)) {
-                $keywordsString = implode(', ', $this->options['filter_keywords']);
-                $keywordsString = stripslashes($keywordsString);
-            }
-            return "模板中不允许出现以下关键字: {$keywordsString}";
-        }
-        */
-
-        return true;
     }
 
 }
