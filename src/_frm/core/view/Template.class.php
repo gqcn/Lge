@@ -40,11 +40,28 @@ class Template
     {
         $this->_tplOptions = Core::$tplOptions;
     }
-    
+
+    /**
+     * 设置单项模板配置参数.
+     *
+     * @param string $optionKey   配置项名称.
+     * @param mixed  $optionValue 配置项值.
+     *
+     * @return void
+     */
+    public function setOption($optionKey, $optionValue)
+    {
+        $this->_tplOptions[$optionKey] = $optionValue;
+        if (!empty($this->_tpl)) {
+            $this->_tpl->setOption($optionKey, $optionValue);
+        }
+    }
+
     /**
      * 设置模板引擎参数.
      *
      * @param array $options 参数数组
+     *
      * @return void
      */
     public function setOptions(array $options)
@@ -116,6 +133,7 @@ class Template
      * 设置模板编译文件存放目录。
      *
      * @param string $compileDir 编译后的模板文件存放目录绝对路径
+     *
      * @return void
      */
     public function setCompileDir($compileDir)
@@ -130,6 +148,7 @@ class Template
      * 设置模板文件存放目录。
      *
      * @param string $tplDir 模板文件存放目录绝对路径
+     *
      * @return void
      */
     public function setTplDir($tplDir)
@@ -142,7 +161,9 @@ class Template
     
     /**
      * 用数组形式为页面赋值，每个变量是数组的键值对。
+     *
      * @param array $array 键值对数组
+     *
      * @return void
      */
     public function assigns(array $array)
@@ -155,8 +176,10 @@ class Template
     
     /**
      * 页面赋值
+     *
      * @param string $name  名称
      * @param mixed  $value 赋值
+     *
      * @return void
      */
     public function assign($name, $value)
@@ -199,6 +222,7 @@ class Template
     
     /**
      * 初始化
+     *
      * @return void
      */
     private function _init()

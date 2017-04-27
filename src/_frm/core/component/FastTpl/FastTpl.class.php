@@ -113,9 +113,22 @@ class FastTpl
         // 默认插件目录
         $this->options['plugin_dirs'][] = __DIR__.'/plugin/';
     }
-    
+
     /**
-     * 设置模板参数.
+     * 设置单项模板配置参数.
+     *
+     * @param string $optionKey   配置项名称.
+     * @param mixed  $optionValue 配置项值.
+     *
+     * @return void
+     */
+    public function setOption($optionKey, $optionValue)
+    {
+        $this->options[$optionKey] = $optionValue;
+    }
+
+    /**
+     * 设置模板配置参数.
      *
      * @param array $options 模板参数.
      *
