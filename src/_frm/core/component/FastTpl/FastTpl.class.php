@@ -484,9 +484,9 @@ class FastTpl
     private function _getTplPath($file)
     {
         if (strpos($file, '.') !== false) {
-            $fileNames = array($file, $file.$this->options['tpl_ext']);
+            $fileNames = array($file, "{$file}.{$this->options['tpl_ext']}");
         } else {
-            $fileNames = array($file.$this->options['tpl_ext'], $file);
+            $fileNames = array("{$file}.{$this->options['tpl_ext']}", $file);
         }
         foreach ($fileNames as $fileName) {
             $filePath = $this->options['tpl_dir'].$fileName;
