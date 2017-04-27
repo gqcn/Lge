@@ -57,7 +57,7 @@ class Controller_Git_GitlabCodeSnifferHook extends BaseController
                     // 执行代码检测
                     $result = '';
                     if (file_exists($baseDirPath)) {
-                        $ignoreContent = $this->_getCSIgnoreContent();
+                        $ignoreContent = $this->_getCSIgnoreContent($rawArray[1]);
                         $ignore = empty($ignoreContent) ? "" : "--ignore={$ignoreContent}";
                         $result = shell_exec("cd {$baseDirPath} && phpcs {$baseDirPath} {$ignore}");
                         $result = trim($result);
@@ -86,12 +86,14 @@ class Controller_Git_GitlabCodeSnifferHook extends BaseController
     /**
      * 获得code sniffer忽略文件内容，并构建成phpcs --ignore=xxx 需要的参数返回.
      *
+     * @param string $commit 提交版本号
+     *
      * @return string
      */
-    private function _getCSIgnoreContent()
+    private function _getCSIgnoreContent($commit = 'HEAD')
     {
         $result  = '';
-        $content = $this->_getGitFileContent('.csignore', 'HEAD');
+        $content = $this->_getGitFileContent('.csignore', $commit);
         if (!empty($content)) {
             $array  = explode("\n", trim($content));
             $result = implode(',', $array);
