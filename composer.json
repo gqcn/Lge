@@ -35,6 +35,6 @@
     },
     "suggest" : { },
     "autoload": {
-        "files": [ "src/_frm/commin.inc.php" ]
+        "files": [ "src/_frm/common.inc.php" ]
     }
 }
