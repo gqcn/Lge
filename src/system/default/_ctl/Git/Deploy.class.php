@@ -25,7 +25,7 @@ if (!defined('LGE')) {
 /**
  * Git方式自动部署.
  */
-class Controller_Gitdeploy extends BaseController
+class Controller_Git_Deploy extends BaseController
 {
 
     /**
@@ -58,8 +58,9 @@ class Controller_Gitdeploy extends BaseController
                 $resp   = $item[0];
                 $branch = empty($deployBranch) ? $item[1] : $deployBranch;
                 if ($branch == '*') {
+                    // 推送所有的分支及标签
                     exec('git config push.default matching');
-                    $branch = '';
+                    $branch = '--tags';
                 }
                 echo ($k + 1).": {$resp} {$branch}\n";
                 if (empty($item[2])) {

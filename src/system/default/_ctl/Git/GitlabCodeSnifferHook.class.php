@@ -14,7 +14,7 @@ if (!defined('LGE')) {
 /**
  * Giblab + PHP_CodeSniffer服务端自动检测脚本。
  */
-class Controller_GitlabCodeSnifferHook extends BaseController
+class Controller_Git_GitlabCodeSnifferHook extends BaseController
 {
 
     /**
