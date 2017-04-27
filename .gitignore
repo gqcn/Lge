@@ -1,12 +1,14 @@
 .buildpath
 .hgignore.swp
 .project
-.settings/
 .orig
 .swp
 .idea/
+.settings/
+vender/
 log/
 gitpush.sh
+composer.lock
 src/cache/
 !src/cache/.keep
 src/upload/

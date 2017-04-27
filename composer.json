@@ -1,7 +1,7 @@
 {
     "name"       : "johng/lge",
     "type"       : "library",
-    "description": "Lightweight Glue Engine - a lightweight php framework.",
+    "description": "Lge(Lightweight Glue Engine)轻量级PHP开发框架.",
     "keywords": [
         "lge",
         "framework",
@@ -31,9 +31,18 @@
         "docs"  : "http://johng.cn/lge"
     },
     "require": {
-        "php": ">=5.0.0"
+        "php"         : ">=5.0.0",
+        "ext-mbstring": "*",
+        "ext-curl"    : "*",
+        "ext-fpm"     : "*"
     },
-    "suggest" : { },
+    "suggest": {
+        "ext-pdo"      : "Required to use database operations.",
+        "ext-redis"    : "Required to use the redis.",
+        "ext-memcached": "Required to use the memcache service.",
+        "ext-gd"       : "Required to deal with kinds of images.",
+        "ext-ssh2"     : "Required to handle SSH protocol, such as Linux server connections."
+    },
     "autoload": {
         "files": [ "src/_frm/common.inc.php" ]
     }
