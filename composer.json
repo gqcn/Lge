@@ -1,0 +1,40 @@
+{
+    "name"       : "johng/lge",
+    "type"       : "library",
+    "description": "Lightweight Glue Engine - a lightweight php framework.",
+    "keywords": [
+        "lge",
+        "framework",
+        "lightweight",
+        "php-library",
+        "php-framework",
+        "php7",
+        "php7-library",
+        "php7-framework"
+    ],
+    "homepage": "http://johng.cn/lge",
+    "license" : "MIT",
+    "authors" : [
+        {
+            "name"    : "John Guo",
+            "email"   : "john@johng.cn",
+            "homepage": "http://johng.cn",
+            "role"    : "Developer"
+        }
+    ],
+    "support": {
+        "email" : "john@johng.cn",
+        "issues": "http://johng.cn/lge",
+        "forum" : "http://johng.cn/lge",
+        "wiki"  : "http://johng.cn/lge",
+        "source": "https://github.com/EngineQ/Lge",
+        "docs"  : "http://johng.cn/lge"
+    },
+    "require": {
+        "php": ">=5.0.0"
+    },
+    "suggest" : { },
+    "autoload": {
+        "files": [ "src/_frm/commin.inc.php" ]
+    }
+}
