@@ -104,6 +104,7 @@ class Controller_Git_GitlabCodeSnifferHook extends BaseController
      *
      * @param string $file   文件名称
      * @param string $commit 提交版本号
+     *
      * @return string
      */
     private function _getGitFileContent($file, $commit)

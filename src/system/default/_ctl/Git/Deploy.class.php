@@ -60,17 +60,22 @@ class Controller_Git_Deploy extends BaseController
                 if ($branch == '*') {
                     // 推送所有的分支及标签
                     exec('git config push.default matching');
-                    $branch = '--tags';
+                    $branch   = '';
+                    $branches = array('', '--tags');
+                } else {
+                    $branches = array($branch);
                 }
                 echo ($k + 1).": {$resp} {$branch}\n";
-                if (empty($item[2])) {
-                    $pushResult = $this->_exeCmd("git push {$resp} {$branch}");
-                    $this->_checkPushResult($pushResult);
-                } else {
-                    $this->_checkAndInitGitRepoForRemoteServer($resp, $item[2]);
-                    $pushResult = $this->_exeCmd("sshpass -p {$item[2]} git push {$resp} {$branch}");
-                    $this->_checkPushResult($pushResult);
-                    $this->_checkAndChangeRemoteRepoToSpecifiedBranch($resp, $branch, $item[2]);
+                foreach ($branches as $branch) {
+                    if (empty($item[2])) {
+                        $pushResult = $this->_exeCmd("git push {$resp} {$branch}");
+                        $this->_checkPushResult($pushResult);
+                    } else {
+                        $this->_checkAndInitGitRepoForRemoteServer($resp, $item[2]);
+                        $pushResult = $this->_exeCmd("sshpass -p {$item[2]} git push {$resp} {$branch}");
+                        $this->_checkPushResult($pushResult);
+                        $this->_checkAndChangeRemoteRepoToSpecifiedBranch($resp, $branch, $item[2]);
+                    }
                 }
                 echo "\n";
             }
