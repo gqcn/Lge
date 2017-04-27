@@ -15,4 +15,5 @@ src/upload/
 !src/upload/file/.keep
 !src/upload/image/.keep
 !src/upload/media/.keep
+src/system/default/_ctl/Test.class.php
 
