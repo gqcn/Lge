@@ -61,7 +61,7 @@ class Controller_Git_Deploy extends BaseController
                     // 推送所有的分支及标签
                     exec('git config push.default matching');
                     $branch   = '';
-                    $branches = array('', '--tags');
+                    $branches = array('--all', '--tags');
                 } else {
                     $branches = array($branch);
                 }

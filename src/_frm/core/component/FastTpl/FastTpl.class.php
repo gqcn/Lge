@@ -73,6 +73,7 @@ class FastTpl
     
     /**
      * 模板变量
+     *
      * @var array
      */
     public $vars = array();
