@@ -350,6 +350,7 @@ class Core
         $fileName = $fileName.'.class.php';
         $filePath = $fileDir.$fileName;
         if (file_exists($filePath)) {
+            // 同一个控制器只能初始化并且执行一次
             if (strcasecmp($filePath, self::$ctlPath) != 0) {
                 self::$ctlPath = $filePath;
                 // 加载控制器文件
@@ -365,13 +366,13 @@ class Core
                     }
                     exception($error);
                 }
+                // 使用__init回调方法在控制器对象初始化之后立即调用，相当于初始化函数
+                if (method_exists(self::$ctlObj, '__init')) {
+                    self::$ctlObj->__init();
+                }
+                // 使用run()方法作为对象入口函数
+                self::$ctlObj->run();
             }
-            // 使用__init回调方法在控制器对象初始化之后立即调用，相当于初始化函数
-            if (method_exists(self::$ctlObj, '__init')) {
-                self::$ctlObj->__init();
-            }
-            // 使用run()方法作为对象入口函数
-            self::$ctlObj->run();
         } else {
             $sys   = self::$sys;
             $ctl   = self::$ctl;
