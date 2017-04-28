@@ -24,24 +24,9 @@ class Controller_Phar extends BaseController
      */
     public function index()
     {
-        $this->_makeLgeLibPhar();
-        // $this->_makeLgeBinPhar();
+        $this->_makeLgePkpPhar();
         echo "Done!\n";
         exception('exit');
-    }
-
-    /**
-     * 生成Lge框架的phar包含文件，路经为项目根目录的/lib/lge.phar
-     *
-     * @return void
-     */
-    private function _makeLgeLibPhar()
-    {
-        $phar = new \Phar(L_ROOT_PATH.'/../lib/lge.phar');
-        $phar->buildFromDirectory(L_ROOT_PATH.'_frm');
-        $phar->compressFiles(\Phar::BZ2);
-        $phar->stopBuffering();
-        $phar->setStub($phar->createDefaultStub('common.inc.php'));
     }
 
     /**
@@ -49,9 +34,9 @@ class Controller_Phar extends BaseController
      *
      * @return void
      */
-    private function _makeLgeBinPhar()
+    private function _makeLgePkpPhar()
     {
-        $phar = new \Phar(L_ROOT_PATH.'/../bin/lge.phar');
+        $phar = new \Phar(L_ROOT_PATH.'/../dist/lge.phar');
         $phar->buildFromDirectory(L_ROOT_PATH);
         $phar->compressFiles(\Phar::GZ);
         $phar->stopBuffering();

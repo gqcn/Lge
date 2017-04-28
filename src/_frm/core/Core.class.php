@@ -20,54 +20,63 @@ class Core
 {
     /**
      * 执行的分站
+     *
      * @var string
      */
     public static $sys           = 'default';
 
     /**
      * 执行的controller
-     * @var tring
+     *
+     * @var string
      */
     public static $ctl           = 'default';
     
     /**
      * 执行的act
+     *
      * @var string
      */
     public static $act           = 'index';
 
     /**
      * 分站变量名称
+     *
      * @var string
      */
     public static $sysName       = '__s';
 
     /**
      * 控制器变量名称
+     *
      * @var string
      */
     public static $ctlName       = '__c';
 
     /**
      * 执行方法变量名称
+     *
      * @var string
      */
     public static $actName       = '__a';
 
     /**
      * 分站变量名称(CLI)
+     *
      * @var string
      */
     public static $sysNameCli    = 's';
 
     /**
      * 控制器变量名称(CLI)
+     *
      * @var string
      */
     public static $ctlNameCli    = 'c';
 
     /**
      * 执行方法变量名称(CLI)
+     *
      * @var string
      */
     public static $actNameCli    = 'a';
@@ -120,12 +129,6 @@ class Core
      * @var array
      */
     public static $tplOptions    = array();
-
-    /**
-     * 是否将默认的错误输出到logger处理。
-     * @var bool
-     */
-    public static $errorToLogger = false;
 
     /**
      * 类自动加载搜索目录(根据类名中的'_'符号进行分级查找).
@@ -215,14 +218,15 @@ class Core
         self::addClassSearchPath(self::$incDir.'library/');
 
         // SESSION缓存管理(使用memcache缓存控制，不处理默认采用文件存储SESSION)
-        if (defined('L_SESSION_STORAGE') && L_SESSION_STORAGE == 'memcache') {
-            $config      = Config::getFile();
-            $memcacheKey = L_SESSION_MEMCACHE_KEY;
-            if (empty($config['MemcacheServer'][$memcacheKey])) {
+        $sessionConfig = Config::getValue('Session');
+        if (!empty($sessionConfig) && $sessionConfig['storage'] == 'memcache') {
+            $memcacheKey    = $sessionConfig['memcache_key'];
+            $memcacheConfig = Config::getValue("MemcacheServer.{$memcacheKey}");
+            if (empty($memcacheConfig)) {
                 exception('You configured using memcache to store SESSION values, but no memcache configures found in configuration');
             } else {
                 $sessionSavePath = '';
-                foreach ($config['MemcacheServer'][$memcacheKey] as $v) {
+                foreach ($memcacheConfig as $v) {
                     $sessionSavePath .= "{$v[0]}:{$v[1]},";
                 }
                 if (!empty($sessionSavePath)) {
@@ -237,7 +241,7 @@ class Core
     /**
      * 初始化app对象操作，文件名大小非敏感查找.
      *
-     * @throws Exception 异常.
+     * @throws \Exception 异常.
      *
      * @return void
      */
@@ -248,17 +252,20 @@ class Core
             ob_start();
         }
 
-        // 默认控制器和执行方法判断
+        /*
+         * 非CLI模式下执行的判断
+         */
         if (php_sapi_name() != 'cli') {
             /*
              * 子域名判断子分站
              */
-            if (L_SYSTEM_BY_SUBDOMAIN === true) {
-                $level     = L_SYSTEM_BY_SUBDOMAIN_LEVEL;
+            $systemConfig = Config::getValue('System');
+            if (!empty($systemConfig['check_by_subdomain'])) {
+                $level     = $systemConfig['check_by_subdomain_level'];
                 $subDomain = Lib_Url::getSubdomain($level);
                 if (!empty($subDomain)) {
                     $sys     = $subDomain;
-                    $mapping = json_decode(L_SYSTEM_BY_SUBDOMAIN_MAPPING, true);
+                    $mapping = $systemConfig['check_by_subdomain_mapping'];
                     if (isset($mapping[$subDomain])) {
                         $sys = $mapping[$subDomain];
                     }
@@ -270,7 +277,7 @@ class Core
             $globalGet = &Data::get('_GET');
 
             // 路由解析处理
-            if ((php_sapi_name() != 'cli') && !empty($_SERVER['REQUEST_URI'])) {
+            if (!empty($_SERVER['REQUEST_URI'])) {
                 $query = Router::dispatch($_SERVER['REQUEST_URI']);
                 if (!empty($query)) {
                     $query = ltrim($query, '/?');
@@ -317,7 +324,7 @@ class Core
 
         // 包含扩展应用的加载文件
         if (file_exists(self::$sysDir.'_inc/common.inc.php')) {
-            include(self::$sysDir.'_inc/common.inc.php');
+            include_once(self::$sysDir.'_inc/common.inc.php');
         }
         // 控制器文件加载
         $ctlName   = '';
@@ -343,30 +350,36 @@ class Core
         $fileName = $fileName.'.class.php';
         $filePath = $fileDir.$fileName;
         if (file_exists($filePath)) {
-            self::$ctlPath = $filePath;
-
-            // 加载控制器文件
-            include $filePath;
-
-            // 生成类对象(控制器必须在框架的命名空间下)
-            $ctlClass     = '\Lge\\Controller_'.$ctlName;
-            self::$ctlObj = new $ctlClass();
+            if (strcasecmp($filePath, self::$ctlPath) != 0) {
+                self::$ctlPath = $filePath;
+                // 加载控制器文件
+                include_once($filePath);
+                // 生成类对象(控制器必须在框架的命名空间下)
+                $ctlClass = '\Lge\\Controller_'.$ctlName;
+                if (class_exists($ctlClass)) {
+                    self::$ctlObj = new $ctlClass();
+                } else {
+                    $error = "Error: Controller class not exist for '{$ctlClass}'";
+                    if (php_sapi_name() != 'cli') {
+                        header("status: 404");
+                    }
+                    exception($error);
+                }
+            }
             // 使用__init回调方法在控制器对象初始化之后立即调用，相当于初始化函数
             if (method_exists(self::$ctlObj, '__init')) {
                 self::$ctlObj->__init();
             }
-
             // 使用run()方法作为对象入口函数
             self::$ctlObj->run();
         } else {
-            $sys = self::$sys;
-            $ctl = self::$ctl;
-            if ((php_sapi_name() == 'cli')) {
-                echo "Error: No controller file found for '{$sys}::{$ctl}'".PHP_EOL;
-            } else {
-                header("status: 404 No controller file found for '{$sys}::{$ctl}'");
+            $sys   = self::$sys;
+            $ctl   = self::$ctl;
+            $error = "Error: No controller file found for '{$sys}::{$ctl}'";
+            if (php_sapi_name() != 'cli') {
+                header("status: 404");
             }
-            exception("exit");
+            exception($error);
         }
     }
 
@@ -489,7 +502,7 @@ class Core
     }
 
     /**
-     * 检查所需扩展再当前运行环境的安装情况.
+     * 检查所需扩展再当前运行环境的安装情况(手动调用).
      *
      * @param array $functions 通过函数来判断扩展(格式: array('函数名' => '扩展名')).
      * @param array $classes   通过类名来判断扩展(格式: array('类名称' => '扩展名')).
@@ -552,8 +565,8 @@ class Core
         if (!($errorNo & $errorReporting)) {
             return false;
         }
-
-        if (self::$errorToLogger && Logger::initOptions(false)) {
+        $loggerConfig = Config::getValue('Logger');
+        if (!empty($loggerConfig['error_logging']) && Logger::initOptions(false)) {
             $levelNo   = Logger::phpErrorNo2LoggerNo($errorNo);
             $errorStr  = "{$errorStr} in {$errorFile}({$errorLine})";
             $backtrace = self::_getBacktraceString();
@@ -592,7 +605,8 @@ class Core
                 if (!headers_sent()) {
                     header("Content-Type: text/html; charset=utf-8");
                 }
-                if (self::$errorToLogger) {
+                $loggerConfig = Config::getValue('Logger');
+                if (!empty($loggerConfig['error_logging'])) {
                     try {
                         $backtrace = self::formatBacktrace($e->getTrace());
                         if (!empty($backtrace)) {
@@ -644,7 +658,6 @@ class Core
     }
 
     /**
-     *
      * 设置back trace 回调函数(用于做日志过滤).
      *
      * @param mixed $callback 回调函数.

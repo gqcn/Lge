@@ -48,6 +48,7 @@ class Logger
 
     /**
      * PHP内置错误对应Logger错误编码.
+     *
      * @var array
      */
     private static $_phpErrorNoMapping = array(
@@ -70,18 +71,21 @@ class Logger
 
     /**
      * 日志过滤回调函数.
+     *
      * @var function
      */
     private static $_filterCallback = null;
 
     /**
      * 日志配置选项.
+     *
      * @var array
      */
     private static $_options = array();
 
     /**
      * 缓存的日志内容数组(缓存日志后一次性写入用以降低IO操作).
+     *
      * @var array
      */
     private static $_messages = array();
@@ -100,7 +104,6 @@ class Logger
     }
 
     /**
-     *
      * 设置日志内容回调函数(用以过滤日志内容).
      *
      * @param mixed $callback 回调函数.
@@ -124,7 +127,7 @@ class Logger
         // 当前PHP错误码转换成Logger错误码
         $level = isset(self::$_phpErrorNoMapping[$phpErrorNo]) ? self::$_phpErrorNoMapping[$phpErrorNo] : 0;
         // 是否记录所有日志信息
-        $logall = empty(self::$_options['levels']) || in_array(self::$_options['levels'], array(self::LOG_LEVEL_ALL, self::LOG_LEVEL_DEV));
+        $logall = empty(self::$_options['error_logging_levels']) || in_array(self::$_options['error_logging_levels'], array(self::LOG_LEVEL_ALL, self::LOG_LEVEL_DEV));
         if (!empty($level) && !$logall) {
             // 强制使用 LOG_LEVEL_PROD 来处理PHP错误信息
             if (!($level & self::LOG_LEVEL_PROD)) {
@@ -151,7 +154,7 @@ class Logger
                                $adapter  = null,
                                $cache    = null)
     {
-        if (!self::initOptions(false) || !($level & self::$_options['levels'])) {
+        if (!self::initOptions(false)) {
             return;
         }
         if (!isset($adapter)) {
@@ -224,7 +227,7 @@ class Logger
                                          $time     = null
     )
     {
-        if (!self::initOptions(false) || !($level & self::$_options['levels'])) {
+        if (!self::initOptions(false)) {
             return;
         }
         if (!isset($time)) {
@@ -266,14 +269,14 @@ class Logger
                                      $time     = null
     )
     {
-        if (!self::initOptions(false) || !($level & self::$_options['levels'])) {
+        if (!self::initOptions(false)) {
             return;
         }
         if (!isset($time)) {
             $time = time();
         }
 
-        $logDirPath = self::$_options['setting']['file']['path'];
+        $logDirPath = self::$_options['adapter_file_log_path'];
         if (empty($logDirPath)) {
             exception("Log dir path not set!");
         } else {
@@ -353,23 +356,6 @@ class Logger
     }
 
     /**
-     * 兼容方法.
-     *
-     * @todo 新项目中不再使用该方法.
-     *
-     * @param string  $message  日志内容.
-     * @param string  $category 日志类别.
-     * @param integer $level    日志级别.
-     *
-     * @deprecated
-     * @return void
-     */
-    public static function writeLine($message, $category = 'default', $level = Logger::INFO)
-    {
-        self::logToFile($message, $category, $level);
-    }
-
-    /**
      * 缓存日志内容.
      *
      * @param string  $message  日志内容.
@@ -427,9 +413,9 @@ class Logger
     {
         $result = false;
         if (empty(self::$_options)) {
-            $config = Config::getFile();
-            if (!empty($config['Logger'])) {
-                self::setOptions($config['Logger']);
+            $loggerConfig = Config::getValue('Logger');
+            if (!empty($loggerConfig)) {
+                self::setOptions($loggerConfig);
                 $result = true;
             } elseif ($throwException) {
                 exception('No configuration for Logger is found!');

@@ -56,8 +56,8 @@ function strAddSlashes($str)
 /**
  * 转义GET、POST、COOKIE传递的值，判断魔法引用进行处理。
  *
- * @param  array   $array  数据数组
- * @param  boolean $strict 强制转义，不管有没魔法引用
+ * @param array   $array  数据数组
+ * @param boolean $strict 强制转义，不管有没魔法引用
  *
  * @return array
  */

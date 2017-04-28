@@ -1,10 +1,13 @@
 <?php
 /**
- * 框架核心组件包含文件
+ * 框架核心组件包含文件。
+ * 框架核心组件设计采用强耦合性。
+ * 框架外部模块设计采用松耦合性。
+ *
  * @author john
  */
 
-// 核心类
+// 核心函数库及类
 include(__DIR__.'/Core.func.php');  // 函数定义
 include(__DIR__.'/Core.class.php'); // 框架总管
 include(__DIR__.'/Base.class.php'); // 框架基础类
