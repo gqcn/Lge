@@ -65,47 +65,14 @@ class Module_Command extends BaseModule
         foreach ($values as $value) {
             switch ($value) {
                 case 'install':
-                    $this->_installLgeToSystemBinaryPath();
+                    Module_Command_Install::instance()->run();
+                    break;
+
+                case 'phar':
+                    Module_Command_Phar::instance()->run();
                     break;
             }
         }
-    }
-
-    /**
-     * 将lge.phar安装到系统可执行文件目录
-     *
-     * @return void
-     */
-    private function _installLgeToSystemBinaryPath()
-    {
-        $phpBinaryPath = $this->_getPhpBinaryPath();
-        if (empty($phpBinaryPath)) {
-            echo "PHP binary not found, please install php cli first!\n";
-        }
-
-        if (preg_match('/phar:\/\/(.+\/lge.phar)/', L_ROOT_PATH, $match)) {
-            $pharPath   = $match[1];
-            $binaryDir  = '/usr/bin/';
-            $binaryPath = $binaryDir.'lge';
-            $content    = "#!/bin/bash\nphp {$pharPath} \$*\n";
-            if (is_writable($binaryDir)) {
-                file_put_contents($binaryPath, $content);
-                @chmod($binaryPath, 0777);
-                echo "Lge binary installation done!\n";
-            } else {
-                echo "Lge binary installation failed, please make sure you have permission to make this.\n";
-            }
-        }
-    }
-
-    /**
-     * 获得php执行文件的路径。
-     *
-     * @return string
-     */
-    private function _getPhpBinaryPath()
-    {
-        return trim(shell_exec('which php'));
     }
 
 }

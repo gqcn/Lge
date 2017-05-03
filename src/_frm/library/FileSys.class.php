@@ -253,4 +253,104 @@ class Lib_FileSys
             exit();
         }
     }
+
+    /**
+     * 判断文件类型是否为压缩文件(常用文件名后缀)
+     * 根据文件后缀名判断
+     *
+     * @param  string $filePath
+     * @return boolean
+     */
+    public static function isCompress($filePath)
+    {
+        switch(self::getFileType($filePath)){
+            case '7z':
+            case 'rar':
+            case 'zip':
+            case 'bz2':
+            case 'tar':
+            case 'rpm':
+            case 'gz':
+                return true;
+                break;
+            default:
+                return false;
+                break;
+        }
+    }
+
+    /**
+     * 判断文件类型是否为视频文件(常用文件名后缀)
+     * 根据文件后缀名判断
+     *
+     * @param  string $filePath
+     * @return boolean
+     */
+    public static function isVideo($filePath)
+    {
+        switch(self::getFileType($filePath)){
+            case 'swf':
+            case 'mkv':
+            case 'rmvb':
+            case 'flv':
+            case 'wmv':
+            case 'avi':
+            case 'rm':
+            case 'mp4':
+                return true;
+                break;
+            default:
+                return false;
+                break;
+        }
+    }
+
+    /**
+     * 判断文件类型是否为音频文件(常用文件名后缀)
+     * 根据文件后缀名判断
+     *
+     * @param  string $filePath
+     * @return boolean
+     */
+    public static function isAudio($filePath)
+    {
+        switch(self::getFileType($filePath)){
+            case 'm4a':
+            case 'mp3':
+            case 'wma':
+            case 'mid':
+            case 'ogg':
+            case 'flv':
+            case 'mp4':
+            case 'wav':
+                return true;
+                break;
+            default:
+                return false;
+                break;
+        }
+    }
+
+    /**
+     * 判断文件类型是否为图象文件(常用文件名后缀)
+     * 根据文件后缀名判断
+     *
+     * @param  string $filePath
+     * @return boolean
+     */
+    public static function isImage($filePath)
+    {
+        switch(self::getFileType($filePath)){
+            case 'gif':
+            case 'bmp':
+            case 'jpg':
+            case 'jpeg':
+            case 'png':
+                return true;
+                break;
+            default:
+                return false;
+                break;
+        }
+    }
 }

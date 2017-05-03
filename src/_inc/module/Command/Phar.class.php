@@ -1,6 +1,6 @@
 <?php
 /**
- * 这是框架的默认加载类。
+ * Lge命令：生成phar包。
  *
  * @author john
  */
@@ -12,21 +12,32 @@ if (!defined('LGE')) {
 }
 
 /**
- * Class Controller_Phar
+ * Class Module_Command_Phar
+ *
+ * @package Lge
  */
-class Controller_Phar extends BaseController
+class Module_Command_Phar extends BaseModule
 {
+
+    /**
+     * 获得实例.
+     *
+     * @return Module_Command_Phar
+     */
+    public static function instance()
+    {
+        return self::_instanceInternal(__CLASS__);
+    }
 
     /**
      * 生成框架phar包文件.
      *
      * @return void
      */
-    public function index()
+    public function run()
     {
         $this->_makeLgePkpPhar();
         echo "Done!\n";
-        exception('exit');
     }
 
     /**
