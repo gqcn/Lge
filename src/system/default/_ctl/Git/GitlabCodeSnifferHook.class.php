@@ -29,11 +29,10 @@ class Controller_Git_GitlabCodeSnifferHook extends BaseController
             $rawInput = file_get_contents('php://stdin');
             $rawArray = explode(' ', $rawInput);
             if (!empty($rawArray)) {
-                $result = shell_exec("git diff --name-only {$rawArray[0]} {$rawArray[1]}");
-                if (!empty($result)) {
+                $files = $this->_getDiffFiles($rawArray);
+                if (!empty($files)) {
                     $currentTime = date('YmdHis');
                     $baseDirPath = "/tmp/{$currentTime}-lge-code-sniffer/";
-                    $files       = explode("\n", trim($result));
                     foreach ($files as $file) {
                         $type = Lib_FileSys::getFileType($file);
                         if ($type == 'php') {
@@ -66,6 +65,7 @@ class Controller_Git_GitlabCodeSnifferHook extends BaseController
                         $exitCode = 0;
                     } else {
                         $exitCode = 1;
+                        $result   = str_replace($baseDirPath, '/', $result);
                         echo "======================================================================\n";
                         echo "======================= Code Sniffer Errors ==========================\n";
                         echo "======================================================================\n";
@@ -81,6 +81,45 @@ class Controller_Git_GitlabCodeSnifferHook extends BaseController
             echo $e->getMessage().PHP_EOL;
         }
         exit($exitCode);
+    }
+
+    /**
+     * 获取本次提交的不同的文件，构成数组返回。
+     *
+     * @param array $rawArray 输入参数数组
+     *
+     * @return array
+     */
+    private function _getDiffFiles(array $rawArray)
+    {
+        $result = '';
+        $files  = array();
+        // 有可能是一个新branch
+        if ($rawArray[0] == '0000000000000000000000000000000000000000') {
+            $currentBranch = $this->_getCurrentBranch();
+            if (!empty($currentBranch)) {
+                $result = shell_exec("git diff --name-only {$currentBranch} {$rawArray[1]}");
+            }
+        } else {
+            $result = shell_exec("git diff --name-only {$rawArray[0]} {$rawArray[1]}");
+        }
+        $result = trim($result);
+        if (!empty($result)) {
+            $files = explode("\n", $result);
+        }
+        return $files;
+    }
+
+    /**
+     * 获取当前版本库所在分支
+     *
+     * @return string
+     */
+    private function _getCurrentBranch()
+    {
+        $result = shell_exec("git branch|grep '*'");
+        $result = preg_replace('/[\*\r\s\n\t]*/', '', $result);
+        return $result;
     }
 
     /**

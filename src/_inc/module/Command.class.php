@@ -71,6 +71,10 @@ class Module_Command extends BaseModule
                 case 'phar':
                     Module_Command_Phar::instance()->run();
                     break;
+
+                case 'init':
+                    Module_Command_Init::instance()->run();
+                    break;
             }
         }
     }
