@@ -53,6 +53,8 @@ class Module_Command_Install extends BaseModule
             } else {
                 echo "Lge binary installation failed, please make sure you have permission to make this.\n";
             }
+        } else {
+            exception("It should be running in phar!");
         }
     }
 

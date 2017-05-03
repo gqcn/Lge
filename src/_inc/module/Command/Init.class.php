@@ -40,14 +40,36 @@ class Module_Command_Init extends BaseModule
             $pharPath = $match[1];
             $homePath = Lib_ConsoleOption::instance()->getOption('d', getcwd());
             if (file_exists($homePath)) {
-                $phar = new \Phar($pharPath);
-                $phar->extractTo('/tmp/lge', null, true);
-                $homePath = rtrim($homePath, '/').'/';
-                $expPath  = "/tmp/lge/*";
-                exec("cp -fr {$expPath} {$homePath}");
+                fwrite(STDOUT, "Sure to initialize an empty Lge project at {$homePath} ? (y/n): ");
+                if (trim(fgets(STDIN)) == 'y') {
+                    // 将lge.phar转换成lge.tar.gz并解压缩到指定临时目录
+                    $tmp  = '/tmp/lge_exp';
+                    $phar = new \Phar($pharPath);
+                    $phar->convertToData(\Phar::TAR,\Phar::GZ)->extractTo($tmp, null, true);
+                    // 删除临时的lge.tar.gz文件
+                    $gzPath = dirname($pharPath).'/lge.tar.gz';
+                    if (file_exists($gzPath)) {
+                        unlink($gzPath);
+                    }
+                    // 复制空项目到指定目录
+                    $homePath = rtrim($homePath, '/').'/';
+                    $expPath  = "{$tmp}/_exp/*";
+                    exec("cp -fr {$expPath} {$homePath}");
+
+                    /*
+                     * 内容替换
+                     */
+                    $constFilePath = $homePath.'src/_cfg/const.inc.php';
+                    file_put_contents($constFilePath, str_replace('#L_PHAR_FILE_PATH#', $pharPath, file_get_contents($constFilePath)));
+                    echo "Project initialized done!\n";
+                } else {
+                    echo "Cancelled.\n";
+                }
             } else {
                 exception("Project path '{$homePath}' dose not exist!");
             }
+        } else {
+            exception("It should be running in phar!");
         }
     }
 

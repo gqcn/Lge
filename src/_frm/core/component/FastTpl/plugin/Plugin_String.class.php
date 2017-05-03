@@ -108,7 +108,7 @@ class Plugin_String
     {
         $strLength = mb_strlen($string, 'utf-8');
         if ($strLength > $length) {
-            return mb_substr($string, 0, $length).$addStr;
+            return mb_substr($string, 0, $length, 'utf-8').$addStr;
         } else {
             return $string;
         }
