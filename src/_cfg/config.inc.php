@@ -7,7 +7,7 @@
 
 return array(
     /*
-     * 子站点配置(可选)
+     * 系统配置(可选)
      */
     'System' => array(
         'check_by_subdomain'         => false,   // 通过URL中的子级域名判断子网站(true|false, 如果为true，例如: admin.xxx.com 映射的子网站为admin)

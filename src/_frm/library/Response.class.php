@@ -7,12 +7,12 @@ if (!defined('LGE')) {
 
 /**
  * 返回客户端请求封装方法类.
- * 
+ *
  * @author john
  */
-
 class Lib_Response
 {
+
     /**
      * 固定格式返回json数据.
      *
@@ -24,7 +24,7 @@ class Lib_Response
      *
      * @return void
      */
-    static public function json($result = true, $data = array(), $message = '', $extra = array(), $exit = true)
+    public static function json($result = true, $data = array(), $message = '', array $extra = array(), $exit = true)
     {
         $result = array(
             'result'  => $result,
@@ -52,7 +52,7 @@ class Lib_Response
      *
      * @return void
      */
-    static public function jsonp($result = true, $data = array(), $message = '', $extra = array(), $exit = true)
+    public static function jsonp($result = true, $data = array(), $message = '', array $extra = array(), $exit = true)
     {
         $callback = isset($_GET['callback']) ? $_GET['callback'] : '';
         if (empty($callback)) {
@@ -78,7 +78,7 @@ class Lib_Response
      *
      * @return void
      */
-    static public function xml($result = true, $data = array(), $message = '', $extra = array(), $exit = true)
+    public static function xml($result = true, $data = array(), $message = '', array $extra = array(), $exit = true)
     {
         $result = array(
             'result'  => $result,
@@ -89,11 +89,30 @@ class Lib_Response
             $result = array_merge($result, $extra);
         }
         header("Content-type: text/xml");
-        echo Lib_XmlParser::array2Xml(array(
-            'response' => $result
-        ));
+        echo Lib_XmlParser::array2Xml(
+            array(
+                'response' => $result
+            )
+        );
         if ($exit) {
             exception('exit');
         }
     }
+
+    /**
+     * 允许指定的来源地址跨域请求。
+     *
+     * @param string  $allowOrigin  允许跨域请求的来源地址
+     * @param string  $allowMethods 允许的跨域请求方式
+     * @param integer $maxAge       在多少秒内，不需要再发送预检验请求，可以缓存该结果
+     *
+     * @return void
+     */
+    public static function allowCrossDomainRequest($allowOrigin = '*', $allowMethods = 'GET, POST, PUT, DELETE', $maxAge = 3628800)
+    {
+        header("Access-Control-Allow-Origin: {$allowOrigin}");
+        header("Access-Control-Allow-Methods: {$allowMethods}");
+        header("Access-Control-Max-Age: {$maxAge}");
+    }
+
 }

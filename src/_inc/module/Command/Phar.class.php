@@ -37,7 +37,7 @@ class Module_Command_Phar extends BaseModule
     public function run()
     {
         $this->_makeLgePkpPhar();
-        echo "Done!\n";
+        echo "Making lge phar file done!\n";
     }
 
     /**
