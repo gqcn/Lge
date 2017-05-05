@@ -55,13 +55,15 @@ class Lib_Response
     static public function jsonp($result = true, $data = array(), $message = '', $extra = array(), $exit = true)
     {
         $callback = isset($_GET['callback']) ? $_GET['callback'] : '';
-        if (!empty($callback)) {
+        if (empty($callback)) {
+            self::json($result, $data, $message, $extra, $exit);
+        } else {
             echo $callback.'(';
             self::json($result, $data, $message, $extra, false);
             echo ');';
-            if ($exit) {
-                exception('exit');
-            }
+        }
+        if ($exit) {
+            exception('exit');
         }
     }
 

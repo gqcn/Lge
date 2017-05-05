@@ -1,4 +1,10 @@
 <?php
+/**
+ * SSH操作类
+ *
+ * @author john
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -7,20 +13,28 @@ if (!defined('LGE')) {
 
 /**
  * SSH操作类
- *
  */
 class Lib_Network_Ssh
 {
-    private $host;
-    private $user;
-    private $pass;
-    private $port;
-    private $conn;
-    private $stream;
-    private $streamTimeout = 86400;
-    private $lastLog;
+    public $host;
+    public $user;
+    public $pass;
+    public $port;
+    public $conn;
+    public $stream;
+    public $streamTimeout = 86400;
+    public $lastLog;
 
-    public function __construct ($host, $port, $user, $pass) {
+    /**
+     * Lib_Network_Ssh constructor.
+     *
+     * @param string $host 主机地址(IP或域名)
+     * @param string $port 端口
+     * @param string $user 账号
+     * @param string $pass 密码
+     */
+    public function __construct ($host, $port, $user, $pass)
+    {
         if (!function_exists('ssh2_connect')) {
             $this->log("ssh2 extension not installed!\n");
             exit();
