@@ -174,6 +174,18 @@ class Lib_Request
     }
 
     /**
+     * 获取当前客户端的请求方式。
+     *
+     * @return string
+     */
+    public static function getMethod()
+    {
+        $globalServer = &Data::get('_SERVER');
+        $method       = isset($globalServer['REQUEST_METHOD']) ? $globalServer['REQUEST_METHOD'] : '';
+        return $method;
+    }
+
+    /**
      * 判断是不是POST请求.
      *
      * @return boolean
