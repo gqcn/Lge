@@ -19,12 +19,12 @@ class Lib_Response
      * @param boolean $result  结果(0:失败，1:成功).
      * @param mixed   $data    数据.
      * @param string  $message 提示信息.
-     * @param array   $extra   额外参数关联数组.
+     * @param mixed   $extra   额外参数关联数组.
      * @param boolean $exit    是否停止执行.
      *
      * @return void
      */
-    public static function json($result = true, $data = array(), $message = '', array $extra = array(), $exit = true)
+    public static function json($result = true, $data = array(), $message = '', $extra = array(), $exit = true)
     {
         $result = array(
             'result'  => $result,
@@ -47,12 +47,12 @@ class Lib_Response
      * @param boolean $result  结果(0:失败，1:成功).
      * @param mixed   $data    数据.
      * @param string  $message 提示信息.
-     * @param array   $extra   额外参数关联数组.
+     * @param mixed   $extra   额外参数关联数组.
      * @param boolean $exit    是否停止执行.
      *
      * @return void
      */
-    public static function jsonp($result = true, $data = array(), $message = '', array $extra = array(), $exit = true)
+    public static function jsonp($result = true, $data = array(), $message = '', $extra = array(), $exit = true)
     {
         $callback = isset($_GET['callback']) ? $_GET['callback'] : '';
         if (empty($callback)) {
@@ -73,12 +73,12 @@ class Lib_Response
      * @param boolean $result  结果(0:失败，1:成功).
      * @param mixed   $data    数据.
      * @param string  $message 提示信息.
-     * @param array   $extra   额外参数关联数组.
+     * @param mixed   $extra   额外参数关联数组.
      * @param boolean $exit    是否停止执行.
      *
      * @return void
      */
-    public static function xml($result = true, $data = array(), $message = '', array $extra = array(), $exit = true)
+    public static function xml($result = true, $data = array(), $message = '', $extra = array(), $exit = true)
     {
         $result = array(
             'result'  => $result,
