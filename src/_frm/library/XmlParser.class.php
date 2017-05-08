@@ -13,6 +13,19 @@ if (!defined('LGE')) {
 
 class Lib_XmlParser
 {
+
+    /**
+     * 判断所给字符串是否为XML格式
+     *
+     * @param string $content 字符串.
+     *
+     * @return array
+     */
+    public static function isXml($content)
+    {
+        return (@simplexml_load_string($content) === false) ? false : true;
+    }
+
     /**
      * XML转换为数组，需要simplexml扩展支持
      *
