@@ -1,4 +1,10 @@
 <?php
+/**
+ * 接收客户端请求的封装类.
+ *
+ * @author john
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -7,12 +13,10 @@ if (!defined('LGE')) {
 
 /**
  * 接收客户端请求的封装类.
- * 
- * @author john
  */
-
 class Lib_Request
 {
+
     /**
      * 获取GET|POST|REQUEST方式传递的变量值.
      *
@@ -23,7 +27,7 @@ class Lib_Request
      *
      * @return mixed
      */
-    static public function get($keyName, $defaultValue = null, $method = 'get', $trim = true)
+    public static function get($keyName, $defaultValue = null, $method = 'get', $trim = true)
     {
         $data = self::getArray(array($keyName => $defaultValue), $method, $trim);
         return $data[$keyName];
@@ -38,7 +42,7 @@ class Lib_Request
      *
      * @return mixed
      */
-    static public function getGet($keyName, $defaultValue = null, $trim = true)
+    public static function getGet($keyName, $defaultValue = null, $trim = true)
     {
         $data = self::getArray(array($keyName => $defaultValue), 'get', $trim);
         return $data[$keyName];
@@ -53,7 +57,7 @@ class Lib_Request
      *
      * @return mixed
      */
-    static public function getPost($keyName, $defaultValue = null, $trim = true)
+    public static function getPost($keyName, $defaultValue = null, $trim = true)
     {
         $data = self::getArray(array($keyName => $defaultValue), 'post', $trim);
         return $data[$keyName];
@@ -68,7 +72,7 @@ class Lib_Request
      *
      * @return mixed
      */
-    static public function getRequest($keyName, $defaultValue = null, $trim = true)
+    public static function getRequest($keyName, $defaultValue = null, $trim = true)
     {
         $value = self::getGet($keyName, $defaultValue, $trim);
         if (!isset($value)) {
@@ -86,7 +90,7 @@ class Lib_Request
      *
      * @return array
      */
-    static public function getGetArray(array $array = array(), $returnFullRequestParams = false, $trim = true)
+    public static function getGetArray(array $array = array(), $returnFullRequestParams = false, $trim = true)
     {
         return self::getArray($array, 'get', $returnFullRequestParams, $trim);
     }
@@ -100,7 +104,7 @@ class Lib_Request
      *
      * @return array
      */
-    static public function getPostArray(array $array = array(), $returnFullRequestParams = false, $trim = true)
+    public static function getPostArray(array $array = array(), $returnFullRequestParams = false, $trim = true)
     {
         return self::getArray($array, 'post', $returnFullRequestParams, $trim);
     }
@@ -114,22 +118,22 @@ class Lib_Request
      *
      * @return array
      */
-    static public function getRequestArray(array $array = array(), $returnFullRequestParams = false, $trim = true)
+    public static function getRequestArray(array $array = array(), $returnFullRequestParams = false, $trim = true)
     {
         return self::getArray($array, 'request', $returnFullRequestParams, $trim);
     }
 
     /**
      * 根据条件筛选request过来的数据, 并对数据执行 arrayTrimAndSlashes 处理，内部会对魔法引用做判断处理.
-     * 
+     *
      * @param array   $array                   带需要过滤的key和默认值的数组.
      * @param string  $method                  指定请求(|post|get|request).
      * @param boolean $returnFullRequestParams 返回完整的请求关联数组，相当于第一个参数数组只是为没有提交的参数设置默认值.
      * @param boolean $trim                    是否过滤元素的前后空格.
-     * 
+     *
      * @return array
      */
-    static public function getArray(array $array = array(), $method = 'get', $returnFullRequestParams = false, $trim = true)
+    public static function getArray(array $array = array(), $method = 'get', $returnFullRequestParams = false, $trim = true)
     {
         $act     = strtolower($method);
         $request = null;
@@ -190,9 +194,20 @@ class Lib_Request
      *
      * @return boolean
      */
-    public static function isRequestMethodPost ()
+    public static function isRequestMethodPost()
     {
         $globalServer = &Data::get('_SERVER');
         return ($globalServer['REQUEST_METHOD'] == 'POST');
     }
+
+    /**
+     * 获得php://input提交的参数
+     *
+     * @return string
+     */
+    public static function getInput()
+    {
+        return file_get_contents('php://input');
+    }
+
 }
