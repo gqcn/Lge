@@ -1,4 +1,10 @@
 <?php
+/**
+ * HTTP请求封装类，内部封装了CURL方法
+ *
+ * @author john
+ */
+
 namespace Lge;
 
 if (!defined('LGE')) {
@@ -7,14 +13,13 @@ if (!defined('LGE')) {
 
 /**
  * HTTP请求封装类，内部封装了CURL方法
- * 
  */
 class Lib_Network_Http
 {
-    public $httpCode;   //状态码
-    public $httpType;   //Content-Type值，只包含文件类型，不包含编码等其他信息
-    public $httpError;  //如果发生错误则返回错误信息，与httpCode相关
-    public $httpHeader; //返回的header信息 - 关联数组(其中也包含了http状态码信息)
+    public $httpCode;   // 状态码
+    public $httpType;   // Content-Type值，只包含文件类型，不包含编码等其他信息
+    public $httpError;  // 如果发生错误则返回错误信息，与httpCode相关
+    public $httpHeader; // 返回的header信息 - 关联数组(其中也包含了http状态码信息)
     
     private $_ch;
     private $_cookie;
@@ -26,12 +31,12 @@ class Lib_Network_Http
     private $_proxyPass;
     private $_certificate;            // SSL证书
     private $_browserMode    = false; // 浏览器模式, cookie会伴随着整个请求流程,并且请求会自动保存返回的cookie
-    private $_connectTimeout = 0;     // 连接超时时间
-    
-    
+    private $_timeout        = 10;    // 执行超时时间
+    private $_connectTimeout = 10;    // 连接超时时间
+
     /**
      * 获取cookie成员变量.
-     * 
+     *
      * @return string
      */
     public function getCookie()
@@ -41,7 +46,10 @@ class Lib_Network_Http
     
     /**
      * 设置请求的COOKIE
+     *
      * @param string $cookie 例如: session=c36f5eba6978450b12; domain=.iteye.com; path=/; HttpOnly
+     *
+     * @return void
      */
     public function setCookie($cookie)
     {
@@ -50,7 +58,10 @@ class Lib_Network_Http
     
     /**
      * 设置使用证书
-     * @param string $filePath
+     *
+     * @param string $filePath 证书绝对路径
+     *
+     * @return void
      */
     public function setCertificate($filePath)
     {
@@ -60,22 +71,25 @@ class Lib_Network_Http
     /**
      * 设置提交的header
      *
-     * @param array $headers 例如: 
+     * @param array $headers 例如:
+     *
      * array (
             "user_agent" => "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6 (.NET CLR 3.5.30729)",
             "language"   => "en-us,en;q=0.5"
        ),
+     *
+     * @return void
      */
-    public function setHeaders($headers)
+    public function setHeaders(array $headers)
     {
         $this->_headers = $headers;
     }
     
     /**
-     * 设置浏览器模式.
-     * 
+     * 设置浏览器模式，模拟浏览器模式请求，连续的访问请求下，所有的cookie将会自动保存.
+     *
      * @param boolean $mode 开启或者关闭.
-     * 
+     *
      * @return void
      */
     public function setBrowserMode($mode = true)
@@ -86,7 +100,9 @@ class Lib_Network_Http
     /**
      * 设置请求的来源地址
      *
-     * @param string $referer
+     * @param string $referer 来源地址
+     *
+     * @return void
      */
     public function setReferer($referer)
     {
@@ -96,10 +112,12 @@ class Lib_Network_Http
     /**
      * 设置代理
      *
-     * @param string $proxyHost 代理地址
-     * @param int    $proxyPort 代理端口
-     * @param string $proxyUser 代理账号
-     * @param string $proxyPass 代理密码
+     * @param string  $proxyHost 代理地址
+     * @param integer $proxyPort 代理端口
+     * @param string  $proxyUser 代理账号
+     * @param string  $proxyPass 代理密码
+     *
+     * @return void
      */
     public function setProxy($proxyHost, $proxyPort, $proxyUser = null, $proxyPass = null)
     {
@@ -108,10 +126,25 @@ class Lib_Network_Http
         $this->_proxyUser = $proxyUser;
         $this->_proxyPass = $proxyPass;
     }
-    
+
     /**
-     * 设置连接超时时间
-     * @param int $second
+     * 设置请求执行超时时间
+     *
+     * @param integer $second 秒
+     *
+     * @return void
+     */
+    public function setTimeout($second)
+    {
+        $this->_timeout = $second;
+    }
+
+    /**
+     * 设置请求连接超时时间
+     *
+     * @param integer $second 秒
+     *
+     * @return void
      */
     public function setConnectionTimeout($second)
     {
@@ -121,10 +154,11 @@ class Lib_Network_Http
     /**
      * GET方式发送请求
      *
-     * @param  string        $url
-     * @param  array|string  $data
-     * @param  int           $getType 0:只返回body | 1:只返回header | 2:同时返回header和body
-     * @param  string        保存到本地文件地址
+     * @param string       $url     请求地址
+     * @param array|string $data    请求数据
+     * @param integer      $getType 0:只返回body | 1:只返回header | 2:同时返回header和body
+     * @param string       $tofile  保存到本地文件地址
+     *
      * @return string
      */
     public function get($url, $data = array(), $getType = 2, $tofile = null)
@@ -135,10 +169,11 @@ class Lib_Network_Http
     /**
      * POST方式发送请求
      *
-     * @param  string        $url
-     * @param  array|string  $data
-     * @param  int           $getType 0:只返回body | 1:只返回header | 2:同时返回header和body
-     * @param  string        保存到本地文件地址
+     * @param string       $url     请求地址
+     * @param array|string $data    请求数据
+     * @param integer      $getType 0:只返回body | 1:只返回header | 2:同时返回header和body
+     * @param string       $tofile  保存到本地文件地址
+     *
      * @return string
      */
     public function post($url, $data = array(), $getType = 2, $tofile = null)
@@ -148,7 +183,11 @@ class Lib_Network_Http
 
     /**
      * 下载到文件
-     * @param string $url
+     *
+     * @param string $url    请求地址
+     * @param string $tofile 保存到本地文件地址
+     *
+     * @return string
      */
     public function download($url, $tofile)
     {
@@ -158,28 +197,30 @@ class Lib_Network_Http
     /**
      * 向地址发送请求
      *
-     * @param  string        $url
-     * @param  array|string  $data
-     * @param  string        $method get | post
-     * @param  int           $getType 0:只返回body | 1:只返回header | 2:同时返回header和body
-     * @param  string        保存到本地文件的指针
+     * @param string       $url     请求地址
+     * @param array|string $data    请求数据
+     * @param string       $method  请求方式
+     * @param integer      $getType 0:只返回body | 1:只返回header | 2:同时返回header和body
+     * @param string       $tofile  保存到本地文件地址
+     *
      * @return string
      */
     public function send($url, $data = array(), $method = 'get', $getType = 2, $tofile = null)
     {
-        if(empty($this->_ch)){
-            $this->init();
+        if (empty($this->_ch)) {
+            $this->_init();
         }
 
-        curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, true); //返回给变量
-        curl_setopt($this->_ch, CURLOPT_FOLLOWLOCATION, true); //抓取跳转后的页面
+        curl_setopt($this->_ch, CURLOPT_RETURNTRANSFER, true); // 返回给变量
+        curl_setopt($this->_ch, CURLOPT_FOLLOWLOCATION, true); // 抓取跳转后的页面
+        curl_setopt($this->_ch, CURLOPT_TIMEOUT,        $this->_timeout);
         curl_setopt($this->_ch, CURLOPT_CONNECTTIMEOUT, $this->_connectTimeout);
         // curl_setopt($this->_ch, CURLOPT_NOPROGRESS, false);  //启用时关闭curl传输的进度条，此项的默认设置为true
-        if(!empty($this->_certificate)){
+        if (!empty($this->_certificate)) {
             curl_setopt($this->_ch, CURLOPT_SSL_VERIFYPEER, true);
             curl_setopt($this->_ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($this->_ch, CURLOPT_CAINFO, $this->_certificate);
-        }else{
+        } else {
             curl_setopt($this->_ch, CURLOPT_SSL_VERIFYPEER, false);
         }
         // 是否使用代理
@@ -209,12 +250,12 @@ class Lib_Network_Http
         }
         // 下载到文件
         if (!empty($tofile)) {
-            $tofilept = fopen ($tofile, "wb");
+            $tofilept = fopen($tofile, "wb");
             curl_setopt($this->_ch, CURLOPT_FILE, $tofilept);
         }
-        //处理请求方式
+        // 处理请求方式
         $method = strtolower($method);
-        switch ($method){
+        switch ($method) {
             case 'get':
                 // get请求时需要转换为字符串
                 if (is_array($data)) {
@@ -245,24 +286,24 @@ class Lib_Network_Http
                 break;
 
             default:
-                // 设置请求方式
+                curl_setopt($this->_ch, CURLOPT_POSTFIELDS,    $data);
                 curl_setopt($this->_ch, CURLOPT_CUSTOMREQUEST, $method);
                 break;
         }
-        switch ($getType){
+        switch ($getType) {
             case 0:
                 // 只返回body
-                curl_setopt($this->_ch, CURLOPT_HEADER, false);         
+                curl_setopt($this->_ch, CURLOPT_HEADER, false);
                 // curl_setopt($this->_ch, CURLOPT_NOBODY, false);
                 break;
             case 1:
                 // 只返回header
-                curl_setopt($this->_ch, CURLOPT_HEADER, true);         
-                curl_setopt($this->_ch, CURLOPT_NOBODY, true); 
+                curl_setopt($this->_ch, CURLOPT_HEADER, true);
+                curl_setopt($this->_ch, CURLOPT_NOBODY, true);
                 break;
             case 2:
                 // 同时返回header和body
-                curl_setopt($this->_ch, CURLOPT_HEADER, true);         
+                curl_setopt($this->_ch, CURLOPT_HEADER, true);
                 // curl_setopt($this->_ch, CURLOPT_NOBODY, false);
                 break;
         }
@@ -270,7 +311,7 @@ class Lib_Network_Http
         // 设置请求地址
         curl_setopt($this->_ch, CURLOPT_URL, $url);
         $rawContent = curl_exec($this->_ch);
-        switch ($getType){
+        switch ($getType) {
             case 0:
                 // 只返回body
                 $headerContent = null;
@@ -290,12 +331,12 @@ class Lib_Network_Http
         }
         $this->httpCode   = curl_getinfo($this->_ch, CURLINFO_HTTP_CODE);
         $this->httpHeader = $this->_parseHeader($headerContent);
-        if(isset($this->httpHeader['content-type'])){
+        if (isset($this->httpHeader['content-type'])) {
             $tArray           = explode(';', $this->httpHeader['content-type']);
             $this->httpType   = $tArray[0];
         }
         $this->httpError  = curl_error($this->_ch);
-        if(isset($tofilept) && is_object($tofilept)){
+        if (isset($tofilept) && is_object($tofilept)) {
             $tofilept->close();
         }
         // COOKIE保存
@@ -303,20 +344,20 @@ class Lib_Network_Http
             $cookie = '';
             if (isset($this->httpHeader['set-cookie'])) {
                 $cookie = $this->httpHeader['set-cookie'];
-            } else if (isset($this->httpHeader['Set-Cookie'])) {
+            } elseif (isset($this->httpHeader['Set-Cookie'])) {
                 $cookie = $this->httpHeader['Set-Cookie'];
             }
             $this->_saveToLocalCookie($cookie);
         }
-        //$this->close();
+        // $this->close();
         return $bodyContent;
     }
-    
     
     /**
      * 获取指定URL的header，返回的是关联数组
      *
-     * @param  string $url
+     * @param string $url 请求地址
+     *
      * @return array
      */
     public function getHeader($url)
@@ -328,10 +369,11 @@ class Lib_Network_Http
     /**
      * 关闭CURL连接
      *
+     * @return void
      */
     public function close()
     {
-        if($this->_ch){
+        if (!empty($this->_ch)) {
             curl_close($this->_ch);
             unset($this->_ch);
         }
@@ -340,8 +382,9 @@ class Lib_Network_Http
     /**
      * 初始化curl
      *
+     * @return void
      */
-    private function init()
+    private function _init()
     {
         $this->_ch = curl_init();
     }
@@ -349,6 +392,7 @@ class Lib_Network_Http
     /**
      * 析构函数
      *
+     * @return void
      */
     public function __destruct()
     {
@@ -357,9 +401,9 @@ class Lib_Network_Http
     
     /**
      * 解析Cookie为数组键值对.
-     * 
+     *
      * @param string $cookie COOKIE.
-     * 
+     *
      * @return array
      */
     private function _parseCookie($cookie)
@@ -379,9 +423,9 @@ class Lib_Network_Http
     
     /**
      * 保存cookie到本地.
-     * 
+     *
      * @param string $cookie COOKIE;
-     * 
+     *
      * @return void
      */
     private function _saveToLocalCookie($cookie)
@@ -402,24 +446,26 @@ class Lib_Network_Http
     /**
      * 解析header，返回的是关联数组
      *
-     * @param  string $header
+     * @param string $header HTTP HEADER字符串
+     *
      * @return array
      */
     private function _parseHeader($header)
     {
         $returnArray = array();
         $headerArray = explode("\n", $header);
-        foreach ($headerArray as $v){
+        foreach ($headerArray as $v) {
             $tArray = array();
             $tArray = explode(": ", trim($v));
-            if($tArray[0]){
-                if(empty($tArray[1])){
+            if ($tArray[0]) {
+                if (empty($tArray[1])) {
                     $returnArray[0] = $tArray[0];
-                }else{
+                } else {
                     $returnArray[strtolower($tArray[0])] = $tArray[1];
                 }
             }
         }
         return $returnArray;
     }
+
 }
