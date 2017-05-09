@@ -151,7 +151,7 @@ class Lib_Request
         $data = array();
         if (empty($array)) {
             $data = $request;
-        } else if ($returnFullRequestParams) {
+        } elseif ($returnFullRequestParams) {
             $data = $request;
             foreach ($array as $k => $v) {
                 $data[$k] = isset($request[$k]) ? $request[$k] : $v;
