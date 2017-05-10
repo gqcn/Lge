@@ -41,9 +41,7 @@ class Cookie
         $this->_authkey = $authkey;
 
         if (empty($this->_domain) && !empty($_SERVER['HTTP_HOST'])) {
-            if (!empty($_SERVER['SERVER_NAME'])) {
-                $this->_domain = ".{$_SERVER['SERVER_NAME']}";
-            } elseif (!empty($_SERVER['HTTP_HOST'])) {
+            if (!empty($_SERVER['HTTP_HOST'])) {
                 $array             = explode($_SERVER['HTTP_HOST'], ':');
                 list($name, $port) = each($array);
                 $this->_domain     = '.'.trim(substr($name, strpos($name, '.')), '.');
