@@ -143,4 +143,16 @@ class Plugin_String
         return substr_replace($str, $hideStr, $start, $hideLength);
     }
 
+    /**
+     * 将\n\r替换为html中的<br>标签.
+     *
+     * @param string $content 内容
+     *
+     * @return string
+     */
+    public function nl2br($content)
+    {
+        return nl2br($content);
+    }
+
 }
