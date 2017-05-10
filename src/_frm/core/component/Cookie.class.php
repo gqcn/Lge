@@ -41,9 +41,9 @@ class Cookie
         $this->_authkey = $authkey;
 
         if (empty($this->_domain) && !empty($_SERVER['HTTP_HOST'])) {
-            $array             = explode(':', $_SERVER['HTTP_HOST']);
-            list($name, $port) = each($array);
-            $this->_domain     = '.'.trim(substr($name, strpos($name, '.')), '.');
+            $array         = explode(':', $_SERVER['HTTP_HOST']);
+            $host          = $array[0];
+            $this->_domain = '.'.trim(substr($host, strpos($host, '.')), '.');
         }
         if (isset($_COOKIE['Lge_Cookie'])) {
             $this->_cookies = unserialize($this->_authcode($_COOKIE['Lge_Cookie'], false));
