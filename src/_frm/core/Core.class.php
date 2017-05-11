@@ -363,17 +363,21 @@ class Core
             // 加载控制器文件
             include_once(self::$ctlPath);
             // 生成类对象(控制器必须在框架的命名空间下)
-            $tempArray = explode('_', $ctlName);
-            $className = $tempArray[0];
-            $ctlClass = '\Lge\\Controller_'.$className;
+            // 为方便寻址，支持目录名与类名相同时的二级搜索
+            $ctlClass = '\Lge\\Controller_'.$ctlName;
             if (!class_exists($ctlClass)) {
-                $ctlClass = '\Lge\\Controller_'.$className.'_'.$className;
+                $tempArray = explode('_', $ctlName);
+                $className = $tempArray[0];
+                $ctlClass = '\Lge\\Controller_'.$className;
                 if (!class_exists($ctlClass)) {
-                    $error = "Error: No controller class found for '{$sys}::{$ctl}'";
-                    if (php_sapi_name() != 'cli') {
-                        header("status: 404");
+                    $ctlClass = '\Lge\\Controller_'.$className.'_'.$className;
+                    if (!class_exists($ctlClass)) {
+                        $error = "Error: No controller class found for '{$sys}::{$ctl}'";
+                        if (php_sapi_name() != 'cli') {
+                            header("status: 404");
+                        }
+                        exception($error);
                     }
-                    exception($error);
                 }
             }
             self::$ctlObj = new $ctlClass();
