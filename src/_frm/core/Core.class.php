@@ -357,20 +357,26 @@ class Core
                 self::$ctlPath = $filePath;
             }
         }
+        $sys = self::$sys;
+        $ctl = self::$ctl;
         if (!empty(self::$ctlPath)) {
             // 加载控制器文件
             include_once(self::$ctlPath);
             // 生成类对象(控制器必须在框架的命名空间下)
-            $ctlClass = '\Lge\\Controller_'.$ctlName;
-            if (class_exists($ctlClass)) {
-                self::$ctlObj = new $ctlClass();
-            } else {
-                $error = "Error: Controller class not exist for '{$ctlClass}'";
-                if (php_sapi_name() != 'cli') {
-                    header("status: 404");
+            $tempArray = explode('_', $ctlName);
+            $className = $tempArray[0];
+            $ctlClass = '\Lge\\Controller_'.$className;
+            if (!class_exists($ctlClass)) {
+                $ctlClass = '\Lge\\Controller_'.$className.'_'.$className;
+                if (!class_exists($ctlClass)) {
+                    $error = "Error: No controller class found for '{$sys}::{$ctl}'";
+                    if (php_sapi_name() != 'cli') {
+                        header("status: 404");
+                    }
+                    exception($error);
                 }
-                exception($error);
             }
+            self::$ctlObj = new $ctlClass();
             // 使用__init回调方法在控制器对象初始化之后立即调用，相当于初始化函数
             if (method_exists(self::$ctlObj, '__init')) {
                 self::$ctlObj->__init();
@@ -378,8 +384,6 @@ class Core
             // 使用run()方法作为对象入口函数
             self::$ctlObj->run();
         } else {
-            $sys   = self::$sys;
-            $ctl   = self::$ctl;
             $error = "Error: No controller file found for '{$sys}::{$ctl}'";
             if (php_sapi_name() != 'cli') {
                 header("status: 404");
