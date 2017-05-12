@@ -402,20 +402,28 @@ class Lib_Network_Http
     /**
      * 解析Cookie为数组键值对.
      *
-     * @param string $cookie COOKIE.
+     * @param mixed $inputCookie 返回的COOKIE数值，可能是数组.
      *
      * @return array
      */
-    private function _parseCookie($cookie)
+    private function _parseCookie($inputCookie)
     {
         $cookieArray = array();
-        if (!empty($cookie)) {
-            $array = explode(';', $cookie);
-            foreach ($array as $string) {
-                $t = explode('=', trim($string));
-                $k = $t[0];
-                $v = isset($t[1]) ? $t[1] : '';
-                $cookieArray[$k] = $v;
+        if (is_array($inputCookie)) {
+            $cookies = $inputCookie;
+        } else {
+            $cookies = array($inputCookie);
+        }
+        if (!empty($cookies)) {
+            foreach ($cookies as $cookie) {
+                $array = explode(';', $cookie);
+                if (!empty($array[0])) {
+                    $string = $array[0];
+                    $t = explode('=', trim($string));
+                    $k = $t[0];
+                    $v = isset($t[1]) ? $t[1] : '';
+                    $cookieArray[$k] = $v;
+                }
             }
         }
         return $cookieArray;
@@ -424,7 +432,7 @@ class Lib_Network_Http
     /**
      * 保存cookie到本地.
      *
-     * @param string $cookie COOKIE;
+     * @param mixed $cookie COOKIE;
      *
      * @return void
      */
@@ -456,11 +464,24 @@ class Lib_Network_Http
         $headerArray = explode("\n", $header);
         foreach ($headerArray as $v) {
             $tArray = explode(": ", trim($v));
-            if ($tArray[0]) {
+            print_r($tArray);
+            if (!empty($tArray[0])) {
                 if (empty($tArray[1])) {
                     $returnArray[0] = $tArray[0];
                 } else {
-                    $returnArray[strtolower($tArray[0])] = $tArray[1];
+                    $key = strtolower($tArray[0]);
+                    if (isset($returnArray[$key])) {
+                        if (is_array($returnArray[$key])) {
+                            $returnArray[$key][] = $tArray[1];
+                        } else {
+                            $returnArray[$key] = array(
+                                $returnArray[$key],
+                                $tArray[1]
+                            );
+                        }
+                    } else {
+                        $returnArray[$key] = $tArray[1];
+                    }
                 }
             }
         }
