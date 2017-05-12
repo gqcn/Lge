@@ -274,7 +274,7 @@ class Lib_Network_Http
                 // 文件上传兼容处理
                 if (is_array($data)) {
                     foreach ($data as $k => $v) {
-                        if ($v[0] == '@') {
+                        if (isset($v[0]) && $v[0] == '@') {
                             if (class_exists('\CURLFile')) {
                                 $filePath = substr($v, 1);
                                 $data[$k] = new \CURLFile(realpath($filePath));
