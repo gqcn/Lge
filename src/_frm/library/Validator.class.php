@@ -489,13 +489,13 @@ class Lib_Validator
 
                 // json
                 case 'json':
-                    $result    = json_decode($value);
-                    $ruleMatch = ($result !== null && $result !== false);
+                    $checkResult = json_decode($value);
+                    $ruleMatch   = ($result !== null && $result !== false);
                     break;
                 // xml
                 case 'xml':
-                    $result    = @Lib_XmlParser::xml2Array($value);
-                    $ruleMatch = ($result !== null && $result !== false);
+                    $checkResult = @Lib_XmlParser::xml2Array($value);
+                    $ruleMatch   = ($result !== null && $result !== false);
                     break;
 
                 // 数组
