@@ -464,7 +464,6 @@ class Lib_Network_Http
         $headerArray = explode("\n", $header);
         foreach ($headerArray as $v) {
             $tArray = explode(": ", trim($v));
-            print_r($tArray);
             if (!empty($tArray[0])) {
                 if (empty($tArray[1])) {
                     $returnArray[0] = $tArray[0];
