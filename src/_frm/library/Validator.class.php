@@ -56,7 +56,8 @@ max_length         格式：max_length:max                说明：参数长度�
 between            格式：between:min,max               说明：参数大小为min到max
 min                格式：min:min                       说明：参数最小为min
 max                格式：max:max                       说明：参数最大为max
-json               格式：json                          说明：JSON
+json               格式：json                          说明：判断数据格式为JSON
+xml                格式：xml                           说明：判断数据格式为XML
 array              格式：array                         说明：数组
 integer            格式：integer                       说明：整数
 float              格式：float                         说明：浮点数
@@ -102,6 +103,7 @@ class Lib_Validator
         'min'               => '字段最小值为:min',
         'max'               => '字段最大值为:max',
         'json'              => '字段应当为JSON格式',
+        'xml'               => '字段应当为XML格式',
         'array'             => '字段应当为数组',
         'integer'           => '字段应当为整数',
         'float'             => '字段应当为浮点数',
@@ -485,10 +487,20 @@ class Lib_Validator
                     }
                     break;
 
-                // 数组
-                case 'array':   $ruleMatch = is_array($value);              break;
                 // json
-                case 'json':    $ruleMatch = json_decode($value) !== false; break;
+                case 'json':
+                    $result    = json_decode($value);
+                    $ruleMatch = ($result !== null && $result !== false);
+                    break;
+                // xml
+                case 'xml':
+                    $result    = @Lib_XmlParser::xml2Array($value);
+                    $ruleMatch = ($result !== null && $result !== false);
+                    break;
+
+                // 数组
+                case 'array':   $ruleMatch = is_array($value);                          break;
+
                 // 整数
                 case 'integer': $ruleMatch = filter_var($value, FILTER_VALIDATE_INT)     !== false; break;
                 // 小数
