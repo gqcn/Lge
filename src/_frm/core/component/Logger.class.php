@@ -415,8 +415,10 @@ class Logger
         if (empty(self::$_options)) {
             $loggerConfig = Config::getValue('Logger');
             if (!empty($loggerConfig)) {
-                self::setOptions($loggerConfig);
-                $result = true;
+                if (!empty($loggerConfig['enabled'])) {
+                    self::setOptions($loggerConfig);
+                    $result = true;
+                }
             } elseif ($throwException) {
                 exception('No configuration for Logger is found!');
             }

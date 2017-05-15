@@ -22,6 +22,7 @@ return array(
      * 日志配置(可选)
      */
     'Logger' => array(
+        'enabled'               => true,                       // 开启日志功能
         'cache'                 => false,                      // 缓存写入的日志内容到内存，最后请求执行完毕后再真正写入到文件系统
         'adapter'               => \Lge\Logger::ADAPTER_FILE,  // 适配配置，默认写入文件
         'adapter_file_log_path' => L_ROOT_PATH.'../log/',      // 日志目录绝对路径
