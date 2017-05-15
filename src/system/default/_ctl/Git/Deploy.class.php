@@ -100,7 +100,7 @@ class Controller_Git_Deploy extends BaseController
 
 
 MM;
-            exception('exit');
+            exit();
         }
     }
 

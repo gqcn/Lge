@@ -37,7 +37,7 @@ class Lib_Response
         header('Content-type: application/json');
         echo json_encode($result);
         if ($exit) {
-            exception('exit');
+            exit();
         }
     }
 
@@ -63,7 +63,7 @@ class Lib_Response
             echo ');';
         }
         if ($exit) {
-            exception('exit');
+            exit();
         }
     }
 
@@ -95,7 +95,7 @@ class Lib_Response
             )
         );
         if ($exit) {
-            exception('exit');
+            exit();
         }
     }
 
