@@ -9,18 +9,6 @@ return array(
     /*
      * 系统配置(必需)
      */
-    'Setting' => array(
-        'check_by_subdomain'         => false,   // 通过URL中的子级域名判断子网站(true|false, 如果为true，例如: admin.xxx.com 映射的子网站为admin)
-        'check_by_subdomain_level'   => 2,       // 当check_by_subdomain为true时有效, 子域名级别
-        // 当check_by_subdomain为true时有效, 表示子级域名与子站点目录的自定义映射数组，默认子站点名字与子域名相同
-        'check_by_subdomain_mapping' => array(
-
-        ),
-    ),
-
-    /*
-     * 子站点配置(可选)
-     */
     'System' => array(
         'check_by_subdomain'         => false,   // 通过URL中的子级域名判断子网站(true|false, 如果为true，例如: admin.xxx.com 映射的子网站为admin)
         'check_by_subdomain_level'   => 2,       // 当check_by_subdomain为true时有效, 子域名级别
