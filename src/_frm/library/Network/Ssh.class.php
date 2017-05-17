@@ -24,6 +24,7 @@ class Lib_Network_Ssh
     public $stream;
     public $streamTimeout = 86400;
     public $lastLog;
+    public $echoLog = true;
 
     /**
      * Lib_Network_Ssh constructor.
@@ -247,6 +248,19 @@ class Lib_Network_Ssh
     }
 
     /**
+     * 判断服务端的指定命令是否存在，例如：php,sshpass
+     *
+     * @param string $cmd 命令
+     *
+     * @return boolean
+     */
+    public function checkCmd($cmd)
+    {
+        $result = $this->syncCmd("which {$cmd}");
+        return !empty($result);
+    }
+
+    /**
      * 打印日志.
      *
      * @param string $content 日志内容.
@@ -255,6 +269,8 @@ class Lib_Network_Ssh
      */
     public function log($content)
     {
-        echo 'Lge_SSH2: '.trim($content)."\n";
+        if ($this->echoLog) {
+            echo 'Lge_SSH2: '.trim($content)."\n";
+        }
     }
 }
