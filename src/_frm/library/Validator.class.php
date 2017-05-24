@@ -1,36 +1,30 @@
 <?php
-namespace Lge;
-
-if (!defined('LGE')) {
-    exit('Include Permission Denied!');
-}
-
 /**
  * 表单/数据校验类.
 
-    $data  = array(
-        'username'  => '',
-        'userpass'  => '1234567',
-        'userpass2' => '123456',
-    );
-    // 规则格式1
-    $rules = array(
-        'username'  => 'required',
-        'userpass'  => array('required', '用户密码不能为空'),
-        'userpass2' => array('required|same:userpass', array('请再次输入密码进行确认', '您两次输入的密码不一致')),
-    );
+$data  = array(
+    'username'  => '',
+    'userpass'  => '1234567',
+    'userpass2' => '123456',
+);
+// 规则格式1
+$rules = array(
+    'username'  => 'required',
+    'userpass'  => array('required', '用户密码不能为空'),
+    'userpass2' => array('required|same:userpass', array('请再次输入密码进行确认', '您两次输入的密码不一致')),
+);
 
-    // 规则格式2
-    $rules = array(
-        'username'  => 'required',
-        'userpass'  => array('required', '用户密码不能为空'),
-        'userpass2' => array('required|same:userpass', array(
-            'required' => '请再次输入密码进行确认',
-            'same'     => '您两次输入的密码不一致')
-        ),
-    );
+// 规则格式2
+$rules = array(
+    'username'  => 'required',
+    'userpass'  => array('required', '用户密码不能为空'),
+    'userpass2' => array('required|same:userpass', array(
+        'required' => '请再次输入密码进行确认',
+        'same'     => '您两次输入的密码不一致')
+    ),
+);
 
-    校验规则如下：
+校验规则如下：
 required           格式：required                      说明：必需参数
 required_if        格式：required_if:field,value,...   说明：必需参数(当给定字段值与所给任意值相等时)
 required_with      格式：required_with:foo,bar,...     说明：必需参数(当所给定任意字段值不为空时)
@@ -70,10 +64,21 @@ regex              格式：regex:pattern                 说明：参数值应�
 
  * @author John
  */
+
+namespace Lge;
+
+if (!defined('LGE')) {
+    exit('Include Permission Denied!');
+}
+
+/**
+ * Class Lib_Validator
+ */
 class Lib_Validator
 {
     /**
      * 默认校验错误提示信息.
+     *
      * @var array
      */
     public static $defaultMessages = array(
@@ -117,6 +122,7 @@ class Lib_Validator
 
     /**
      * 当前校验的数据数组.
+     *
      * @var array
      */
     private static $_currentData = array();
@@ -131,10 +137,12 @@ class Lib_Validator
      *     1：仅返回错误信息，构成数组返回；
      *     2：仅返回错误信息，如果$returnWhenError为true或者仅有一条错误时，返回错误字符串；
      * ).
-     * @param bool    $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
+     * @param boolean $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
+     *
      * @return array|string
      */
-    public static function check(array $data, array $rules, $returnErrorType = 0, $returnWhenError = false) {
+    public static function check(array $data, array $rules, $returnErrorType = 0, $returnWhenError = false)
+    {
         $result             = array();
         self::$_currentData = $data;
         foreach ($rules as $key => $rule) {
@@ -169,12 +177,14 @@ class Lib_Validator
     /**
      * 根据单条规则验证数值，如果返回值为空那么表示满足规则，否则返回值为错误信息数组.
      *
-     * @param mixed $value           数值.
-     * @param mixed $rule            规则.
-     * @param bool  $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
+     * @param mixed   $value           数值.
+     * @param mixed   $rule            规则.
+     * @param boolean $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
+     *
      * @return array
      */
-    public static function checkRule($value, $rule, $returnWhenError = false) {
+    public static function checkRule($value, $rule, $returnWhenError = false)
+    {
         $result   = array();
         $messages = array();
         if (is_array($rule)) {
@@ -307,7 +317,7 @@ class Lib_Validator
                     $ruleMatch = preg_match('#^13[\d]{9}$|^14[5,7]{1}\d{8}$|^15[^4]{1}\d{8}$|^17[0,3,6,7,8]{1}\d{8}$|^18[\d]{9}$#', $value) ? true : false;
                     break;
 
-                /**
+                /*
                  * 国内座机电话号码："XXXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"、"XXXXXXXX"
                  */
                 case 'telephone':
@@ -377,7 +387,7 @@ class Lib_Validator
                         && preg_match('/[a-z]+/', $value)
                         && preg_match('/[A-Z]+/', $value)
                         && preg_match('/\d+/', $value)
-                        && preg_match('/\S+/', $value)){
+                        && preg_match('/\S+/', $value)) {
                         $ruleMatch = true;
                     } else {
                         $ruleMatch = false;
@@ -489,17 +499,17 @@ class Lib_Validator
 
                 // json
                 case 'json':
-                    $checkResult = json_decode($value);
-                    $ruleMatch   = ($result !== null && $result !== false);
+                    $checkResult = @json_decode($value);
+                    $ruleMatch   = ($checkResult !== null && $checkResult !== false);
                     break;
                 // xml
                 case 'xml':
-                    $checkResult = @Lib_XmlParser::xml2Array($value);
-                    $ruleMatch   = ($result !== null && $result !== false);
+                    $checkResult = @Lib_XmlParser::isXml($value);
+                    $ruleMatch   = ($checkResult !== null && $checkResult !== false);
                     break;
 
                 // 数组
-                case 'array':   $ruleMatch = is_array($value);                          break;
+                case 'array':   $ruleMatch = is_array($value); break;
 
                 // 整数
                 case 'integer': $ruleMatch = filter_var($value, FILTER_VALIDATE_INT)     !== false; break;
