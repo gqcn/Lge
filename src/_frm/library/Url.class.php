@@ -13,6 +13,7 @@ if (!defined('LGE')) {
 
 class Lib_Url
 {
+
     /**
      * 获取子级域名.
      *
@@ -26,6 +27,10 @@ class Lib_Url
         $subDomain = '';
         if (empty($httpHost)) {
             $httpHost = empty($_SERVER['HTTP_HOST']) ? '' : $_SERVER['HTTP_HOST'];
+        }
+        // 判断是否IP访问
+        if (preg_match("/\d+\.\d+\.\d+\.\d+/", $httpHost)) {
+            return $httpHost;
         }
         if (!empty($httpHost)) {
             $array      = explode('.', $httpHost);
