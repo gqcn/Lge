@@ -30,6 +30,23 @@ class Module_Command_Init extends BaseModule
     }
 
     /**
+     * 返回该命令的帮助字符串。
+     *
+     * @return string
+     */
+    public function getHelp()
+    {
+        return <<<MM
+lge init
+说明：在当前目前创建Lge框架的初始化项目目录。
+示例：
+mkdir ~/lge_project
+cd ~/lge_project
+lge init
+MM;
+    }
+
+    /**
      * 初始化以lge为框架的空项目
      *
      * @return void

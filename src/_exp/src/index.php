@@ -9,7 +9,11 @@
 include(__DIR__.'/_cfg/const.inc.php');
 
 // 框架文件引入
-include(L_PHAR_FILE_PATH);
+if (file_exists(L_PHAR_FILE_PATH)) {
+    include(L_PHAR_FILE_PATH);
+} else {
+    die("Lge framework phar could not found!\n");
+}
 
 // 框架初始化并执行
 \Lge\Core::initController();

@@ -31,6 +31,7 @@ class Module_Command extends BaseModule
 
     /**
      * 命令行选项处理
+     * 命令行选项是带有 "-" 或者 "--" 开头的参数
      *
      * @param array $options 命令行选项
      *
@@ -43,11 +44,15 @@ class Module_Command extends BaseModule
                 continue;
             }
             switch ($option) {
+                case '?':
+                    $this->_showHelp();
+                    break;
+
                 case 'i':
+                case 'v':
                 case 'info':
-                    $phpVersion = PHP_VERSION;
-                    $lgeVersion = L_FRAME_VERSION;
-                    echo "Lge version {$lgeVersion}, running in {$phpVersion}\n";
+                    $version = $this->_getVersionInfo();
+                    echo "{$version}\n";
                     break;
             }
         }
@@ -56,6 +61,7 @@ class Module_Command extends BaseModule
     /**
      * 命令行参数处理
      * 第一条value是命令，其他是命令所需的参数
+     * 命令行参数是不带 "-" 或者 "--" 开头的参数
      *
      * @param array $values 参数列表
      *
@@ -64,19 +70,69 @@ class Module_Command extends BaseModule
     public function checkValues(array $values)
     {
         $command = isset($values[0]) ? $values[0] : null;
+        $command = trim($command);
         switch ($command) {
+            case 'help':
+                $this->_showHelp();
+                break;
+
             case 'install':
-                Module_Command_Install::instance()->run();
-                break;
-
             case 'phar':
-                Module_Command_Phar::instance()->run();
+            case 'init':
+                $this->_runCommand($command);
                 break;
 
-            case 'init':
-                Module_Command_Init::instance()->run();
+            default:
+                if (!empty($command)) {
+                    echo "Unknown command: {$command}\n";
+                }
                 break;
         }
+    }
+
+    /**
+     * 显示命令帮助。
+     *
+     * @return void
+     */
+    private function _showHelp()
+    {
+        $version = $this->_getVersionInfo();
+        $usage   = Lib_Console::highlight("lge [command/option]");
+        echo "{$version}\n";
+        echo "Usage   : {$usage}\n";
+        echo "Commands:\n";
+        echo "    ".Lib_Console::highlight("-v,-i,-info")." : show version info\n";
+        echo "    ".Lib_Console::highlight("-?,help")."     : this help\n";
+        echo "    ".Lib_Console::highlight("install")."     : install lge binary to system\n";
+        echo "    ".Lib_Console::highlight("init")."        : initialize current working folder as an empty PHP project using Lge framework\n";
+        echo "\n";
+    }
+
+    /**
+     * 执行命令。
+     *
+     * @param string $command 命令名称
+     *
+     * @return void
+     */
+    private function _runCommand($command)
+    {
+        $class  = 'Lge\Module_Command_'.ucfirst($command);
+        $object = new $class();
+        $object->run();
+    }
+
+    /**
+     * 获得当前运行的PHP版本信息。
+     *
+     * @return string
+     */
+    private function _getVersionInfo()
+    {
+        $phpVersion = PHP_VERSION;
+        $lgeVersion = L_FRAME_VERSION;
+        return "Lge version {$lgeVersion}, running in {$phpVersion}";
     }
 
 }
