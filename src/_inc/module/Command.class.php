@@ -79,6 +79,7 @@ class Module_Command extends BaseModule
             case 'install':
             case 'phar':
             case 'init':
+            case 'lnmp':
                 $this->_runCommand($command);
                 break;
 
@@ -105,6 +106,7 @@ class Module_Command extends BaseModule
         echo "    ".Lib_Console::highlight("-v,-i,-info")." : show version info\n";
         echo "    ".Lib_Console::highlight("-?,help")."     : this help\n";
         echo "    ".Lib_Console::highlight("install")."     : install lge binary to system\n";
+        echo "    ".Lib_Console::highlight("lnmp")."        : install LNMP(Linux+Nginx+MySQL+PHP) environment\n";
         echo "    ".Lib_Console::highlight("init")."        : initialize current working folder as an empty PHP project using Lge framework\n";
         echo "\n";
     }

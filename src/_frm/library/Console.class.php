@@ -73,7 +73,7 @@ class Lib_Console
      *
      * @return string
      */
-    public static function highlight($string, $fontColor = 'white', $backgroundColor = '', $fontStyle = 'bold')
+    public static function highlight($string, $fontColor = 'white', $backgroundColor = '', $fontStyle = '')
     {
         if (isset(self::$fontColors[$fontColor])) {
             $fontColor = self::$fontColors[$fontColor];
@@ -87,6 +87,18 @@ class Lib_Console
             $fontStyle = "{$fontStyle};";
         }
         return "\033[{$fontStyle}{$backgroundColor}{$fontColor}m{$string}\033[0m";
+    }
+
+    /**
+     * 查找可执行文件的绝对路径
+     *
+     * @param string $bin 可执行文件名称，例如：php,nginx,mysql...
+     *
+     * @return string
+     */
+    public static function getBinPath($bin)
+    {
+        return trim(shell_exec("which {$bin}"));
     }
 
 }
