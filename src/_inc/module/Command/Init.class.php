@@ -39,8 +39,9 @@ class Module_Command_Init extends BaseModule
         if (preg_match('/phar:\/\/(.+\/lge.phar)/', L_ROOT_PATH, $match)) {
             $pharPath = $match[1];
             $homePath = Lib_ConsoleOption::instance()->getOption('d', getcwd());
-            if (file_exists($homePath)) {
-                fwrite(STDOUT, "Sure to initialize an empty Lge project at {$homePath} ? (y/n): ");
+            $homePath = realpath($homePath);
+            if ($homePath) {
+                fwrite(STDOUT, "Sure to initialize an empty Lge project at '{$homePath}' ? (y/n): ");
                 if (trim(fgets(STDIN)) == 'y') {
                     // 将lge.phar转换成lge.tar.gz并解压缩到指定临时目录
                     $tmp  = '/tmp/lge_exp';
@@ -66,7 +67,7 @@ class Module_Command_Init extends BaseModule
                      Lib_Console::perror("Cancelled.\n", 'red');
                 }
             } else {
-                Lib_Console::perror("Project path '{$homePath}' dose not exist!");
+                Lib_Console::perror("Invalid project path '{$homePath}' specified!");
             }
         } else {
             Lib_Console::perror("It should be running in phar!");

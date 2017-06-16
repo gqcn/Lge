@@ -108,6 +108,7 @@ class Module_Command extends BaseModule
         echo "    ".Lib_Console::highlight("install")."     : install lge binary to system\n";
         echo "    ".Lib_Console::highlight("lnmp")."        : install LNMP(Linux+Nginx+MySQL+PHP) environment\n";
         echo "    ".Lib_Console::highlight("init")."        : initialize current working folder as an empty PHP project using Lge framework\n";
+        echo "        ".Lib_Console::highlight("-d=PATH")." : specify the folder PATH folder(relative or absolute) to initialize an empty PHP project using Lge framework\n";
         echo "\n";
     }
 

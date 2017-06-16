@@ -36,6 +36,10 @@ class Module_Command_Install extends BaseModule
      */
     public function run()
     {
+        if (!empty(Lib_Console::getBinPath('lge'))) {
+            Lib_Console::psuccess("You've already installed lge!\n");
+            exit();
+        }
         $phpBinaryPath = $this->_getPhpBinaryPath();
         if (empty($phpBinaryPath)) {
             Lib_Console::perror("PHP binary not found, please install php cli first!\n");

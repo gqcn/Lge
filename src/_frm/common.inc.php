@@ -13,7 +13,7 @@
  */
 
 define('LGE',             1);         // 用于判断包含标识
-define('L_FRAME_VERSION', 'v3.1.20'); // 当前Lge框架版本
+define('L_FRAME_VERSION', 'v3.2.10'); // 当前Lge框架版本
 defined('L_DEBUG')                 || define('L_DEBUG',   1); // 是否开启调试模式，判断当前运行环境是否允许调试
 defined('L_ERROR_LEVEL_FOR_DEBUG') || define('L_ERROR_LEVEL_FOR_DEBUG', E_ALL ^ E_NOTICE ^ E_WARNING ^ E_DEPRECATED); // 当 L_DEBUG 为1时有效
 defined('L_ROOT_PATH')             || define('L_ROOT_PATH',             realpath(__DIR__.'/..').'/'); // 系统根目录文件系统绝对路径
