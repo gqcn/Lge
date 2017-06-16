@@ -72,6 +72,7 @@ class Module_Command extends BaseModule
         $command = isset($values[0]) ? $values[0] : null;
         $command = trim($command);
         switch ($command) {
+            case '?':
             case 'help':
                 $this->_showHelp();
                 break;
@@ -104,7 +105,7 @@ class Module_Command extends BaseModule
         echo "Usage   : {$usage}\n";
         echo "Commands:\n";
         echo "    ".Lib_Console::highlight("-v,-i,-info")." : show version info\n";
-        echo "    ".Lib_Console::highlight("-?,help")."     : this help\n";
+        echo "    ".Lib_Console::highlight("?,-?,help")."   : this help\n";
         echo "    ".Lib_Console::highlight("install")."     : install lge binary to system\n";
         echo "    ".Lib_Console::highlight("lnmp")."        : install LNMP(Linux+Nginx+MySQL+PHP) environment\n";
         echo "    ".Lib_Console::highlight("init")."        : initialize current working folder as an empty PHP project using Lge framework\n";
