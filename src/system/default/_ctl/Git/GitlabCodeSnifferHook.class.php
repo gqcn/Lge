@@ -150,19 +150,8 @@ class Controller_Git_GitlabCodeSnifferHook extends BaseController
      */
     private function _getGitFileContent($file, $commit)
     {
-        // 这里使用proc_open替换shell_exec是为了防止标准错误直接输出到终端上
-        $descripts = array(
-            // 0 => array("pipe", "r"),
-            1 => array("pipe", "w"),
-            2 => array("pipe", "w"),
-        );
-        $process = proc_open("git show {$commit}:{$file}", $descripts, $pipes);
-        $result  = stream_get_contents($pipes[1]);
-        // fclose($pipes[0]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        proc_close($process);
-        return $result;
+        $result = Lib_Console::execCommand("git show {$commit}:{$file}");
+        return $result['stdout'];
     }
 
 }

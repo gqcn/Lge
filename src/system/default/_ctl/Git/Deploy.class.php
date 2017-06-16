@@ -113,22 +113,8 @@ MM;
      */
     private function _exeCmd($cmd)
     {
-        // 这里使用proc_open替换shell_exec是为了防止标准错误直接输出到终端上
-        $descripts = array(
-            // 0 => array("pipe", "r"),
-            1 => array("pipe", "w"),
-            2 => array("pipe", "w"),
-        );
-        $process = proc_open($cmd, $descripts, $pipes);
-        $output  = stream_get_contents($pipes[1]);
-        $error   = stream_get_contents($pipes[2]);
-        // fclose($pipes[0]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        proc_close($process);
-        $result  = empty($output) ? '' : $output;
-        $result .= empty($error) ? '' : $error;
-        return $result;
+        $result = Lib_Console::execCommand($cmd);
+        return $result['stdout'];
     }
 
     /**

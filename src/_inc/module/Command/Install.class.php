@@ -38,7 +38,7 @@ class Module_Command_Install extends BaseModule
     {
         $phpBinaryPath = $this->_getPhpBinaryPath();
         if (empty($phpBinaryPath)) {
-            echo "PHP binary not found, please install php cli first!\n";
+            Lib_Console::perror("PHP binary not found, please install php cli first!\n");
         }
 
         if (preg_match('/phar:\/\/(.+\/lge.phar)/', L_ROOT_PATH, $match)) {
@@ -49,12 +49,12 @@ class Module_Command_Install extends BaseModule
             if (is_writable($binaryDir)) {
                 file_put_contents($binaryPath, $content);
                 @chmod($binaryPath, 0777);
-                echo "Lge binary installation done!\n";
+                Lib_Console::psuccess("Lge binary installation done!\n");
             } else {
-                echo "Lge binary installation failed, please make sure you have permission to make this.\n";
+                Lib_Console::perror("Lge binary installation failed, please make sure you have permission to make this.\n");
             }
         } else {
-            exception("It should be running in phar!");
+            Lib_Console::perror("It should be running in phar!");
         }
     }
 
