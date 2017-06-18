@@ -1,7 +1,7 @@
 #!/bin/bash
 # 安装lge执行文件到系统目录
     CURRENT_SCRIPT_PATH=$(cd "$(dirname "$0")"; pwd)
-    echo "\033[32mInstalling php cli\033[0m"
+    echo "\033[32mInstalling php cli...\033[0m"
     # rhel
     which yum > /dev/null 2>&1
     if [ $? = 0 ] ; then
@@ -25,5 +25,5 @@
 
     which php  > /dev/null 2>&1
     if [ $? eq 0 ]; then
-        echo "\033[31mPHP-CLI installation failed\033[0m"
+        echo "\033[31mPHP-CLI installation failed!\033[0m"
     fi

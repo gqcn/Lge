@@ -45,6 +45,7 @@ class Module_Command extends BaseModule
             }
             switch ($option) {
                 case '?':
+                case 'h':
                     $this->_showHelp();
                     break;
 
@@ -77,16 +78,16 @@ class Module_Command extends BaseModule
                 $this->_showHelp();
                 break;
 
-            case 'install':
-            case 'phar':
             case 'init':
+            case 'install':
             case 'lnmp':
+            case 'phar':
                 $this->_runCommand($command);
                 break;
 
             default:
                 if (!empty($command)) {
-                    echo "Unknown command: {$command}\n";
+                    Lib_Console::perror("Unknown command: {$command}\n");
                 }
                 break;
         }
@@ -104,12 +105,12 @@ class Module_Command extends BaseModule
         echo "{$version}\n";
         echo "Usage   : {$usage}\n";
         echo "Commands:\n";
-        echo "    ".Lib_Console::highlight("-v,-i,-info")." : show version info\n";
-        echo "    ".Lib_Console::highlight("?,-?,help")."   : this help\n";
-        echo "    ".Lib_Console::highlight("install")."     : install lge binary to system\n";
-        echo "    ".Lib_Console::highlight("lnmp")."        : install LNMP(Linux+Nginx+MySQL+PHP) environment\n";
-        echo "    ".Lib_Console::highlight("init")."        : initialize current working folder as an empty PHP project using Lge framework\n";
-        echo "        ".Lib_Console::highlight("-d=PATH")." : specify the folder PATH folder(relative or absolute) to initialize an empty PHP project using Lge framework\n";
+        echo "    ".Lib_Console::highlight("?,-?,-h,help")." : this help\n";
+        echo "    ".Lib_Console::highlight("-v,-i,info")."   : show version info\n";
+        echo "    ".Lib_Console::highlight("init")."         : initialize current working folder as an empty PHP project using Lge framework\n";
+        echo "        ".Lib_Console::highlight("-d=PATH")."  : initialize the folder PATH(relative or absolute) as an empty PHP project using Lge framework\n";
+        echo "    ".Lib_Console::highlight("install")."      : install lge binary to system\n";
+        echo "    ".Lib_Console::highlight("lnmp")."         : install LNMP(Linux+Nginx+MySQL+PHP) environment\n";
         echo "\n";
     }
 
@@ -136,7 +137,7 @@ class Module_Command extends BaseModule
     {
         $phpVersion = PHP_VERSION;
         $lgeVersion = L_FRAME_VERSION;
-        return "Lge version {$lgeVersion}, running in {$phpVersion}";
+        return "Lge version {$lgeVersion}, running in PHP{$phpVersion}";
     }
 
 }
