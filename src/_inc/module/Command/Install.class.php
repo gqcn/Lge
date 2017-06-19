@@ -40,7 +40,7 @@ class Module_Command_Install extends BaseModule
         $id = trim($id);
         if ($id != "0") {
             Lib_Console::perror("This script must be running as root\n");
-            exit();
+            exit(1);
         }
         $option = Lib_ConsoleOption::instance()->getValue(1, 'lge');
         switch ($option) {

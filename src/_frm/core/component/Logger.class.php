@@ -104,6 +104,18 @@ class Logger
     }
 
     /**
+     * 设置日志文件的存放路径。
+     *
+     * @param string $path 日志路径
+     *
+     * @return void
+     */
+    public static function setAdapterFileLogPath($path)
+    {
+        self::$_options['adapter_file_log_path'] = $path;
+    }
+
+    /**
      * 设置日志内容回调函数(用以过滤日志内容).
      *
      * @param mixed $callback 回调函数.
