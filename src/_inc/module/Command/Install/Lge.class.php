@@ -38,7 +38,7 @@ class Module_Command_Install_Lge extends Module_Command_Install_Base
     {
         if (!empty(Lib_Console::getBinPath('lge'))) {
             Lib_Console::psuccess("You've already installed lge!\n");
-            exit();
+            exit(0);
         }
         $phpBinaryPath = Lib_Console::getBinPath('php');
         if (empty($phpBinaryPath)) {
