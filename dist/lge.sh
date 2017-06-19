@@ -13,8 +13,8 @@
 # 先判断本地是否已经安装好了php cli
     which php > /dev/null 2>&1
     if [ $? = 0 ]; then
-        sh $CURRENT_SCRIPT_PATH/scripts/subscripts/install-lge.sh
+        sh $CURRENT_SCRIPT_PATH/scripts/install-lge.sh
     else
-        PHP_CLI_SCRIPT_PATH=$CURRENT_SCRIPT_PATH/scripts/subscripts/install-php-cli.sh
+        PHP_CLI_SCRIPT_PATH=$CURRENT_SCRIPT_PATH/scripts/install-php-cli.sh
         echo "\033[31mYou should install php cli first, try $PHP_CLI_SCRIPT_PATH\033[0m"
     fi

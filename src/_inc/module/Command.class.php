@@ -59,9 +59,6 @@ class Module_Command extends BaseModule
     private function _checkOptionsWithoutValues(array $options)
     {
         foreach ($options as $option => $v) {
-            if ($v !== true) {
-                continue;
-            }
             switch ($option) {
                 case '?':
                 case 'h':
@@ -70,7 +67,6 @@ class Module_Command extends BaseModule
 
                 case 'i':
                 case 'v':
-                case 'info':
                     $version = $this->_getVersionInfo();
                     echo "{$version}\n";
                     break;
@@ -97,6 +93,11 @@ class Module_Command extends BaseModule
                 $this->_showHelp();
                 break;
 
+            case 'info':
+                $version = $this->_getVersionInfo();
+                echo "{$version}\n";
+                break;
+
             case 'init':
             case 'install':
             case 'phar':
@@ -119,18 +120,19 @@ class Module_Command extends BaseModule
     private function _showHelp()
     {
         $version = $this->_getVersionInfo();
-        $usage   = Lib_Console::highlight("lge [command/option]");
-        echo "{$version}\n";
-        echo "Usage   : {$usage}\n";
-        echo "Commands:\n";
-        echo "    ".Lib_Console::highlight("?,-?,-h,help")."  : this help\n";
-        echo "    ".Lib_Console::highlight("-v,-i,info")."    : show version info\n";
-        echo "    ".Lib_Console::highlight("init")."          : initialize current working folder as an empty PHP project using Lge framework\n";
-        echo "        ".Lib_Console::highlight("-d=PATH")."   : initialize the folder PATH(relative or absolute) as an empty PHP project using Lge framework\n";
-        echo "    ".Lib_Console::highlight("install")."       : install lge binary to system\n";
-//        echo "        ".Lib_Console::highlight("-o=OPTION")." : install specified environment, OPTION:lge(default),php,nginx,mysql\n";
-        echo "        ".Lib_Console::highlight("-o=OPTION")." : install specified environment, OPTION: lge(default), php\n";
-        echo "\n";
+        echo <<<MM
+{$version}
+Usage   : lge [command/option] [option]
+Commands:
+    ?,-?,-h,help      : this help
+    -v,-i,info        : show version info
+    init [path]       : initialize current working folder as an empty PHP project using Lge framework
+        path          : initialize the folder path(relative or absolute) as an empty PHP project using Lge framework
+    install [lge/php] : install lge binary to system
+        lge           : install lge binary to system(default)
+        php           : install basic PHP extensions
+
+MM;
     }
 
     /**

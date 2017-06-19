@@ -38,7 +38,7 @@ class Module_Command_Init extends BaseModule
     {
         if (preg_match('/phar:\/\/(.+\/lge.phar)/', L_ROOT_PATH, $match)) {
             $pharPath = $match[1];
-            $homePath = Lib_ConsoleOption::instance()->getOption('d', getcwd());
+            $homePath = Lib_ConsoleOption::instance()->getValue(1, getcwd());
             $homePath = realpath($homePath);
             if ($homePath) {
                 fwrite(STDOUT, "Sure to initialize an empty Lge project at '{$homePath}' ? (y/n): ");

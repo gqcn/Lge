@@ -103,14 +103,27 @@ class Lib_ConsoleOption
     /**
      * 根据参数名称获取终端参数值.
      *
-     * @param string $k   参数名称.
-     * @param mixed  $def 当参数不存在时返回的默认值.
+     * @param string $key     参数名称.
+     * @param mixed  $default 当参数不存在时返回的默认值.
+     *
+     * @return string
+     */
+    public function getOption($key, $default = null)
+    {
+        return isset($this->options[$key]) ? $this->options[$key] : $default;
+    }
+
+    /**
+     * 获得对应索引值的参数名称，索引值是在终端命令中输入的参数顺序(注意索引从0开始).
+     *
+     * @param integer $index   参数索引值.
+     * @param mixed   $default 当参数不存在时返回的默认值.
      *
      * @return mixed
      */
-    public function getOption($k, $def = null)
+    public function getValue($index, $default = null)
     {
-        return isset($this->options[$k]) ? $this->options[$k] : $def;
+        return isset($this->values[$index]) ? $this->values[$index] : $default;
     }
 
     /**
