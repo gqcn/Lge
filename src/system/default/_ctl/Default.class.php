@@ -28,12 +28,8 @@ class Controller_Default extends BaseController
          * CLI模式下的value及option检查
          */
         if (php_sapi_name() == 'cli') {
-            $values  = Lib_ConsoleOption::instance()->getValues();
-            $options = Lib_ConsoleOption::instance()->getOptions();
-            Module_Command::instance()->checkValues($values);
-            Module_Command::instance()->checkOptions($options);
+            Module_Command::instance()->run();
         }
-
     }
 
 }

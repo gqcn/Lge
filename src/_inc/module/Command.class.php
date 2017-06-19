@@ -30,14 +30,33 @@ class Module_Command extends BaseModule
     }
 
     /**
-     * 命令行选项处理
+     * 入口函数.
+     * values  : 终端传入的命令参数
+     * options : 对应的是'-'或者'--'开头的选项
+     *
+     * @return void
+     */
+    public function run()
+    {
+        $coption = Lib_ConsoleOption::instance();
+        $values  = $coption->getValues();
+        if (empty($values)) {
+            $options = $coption->getOptions();
+            $this->_checkOptionsWithoutValues($options);
+        } else {
+            $this->_checkValues($values);
+        }
+    }
+
+    /**
+     * 当命令行传入的参数为空时，默认的选项处理
      * 命令行选项是带有 "-" 或者 "--" 开头的参数
      *
      * @param array $options 命令行选项
      *
      * @return void
      */
-    public function checkOptions(array $options)
+    private function _checkOptionsWithoutValues(array $options)
     {
         foreach ($options as $option => $v) {
             if ($v !== true) {
@@ -68,7 +87,7 @@ class Module_Command extends BaseModule
      *
      * @return void
      */
-    public function checkValues(array $values)
+    private function _checkValues(array $values)
     {
         $command = isset($values[0]) ? $values[0] : null;
         $command = trim($command);
@@ -80,7 +99,6 @@ class Module_Command extends BaseModule
 
             case 'init':
             case 'install':
-            case 'lnmp':
             case 'phar':
                 $this->_runCommand($command);
                 break;
@@ -105,12 +123,13 @@ class Module_Command extends BaseModule
         echo "{$version}\n";
         echo "Usage   : {$usage}\n";
         echo "Commands:\n";
-        echo "    ".Lib_Console::highlight("?,-?,-h,help")." : this help\n";
-        echo "    ".Lib_Console::highlight("-v,-i,info")."   : show version info\n";
-        echo "    ".Lib_Console::highlight("init")."         : initialize current working folder as an empty PHP project using Lge framework\n";
-        echo "        ".Lib_Console::highlight("-d=PATH")."  : initialize the folder PATH(relative or absolute) as an empty PHP project using Lge framework\n";
-        echo "    ".Lib_Console::highlight("install")."      : install lge binary to system\n";
-        echo "    ".Lib_Console::highlight("lnmp")."         : install LNMP(Linux+Nginx+MySQL+PHP) environment\n";
+        echo "    ".Lib_Console::highlight("?,-?,-h,help")."  : this help\n";
+        echo "    ".Lib_Console::highlight("-v,-i,info")."    : show version info\n";
+        echo "    ".Lib_Console::highlight("init")."          : initialize current working folder as an empty PHP project using Lge framework\n";
+        echo "        ".Lib_Console::highlight("-d=PATH")."   : initialize the folder PATH(relative or absolute) as an empty PHP project using Lge framework\n";
+        echo "    ".Lib_Console::highlight("install")."       : install lge binary to system\n";
+//        echo "        ".Lib_Console::highlight("-o=OPTION")." : install specified environment, OPTION:lge(default),php,nginx,mysql\n";
+        echo "        ".Lib_Console::highlight("-o=OPTION")." : install specified environment, OPTION: lge(default), php\n";
         echo "\n";
     }
 

@@ -167,4 +167,18 @@ class Lib_Console
         return trim(shell_exec("which {$bin}"));
     }
 
+    /**
+     * 获取当前系统的Linux发布版本信息
+     * array(
+     *     'os' => 主版本,
+     *     'distr' => 主版本,
+     * )
+     *
+     * @return array
+     */
+    public function getLinuxDistributionInfo()
+    {
+
+    }
+
 }
