@@ -6,15 +6,21 @@
 
 # 必需使用root用户执行
     if [ "$(id -u)" != "0" ]; then
-       echo "\033[31mThis script must be running as root\033[0m"
+       echo -e "\033[31mThis script must be running as root\033[0m"
        exit 1
     fi
+
+# 修改子级脚本的可执行权限
+    chmod +x $CURRENT_SCRIPT_PATH/scripts/*
     
 # 先判断本地是否已经安装好了php cli
     which php > /dev/null 2>&1
-    if [ $? = 0 ]; then
-        sh $CURRENT_SCRIPT_PATH/scripts/install-lge.sh
-    else
-        PHP_CLI_SCRIPT_PATH=$CURRENT_SCRIPT_PATH/scripts/install-php-cli.sh
-        echo "\033[31mYou should install php cli first, try $PHP_CLI_SCRIPT_PATH\033[0m"
+    if [ $? = 1 ]; then
+        which apt-get > /dev/null 2>&1
+        if [ $? = 0 ] ; then
+            apt-get update
+            $CURRENT_SCRIPT_PATH/scripts/install-php-cli.sh
+        fi
     fi
+
+    $CURRENT_SCRIPT_PATH/scripts/install-lge.sh

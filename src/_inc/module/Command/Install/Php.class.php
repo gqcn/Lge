@@ -61,7 +61,7 @@ class Module_Command_Install_Php extends Module_Command_Install_Base
 
         // 可能的安装包名称，以便后续判断
         $packages  = 'php-fpm ';
-        $packages .= 'php-mbstring php-mcrypt php-soap php-ssh2 ';
+        $packages .= 'php-gd php-curl php-mbstring php-mcrypt php-soap php-ssh2 ';
         $packages .= 'php-memcached php-redis ';
         $packages .= 'php-mysql php-pdo ';
         $packages  = trim($packages);
@@ -71,6 +71,7 @@ class Module_Command_Install_Php extends Module_Command_Install_Base
                 break;
 
             case 'debian':
+                system("apt-get update");
                 // 需要依次判断PHP版本确定安装包名
                 $phpVersionArray   = array('php', 'php5', 'php7', 'php7.0');
                 $phpPackageArray   = explode(' ', $packages);
