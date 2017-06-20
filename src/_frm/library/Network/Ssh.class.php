@@ -59,10 +59,12 @@ class Lib_Network_Ssh
             if ($this->conn = ssh2_connect($this->host, $this->port)) {
                 $this->log("authenticating to {$this->host}:{$this->port}");
                 if (!ssh2_auth_password($this->conn, $this->user, $this->pass)) {
-                    exception("unable to authenticate to {$this->host}:{$this->port}");
+                    $this->log("unable to authenticate to {$this->host}:{$this->port}");
+                    exit(1);
                 }
             } else {
-                exception("unable to connect to {$this->host}:{$this->port}");
+                $this->log("unable to connect to {$this->host}:{$this->port}");
+                exit(1);
             }
         }
     }
@@ -76,22 +78,23 @@ class Lib_Network_Ssh
      * @param string  $remoteFile 远程文件路径.
      * @param integer $permision  远程文件创建权限.
      *
-     * @return bool
-     * @throws \Exception
+     * @return boolean
      */
     public function sendFile($localFile, $remoteFile, $permision = 0644)
     {
         $this->_init();
 
         if (!is_file($localFile)) {
-            exception("local file {$localFile} does not exist");
+            $this->log("local file {$localFile} does not exist");
+            return false;
         }
         $this->log("sending file {$localFile} to {$remoteFile}");
 
         $sftp       = ssh2_sftp($this->conn);
         $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'w');
         if (!@ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision)) {
-            exception("could not open remote file: {$remoteFile}");
+            $this->log("could not open remote file: {$remoteFile}");
+            return false;
         } else {
             return true;
         }
@@ -103,25 +106,22 @@ class Lib_Network_Ssh
      * @param string $remoteFile 远程文件路径.
      * @param string $localFile  本地文件路径.
      *
-     * @return bool
+     * @return boolean
      */
     public function getFile($remoteFile, $localFile)
     {
         $this->_init();
 
-        $this->log("receiving file {$remoteFile} top {$localFile}");
+        $this->log("receiving file {$remoteFile} to {$localFile}");
         return @ssh2_scp_recv($this->conn, $remoteFile, $localFile);
     }
 
     /**
      * 远程阻塞执行一条SHELL命令.
      *
-     * @todo 功能不完善
-     *
      * @param string $cmd 命令.
      *
      * @return string
-     * @throws \Exception
      */
     public function syncCmd($cmd)
     {
@@ -130,7 +130,8 @@ class Lib_Network_Ssh
         $this->log($cmd);
         $this->stream = ssh2_exec($this->conn, $cmd);
         if (false === $this->stream ) {
-            exception("unable to execute command:{$cmd}");
+            $this->log("unable to execute command:{$cmd}");
+            exit(1);
         }
         stream_set_blocking($this->stream, 1);
         stream_set_timeout($this->stream,  $this->streamTimeout);
@@ -149,7 +150,7 @@ class Lib_Network_Ssh
      *
      * @param mixed $cmds 命令列表.
      *
-     * @throws \Exception
+     * @return void
      */
     public function asyncCmd($cmds = array())
     {
@@ -160,15 +161,15 @@ class Lib_Network_Ssh
         $this->shellStream = ssh2_shell($this->conn);
         // 命令执行后等待一段时间再获取返回数据
         sleep(2);
-        while($line = fgets($this->shellStream)) {
+        while ($line = fgets($this->shellStream)) {
             $this->log($line);
         }
         // 数据类型兼容(数组参数一般用于交互式命令)
         if (!is_array($cmds)) {
             $cmds = array($cmds);
         }
-        foreach($cmds as $index => $item) {
-            /**
+        foreach ($cmds as $index => $item) {
+            /*
              * $isInteractive 表示是否交互命令，以便执行输入
              * 注意$cmdInterval的默认值是null,判断的时候使用isset
              */
@@ -193,7 +194,7 @@ class Lib_Network_Ssh
             }
             // 命令超时时间
             $cmdTimeoutEndTime  = time() + $intervalTimeout;
-            while(true) {
+            while (true) {
                 $line = fgets($this->shellStream);
                 if (empty($line)) {
                     usleep(100000);
@@ -217,10 +218,9 @@ class Lib_Network_Ssh
     /**
      * 判断远程文件是否存在.
      *
-     * @param  string $path 远程文件绝对路径.
+     * @param string $path 远程文件绝对路径.
      *
-     * @return bool
-     * @throws \Exception
+     * @return boolean
      */
     public function fileExists($path)
     {
@@ -256,8 +256,21 @@ class Lib_Network_Ssh
      */
     public function checkCmd($cmd)
     {
-        $result = $this->syncCmd("which {$cmd}");
+        $result = $this->getCmdPath($cmd);
         return !empty($result);
+    }
+
+    /**
+     * 判断服务端的指定命令的可执行文件绝对路径，例如：php,sshpass
+     *
+     * @param string $cmd 命令
+     *
+     * @return string
+     */
+    public function getCmdPath($cmd)
+    {
+        $result = $this->syncCmd("which {$cmd}");
+        return trim($result);
     }
 
     /**
@@ -273,4 +286,5 @@ class Lib_Network_Ssh
             echo 'Lge_SSH2: '.trim($content)."\n";
         }
     }
+
 }

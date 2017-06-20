@@ -42,60 +42,57 @@ class Module_Command_Backup extends BaseModule
             Lib_Console::perror("This script must be running as root\n");
             exit(1);
         }
-        $configFilePath = Lib_ConsoleOption::instance()->getOption('c');
+
+        $configFilePath = Lib_ConsoleOption::instance()->getOption('config');
         if (empty($configFilePath)) {
             Lib_Console::perror("Please specify a backup config file!\n");
             exit(1);
         }
-        if (empty(!file_exists($configFilePath))) {
+        if (!file_exists($configFilePath)) {
             Lib_Console::perror("Specified backup config file does not exist!\n");
             exit(1);
         }
 
         Logger::setAdapterFileLogPath("/var/log/lge/backup/");
+
         Logger::log('==================start===================');
+        Logger::log("using backup config file: {$configFilePath}");
 
         $config       = include $configFilePath;
-        $clientConfig = $config['backup_client'];
-        $serverConfig = $config['backup_server'];
-        $backupDir    = rtrim($clientConfig['folder'], '/');
-        foreach ($serverConfig as $groupName => $backupConfig) {
+        $centerConfig = $config['backup_center'];
+        $groupsConfig = $config['backup_groups'];
+        $backupDir    = rtrim($centerConfig['folder'], '/');
+        foreach ($groupsConfig as $groupName => $backupConfig) {
             // 首先备份数据库
             if (!empty($backupConfig['data'])) {
                 foreach ($backupConfig['data'] as $dataConfig) {
-                    $host = $dataConfig['host'];
-                    $port = $dataConfig['port'];
-                    $user = $dataConfig['user'];
-                    $pass = $dataConfig['pass'];
-                    $dataBackupDir = "{$backupDir}/{$groupName}/{$host}/data";
-                    if (!file_exists($dataBackupDir)) {
-                        @mkdir($dataBackupDir, 0777, true);
-                    }
-                    // 执行备份
-                    foreach ($dataConfig['names'] as $name => $keepDays) {
-                        $keepDays      = empty($keepDays) ? 1 : $keepDays;
-                        $date          = date('Ymd');
-                        $filePath      = "{$dataBackupDir}/{$name}.{$date}.sql.bz2";
-                        $filePathTemp  = "{$dataBackupDir}/{$name}.{$date}.temp.sql.bz2";
-                        $localShellCmd = "mysqldump -C -h{$host} -P{$port} -u{$user} -p{$pass} {$name} | bzip2 > {$filePathTemp}";
-                        Logger::log("Backing up database: {$filePath}");
-
-                        try {
-                            $result = @shell_exec($localShellCmd);
-                            Logger::log($result);
-                        } catch (\Exception $e) {
-
+                    $ssh = new Lib_Network_Ssh($dataConfig['host'], $dataConfig['port'], $dataConfig['user'], $dataConfig['pass']);
+                    foreach ($dataConfig['databases'] as $db) {
+                        // 备份中心目录
+                        $centerBackupDir = "{$backupDir}/{$groupName}/data/{$dataConfig['host']}/{$db['host']}";
+                        if (!file_exists($centerBackupDir)) {
+                            @mkdir($centerBackupDir, 0777, true);
                         }
-
-                        if (file_exists($filePathTemp)) {
-                            // 判断是否备份成功(大于1K)，使用临时文件防止失败时被覆盖
-                            if (filesize($filePathTemp) > 1024) {
-                                copy($filePathTemp, $filePath);
+                        // 远程创建临时目录
+                        $dataBackupDir = "/tmp/lge_backuper/data";
+                        $ssh->syncCmd("mkdir -p {$dataBackupDir}");
+                        // 远程执行执行备份
+                        foreach ($db['names'] as $name => $keepDays) {
+                            if ($keepDays > 0) {
+                                Logger::log("data backing up, server:{$dataConfig['host']}, host:{$db['port']}, db:{$name}");
+                                $date     = date('Ymd');
+                                $fileName = "{$name}.{$date}.sql.bz2";
+                                $filePath = "{$dataBackupDir}/{$fileName}";
+                                $shellCmd = "mysqldump -C -h{$db['host']} -P{$db['port']} -u{$db['user']} -p{$db['pass']} {$name} | bzip2 > {$filePath}";
+                                $ssh->syncCmd($shellCmd);
+                                // 将远程备份文件同步到备份中心
+                                $centerBackupFilePath = "{$centerBackupDir}/{$fileName}";
+                                $ssh->getFile($filePath, $centerBackupFilePath);
+                                // 备份完成后清除远程的备份文件
+                                $ssh->syncCmd("rm {$filePath}");
                             }
-                            unlink($filePathTemp);
-                        }
-                        if ($keepDays > 1) {
-                            $this->_clearDirByKeepDays($dataBackupDir, $keepDays);
+                            // 本地的备份文件数量控制
+                            $this->_clearDirByKeepDays($centerBackupDir, $keepDays);
                         }
                     }
                 }
@@ -104,71 +101,82 @@ class Module_Command_Backup extends BaseModule
             // 其次增量备份项目文件
             if (!empty($backupConfig['file'])) {
                 foreach ($backupConfig['file'] as $fileConfig) {
-                    $fileBackupDir = "{$backupDir}/{$groupName}/{$fileConfig['host']}/file/";
+                    $fileBackupDir = "{$backupDir}/{$groupName}/file/{$fileConfig['host']}";
                     if (!file_exists($fileBackupDir)) {
                         @mkdir($fileBackupDir, 0777, true);
                     }
                     foreach ($fileConfig['folders'] as $folderPath => $keepDays) {
-                        Logger::log("Backing up folder: {$folderPath}");
-                        $host = $clientConfig['host'];
-                        $port = $clientConfig['port'];
-                        $user = $clientConfig['user'];
-                        $pass = $clientConfig['pass'];
+                        Logger::log("file backing up, server:{$fileConfig['host']}, host:{$fileConfig['port']}, folder:{$folderPath}");
+                        $host = $centerConfig['host'];
+                        $port = $centerConfig['port'];
+                        $user = $centerConfig['user'];
+                        $pass = $centerConfig['pass'];
                         $folderPath = rtrim($folderPath, '/');
                         $folderName = basename($folderPath);
                         try {
-                            // 先把本地的目录做备份
-                            if ($keepDays > 0) {
-                                $backupDirPath = rtrim($fileBackupDir, '/').'/'.$folderName;
-                                if (file_exists($backupDirPath)) {
-                                    $this->_compressBackupFileDir($backupDirPath, date('Ymd', time() - 86400));
-                                    $this->_clearDirByKeepDays($fileBackupDir, $keepDays, $folderName);
+                            // 由于采用的是rsync增加备份机制，因此备份的文件夹中会保留一份不做压缩的目录，作为备份的文件之一，所以计数时需要做处理
+                            $backupDirPath = rtrim($fileBackupDir, '/').'/'.$folderName;
+                            if (file_exists($backupDirPath)) {
+                                if ($keepDays < 1) {
+                                    shell_exec("rm -fr {$backupDirPath}");
+                                    $this->_clearDirByKeepDays($fileBackupDir, 0, $folderName);
+                                    continue;
+                                } elseif ($keepDays == 1) {
+                                    $this->_clearDirByKeepDays($fileBackupDir, 0, $folderName);
                                 }
                             }
+
                             $ssh = new Lib_Network_Ssh($fileConfig['host'], $fileConfig['port'], $fileConfig['user'], $fileConfig['pass']);
                             // 先判断有没有安装sshpass工具，没有则自动安装
                             $result = $ssh->checkCmd('sshpass');
                             if (empty($result)) {
                                 if (!empty($ssh->checkCmd('apt-get'))) {
-                                    // Debian/Ubuntu 系统
-                                    $ssh->syncCmd("echo \"{$pass}\" | sudo -S apt-get install -y sshpass");
+                                    // debian 系统
+                                    $ssh->syncCmd("echo \"{$fileConfig['pass']}\" | sudo -S apt-get install -y sshpass");
                                 } elseif (!empty($ssh->checkCmd('yum'))) {
-                                    // CentOS/RedHat 系统，注意这个时候只有root用户才能执行该命令
+                                    // rhel 系统，注意这个时候只有root用户才能执行该命令
                                     $ssh->syncCmd("yum install -y sshpass");
-                                } else {
+                                }
+                                if (!$ssh->checkCmd('sshpass')) {
                                     Logger::log("sshpass not installed, break");
                                 }
                             }
                             $ssh->syncCmd("rsync -aurvz --delete -e 'sshpass -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}");
+                            // 执行目录压缩
+                            if ($keepDays > 1) {
+                                $this->_compressBackupFileDir($backupDirPath, date('Ymd'));
+                                $this->_clearDirByKeepDays($fileBackupDir, $keepDays - 1, $folderName);
+                            }
                         } catch (\Exception $e) {
-                            echo $e->getMessage().PHP_EOL;
+                            Logger::log($e->getMessage());
                         }
                     }
                 }
             }
-
-            echo "Done!\n\n";
+            Lib_Console::psuccess("Done!\n\n");
         }
 
-        Logger::log('==================end====================');
+        Logger::log('===================end====================');
     }
 
     /**
      * 压缩备份的文件目录
      *
      * @param string $backupFileDirPath 文件目录绝对路径
-     * @param string $date              备份文件的日期
+     * @param string $date              备份文件的日期(例如:20170606)
      *
      * @return void
      */
     private function _compressBackupFileDir($backupFileDirPath, $date)
     {
-        $currentDirPath = getcwd();
-        $dirPath = dirname($backupFileDirPath);
-        $dirName = basename($backupFileDirPath);
-        chdir($dirPath);
-        exec("tar -cjvf {$dirPath}/{$dirName}.{$date}.tar.bz2 {$dirName}");
-        chdir($currentDirPath);
+        if (file_exists($backupFileDirPath)) {
+            $currentDirPath = getcwd();
+            $dirPath = dirname($backupFileDirPath);
+            $dirName = basename($backupFileDirPath);
+            chdir($dirPath);
+            exec("tar -cjvf {$dirPath}/{$dirName}.{$date}.tar.bz2 {$dirName}");
+            chdir($currentDirPath);
+        }
     }
 
     /**

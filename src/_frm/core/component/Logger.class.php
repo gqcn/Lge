@@ -112,6 +112,7 @@ class Logger
      */
     public static function setAdapterFileLogPath($path)
     {
+        self::initOptions(false);
         self::$_options['adapter_file_log_path'] = $path;
     }
 
@@ -161,7 +162,7 @@ class Logger
      * @return void
      */
     public static function log($message,
-                               $category = 'default',
+                               $category = '',
                                $level    = Logger::INFO,
                                $adapter  = null,
                                $cache    = null)
@@ -275,7 +276,7 @@ class Logger
      * @return void
      */
     public static function logToFile($message,
-                                     $category = 'default',
+                                     $category = '',
                                      $level    = Logger::INFO,
                                      $cache    = false,
                                      $time     = null
@@ -298,7 +299,11 @@ class Logger
                 return;
             }
             $levelStr = self::levelNo2String($level);
-            $path     = $logDirPath.'/'.$category;
+            if (!empty($category)) {
+                $path = $logDirPath.'/'.$category;
+            } else {
+                $path = $logDirPath;
+            }
             if (!file_exists($path)) {
                 if (empty(@mkdir($path, 0777, true))) {
                     die('Log folder not writable: '.$path);
