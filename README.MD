@@ -1,6 +1,9 @@
 # LGE(Lightweight Glue Engine)轻量级开发框架
 官网地址：[http://johng.cn/lge](http://johng.cn/lge)
 
+# 安装：
+    git clone https://git.oschina.net/johng/Lge.git && sudo ./Lge/dist/lge.sh
+    
 # 特点：
     1、框架的执行效率：逻辑简单，结构清晰，执行高效（核心代码只有几百KB）；
     2、框架的学习成本：KISS设计，简单易于学习，降低团队的学习曲线，减少学习成本；
