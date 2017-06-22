@@ -183,6 +183,10 @@ class Lib_FileSys
         } else {
             $name = substr($fileName, 0, strrpos($fileName, '.'));
         }
+        // 如果所给目录不存在，那么创建
+        if (!file_exists($dirPath)) {
+            @mkdir($dirPath, 0777, true);
+        }
         $fileName   = $name.$type;
         $uploadFile = $dirPath.$fileName;
         if (file_exists($uploadFile) && $replaceIfExist == false) {
