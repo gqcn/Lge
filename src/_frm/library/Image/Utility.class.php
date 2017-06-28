@@ -56,39 +56,51 @@ class Lib_Image_Utility
     }
 
     /**
-     * 缩略图生成函数，注意是整张图片缩略而不是部分。按照宽和高的最小值做为生成标准
+     * 缩略图生成函数，注意是整张图片缩略而不是部分。
+     * 1、按照宽和高的最小值做为生成标准；
+     * 2、并且生成的图片大小不会超过所给定的图片宽和高；
      *
-     * @param string $srcImagePath 源图象路径
-     * @param string $dstImagePath 生成的缩略图路径
-     * @param int    $dstX         生成的缩略图宽
-     * @param int    $dstY         生成的缩略图高
+     * @param string  $srcImagePath 源图象路径
+     * @param string  $dstImagePath 生成的缩略图路径
+     * @param integer $dstXInput    生成的缩略图宽
+     * @param integer $dstYInput    生成的缩略图高
      *
-     * @return array 源图象信息的关联数组(实际宽和高)
+     * @return array 源图象信息的关联数组(实际宽和高) | null
      */
-    static function makeThumb($srcImagePath, $dstImagePath, $dstX = 200, $dstY = 999999)
+    static function makeThumb($srcImagePath, $dstImagePath, $dstXInput = 200, $dstYInput = 999999)
     {
         $imageArray = getimagesize($srcImagePath);
-        $srcX = intval($imageArray[0]);
-        $srcY = intval($imageArray[1]);
-
-        $srcImage = self::openImage($srcImagePath);
-        if($srcImage == false || ($srcX == 0 && $srcY == 0)){
+        $srcX       = intval($imageArray[0]);
+        $srcY       = intval($imageArray[1]);
+        $srcImage   = self::openImage($srcImagePath);
+        if ($srcImage == false || ($srcX == 0 && $srcY == 0)){
             return;
         }
-        if($srcX <= $dstX && $srcY <= $dstY) {
-            //使用原图像大小
+        // 按照宽和高的最小值做为生成标准
+        if ($srcX <= $dstXInput && $srcY <= $dstYInput) {
+            // 使用原图像大小
             $dstX = $srcX;
             $dstY = $srcY;
-        }else if($dstX <= $dstY){
-            //以宽为标准
-            $percent  = $dstX/$srcX;
-            $tempY    = $percent*$srcY;
-            $dstY     = round($tempY);
-        }else{
-            //以高为标准
-            $percent  = $dstY/$srcY;
-            $tempX    = $percent*$srcX;
-            $dstX     = round($tempX);
+        } else {
+            $dstX = $dstXInput + 1;
+            $dstY = $dstYInput + 1;
+            // 按照宽和高的最小值做为生成标准
+            // 并且生成的图片大小不会超过所给定的图片宽和高
+            while ($dstX > $dstXInput || $dstY > $dstYInput ) {
+                $dstX--;
+                $dstY--;
+                if ($dstX <= $dstY) {
+                    // 以宽为标准
+                    $percent = $dstX / $srcX;
+                    $tempY   = $percent * $srcY;
+                    $dstY    = round($tempY);
+                } else {
+                    // 以高为标准
+                    $percent = $dstY / $srcY;
+                    $tempX   = $percent * $srcX;
+                    $dstX    = round($tempX);
+                }
+            }
         }
 
         //不要使用imagecreate，创建的图象会失真
@@ -103,14 +115,15 @@ class Lib_Image_Utility
             case 'gif':
                 imagegif($dstImage, $dstImagePath);
                 break;
+
             case 'png':
                 imagepng($dstImage, $dstImagePath);
                 break;
+
             default:
                 imagejpeg($dstImage, $dstImagePath);
                 break;
         }
-
 
         $return['width']  = $srcX;
         $return['height'] = $srcY;
