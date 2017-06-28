@@ -144,6 +144,18 @@ class Lib_Console
     }
 
     /**
+     * 向标准输出输出高亮的成功信息+换行
+     *
+     * @param string $string 错误信息
+     *
+     * @return void
+     */
+    public static function psuccessln($string)
+    {
+        echo self::colorText($string, 'green').PHP_EOL;
+    }
+
+    /**
      * 向标准输出输出高亮的错误信息
      *
      * @param string $string 错误信息
@@ -153,6 +165,18 @@ class Lib_Console
     public static function perror($string)
     {
         echo self::colorText($string, 'red');
+    }
+
+    /**
+     * 向标准输出输出高亮的错误信息+换行
+     *
+     * @param string $string 错误信息
+     *
+     * @return void
+     */
+    public static function perrorln($string)
+    {
+        echo self::colorText($string, 'red').PHP_EOL;
     }
 
     /**

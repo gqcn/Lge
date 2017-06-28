@@ -12,11 +12,8 @@
 return array(
     // 存放备份数据及文件的客户端信息(通过SSH远程登录客户端执行配备文件的写入)
     'backup_center' => array(
-        'host'    => '192.168.2.102',
-        'port'    => '22',
-        'user'    => 'john',
-        'pass'    => '8692651',
-        'folder'  => '/home/john/temp/',
+        'hostinfo' => 'john@192.168.2.102:22,8692651',
+        'folder'   => '/home/john/temp/',
     ),
     // 需要备份的服务器信息
     'backup_groups' => array(
@@ -25,17 +22,11 @@ return array(
             // 数据库列表，流程：通过ssh链接到服务器->根据数据库配置信息备份数据库->将数据库备份文件同步到备份中心->删除本地备份文件
             'data' => array(
                 array(
-                    'host'      => '192.168.2.124',
-                    'port'      => '22',
-                    'user'      => 'hhzl',
-                    'pass'      => '123456',
+                    'hostinfo'  => 'hhzl@192.168.2.124:22,123456',
                     'databases' => array(
                         array(
-                            'host'  => '127.0.0.1',
-                            'port'  => '3306',
-                            'user'  => 'root',
-                            'pass'  => '123456',
-                            'names' => array(
+                            'hostinfo' => 'root@127.0.0.1:3306,123456',
+                            'names'    => array(
                                 'henghe' => 7,
                             ),
                         ),
@@ -45,11 +36,8 @@ return array(
             // 文件备份列表，流程：通过ssh链接到服务器->通过rsync同步文件夹到备份中心
             'file' => array(
                 array(
-                    'host'      => '192.168.2.124',
-                    'port'      => '22',
-                    'user'      => 'hhzl',
-                    'pass'      => '123456',
-                    'folders'   => array(
+                    'hostinfo' => 'hhzl@192.168.2.124:22,123456',
+                    'folders'  => array(
                         '/home/hhzl/www/lge' => 3,
                     ),
                 ),

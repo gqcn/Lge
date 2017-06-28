@@ -39,18 +39,15 @@ class Module_Command_Backup extends BaseModule
         $id = shell_exec("id -u");
         $id = trim($id);
         if ($id != "0") {
-            Lib_Console::perror("This script must be running as root\n");
-            exit(1);
+            exception("This script must be running as root");
         }
 
         $configFilePath = Lib_ConsoleOption::instance()->getOption('config');
         if (empty($configFilePath)) {
-            Lib_Console::perror("Please specify a backup config file!\n");
-            exit(1);
+            exception("Please specify a backup config file!");
         }
         if (!file_exists($configFilePath)) {
-            Lib_Console::perror("Specified backup config file does not exist!\n");
-            exit(1);
+            exception("Specified backup config file does not exist!");
         }
 
         Logger::setAdapterFileLogPath("/var/log/lge/backup/");
@@ -62,16 +59,39 @@ class Module_Command_Backup extends BaseModule
         $centerConfig = $config['backup_center'];
         $groupsConfig = $config['backup_groups'];
         $backupDir    = rtrim($centerConfig['folder'], '/');
+        $hostInfo     = $this->_parseHostInfo($centerConfig['hostinfo']);
+        if (empty($hostInfo)) {
+            exception("Invalid hostinfo for center node:{$centerConfig['hostinfo']}");
+        }
+        $centerConfig = array_merge($centerConfig, $hostInfo);
+        $result       = shell_exec("sudo chown {$centerConfig['user']}:{$centerConfig['user']} {$backupDir} -R");
+        if (!empty($result)) {
+            exception($result);
+        }
         foreach ($groupsConfig as $groupName => $backupConfig) {
             // 首先备份数据库
             if (!empty($backupConfig['data'])) {
                 foreach ($backupConfig['data'] as $dataConfig) {
-                    $ssh = new Lib_Network_Ssh($dataConfig['host'], $dataConfig['port'], $dataConfig['user'], $dataConfig['pass']);
+                    $hostInfo = $this->_parseHostInfo($dataConfig['hostinfo']);
+                    if (empty($hostInfo)) {
+                        Logger::log("Invalid hostinfo for data node:{$dataConfig['hostinfo']}");
+                        continue;
+                    }
+                    $dataConfig = array_merge($dataConfig, $hostInfo);
+                    $ssh        = new Lib_Network_Ssh($dataConfig['host'], $dataConfig['port'], $dataConfig['user'], $dataConfig['pass']);
                     foreach ($dataConfig['databases'] as $db) {
+                        $hostInfo = $this->_parseHostInfo($db['hostinfo']);
+                        if (empty($hostInfo)) {
+                            Logger::log("Invalid hostinfo for data.databases node:{$db['hostinfo']}");
+                            continue;
+                        }
+                        $db = array_merge($db, $hostInfo);
                         // 备份中心目录
                         $centerBackupDir = "{$backupDir}/{$groupName}/data/{$dataConfig['host']}/{$db['host']}";
                         if (!file_exists($centerBackupDir)) {
                             @mkdir($centerBackupDir, 0777, true);
+                            // @chmod($centerBackupDir, 0777);
+                            shell_exec("chown {$centerConfig['user']}:{$centerConfig['user']} {$backupDir} -R");
                         }
                         // 远程创建临时目录
                         $dataBackupDir = "/tmp/lge_backuper/data";
@@ -101,9 +121,17 @@ class Module_Command_Backup extends BaseModule
             // 其次增量备份项目文件
             if (!empty($backupConfig['file'])) {
                 foreach ($backupConfig['file'] as $fileConfig) {
+                    $hostInfo = $this->_parseHostInfo($fileConfig['hostinfo']);
+                    if (empty($hostInfo)) {
+                        Logger::log("Invalid hostinfo for file node:{$fileConfig['hostinfo']}");
+                        continue;
+                    }
+                    $fileConfig    = array_merge($fileConfig, $hostInfo);
                     $fileBackupDir = "{$backupDir}/{$groupName}/file/{$fileConfig['host']}";
                     if (!file_exists($fileBackupDir)) {
                         @mkdir($fileBackupDir, 0777, true);
+                        // @chmod($fileBackupDir, 0777);
+                        shell_exec("chown {$centerConfig['user']}:{$centerConfig['user']} {$backupDir} -R");
                     }
                     foreach ($fileConfig['folders'] as $folderPath => $keepDays) {
                         Logger::log("file backing up, server:{$fileConfig['host']}, host:{$fileConfig['port']}, folder:{$folderPath}");
@@ -157,6 +185,28 @@ class Module_Command_Backup extends BaseModule
         }
 
         Logger::log('===================end====================');
+    }
+
+    /**
+     * 解析配置的服务器信息
+     * eg: hhzl@192.168.2.124:22,123456
+     *
+     * @param string $hostinfo 服务器信息
+     *
+     * @return array
+     */
+    private function _parseHostInfo($hostinfo)
+    {
+        $result = array();
+        if (preg_match("/(.+?)@(.+?):(\d+?)\s*,\s*(.+)/", $hostinfo, $match)) {
+            $result = array(
+                'host' => $match[2],
+                'port' => $match[3],
+                'user' => $match[1],
+                'pass' => $match[4],
+            );
+        }
+        return $result;
     }
 
     /**

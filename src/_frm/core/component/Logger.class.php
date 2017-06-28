@@ -306,10 +306,9 @@ class Logger
             }
             if (!file_exists($path)) {
                 if (empty(@mkdir($path, 0777, true))) {
-                    die('Log folder not writable: '.$path);
-                    exit();
+                    exception('Log folder not writable: '.$path);
                 }
-                chmod($path, 0777);
+                @chmod($path, 0777);
             }
             $fileName = date('Ymd', $time);
             $filePath = $path . "/{$fileName}.log";

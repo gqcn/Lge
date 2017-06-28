@@ -634,12 +634,12 @@ class Core
                         // 什么都不做，防止基础组件错误
                     }
                 }
-                // 显示换行控制：在cli模式下将br切换为\n
                 if (php_sapi_name() != 'cli') {
-                    $message = nl2br($message);
+                    echo nl2br($message).PHP_EOL;
+                } else {
+                    Lib_Console::perrorln($message);
                 }
-                echo $message."\n";
-                exit();
+                exit(1);
                 break;
         }
     }
