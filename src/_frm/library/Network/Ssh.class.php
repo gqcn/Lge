@@ -170,7 +170,6 @@ class Lib_Network_Ssh
         $this->stream = ssh2_exec($this->conn, $cmd);
         if (false === $this->stream ) {
             $this->log("unable to execute command:{$cmd}");
-            exit(1);
         }
         stream_set_blocking($this->stream, 1);
         stream_set_timeout($this->stream,  $timeout);
