@@ -139,9 +139,9 @@ class Lib_Network_Ssh
             $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'r');
             if (!empty($sftpStream)) {
                 $contents = stream_get_contents($sftpStream);
-                @file_put_contents ($localFile, $contents);
+                @file_put_contents($localFile, $contents);
+                @fclose($sftpStream);
             }
-            @fclose($sftpStream);
             // 如果以上两种方式都失败了，那么尝试使用远程命令的方式来下载文件
             if (!file_exists($localFile)) {
                 $this->disconnect();
@@ -178,7 +178,6 @@ class Lib_Network_Ssh
         fclose($this->stream);
         return $this->lastLog;
     }
-
 
     /**
      * 远程阻塞执行一条SHELL命令(交互式).
@@ -379,8 +378,13 @@ class Lib_Network_Ssh
      */
     public function getCmdPath($cmd)
     {
-        $result = $this->syncShell("which {$cmd}");
-        return trim($result);
+        $result = $this->syncExec("which {$cmd}");
+        $result = trim($result);
+        if (empty($result)) {
+            $result = $this->syncShell("which {$cmd}");
+            $result = trim($result);
+        }
+        return $result;
     }
 
     /**

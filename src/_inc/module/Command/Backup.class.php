@@ -79,6 +79,7 @@ class Module_Command_Backup extends BaseModule
                     }
                     $dataConfig = array_merge($dataConfig, $hostInfo);
                     $ssh        = new Lib_Network_Ssh($dataConfig['host'], $dataConfig['port'], $dataConfig['user'], $dataConfig['pass']);
+                    $mysqldump  = $ssh->getCmdPath("mysqldump");
                     foreach ($dataConfig['databases'] as $db) {
                         $hostInfo = $this->_parseHostInfo($db['hostinfo']);
                         if (empty($hostInfo)) {
@@ -103,7 +104,7 @@ class Module_Command_Backup extends BaseModule
                                 $date     = date('Ymd');
                                 $fileName = "{$name}.{$date}.sql.bz2";
                                 $filePath = "{$dataBackupDir}/{$fileName}";
-                                $shellCmd = "mysqldump -C -h{$db['host']} -P{$db['port']} -u{$db['user']} -p{$db['pass']} {$name} | bzip2 > {$filePath}";
+                                $shellCmd = "{$mysqldump} -C -h{$db['host']} -P{$db['port']} -u{$db['user']} -p{$db['pass']} {$name} | bzip2 > {$filePath}";
                                 $ssh->syncExec($shellCmd);
                                 // 将远程备份文件同步到备份中心
                                 $centerBackupFilePath = "{$centerBackupDir}/{$fileName}";
@@ -155,10 +156,9 @@ class Module_Command_Backup extends BaseModule
                                 }
                             }
 
-                            $ssh = new Lib_Network_Ssh($fileConfig['host'], $fileConfig['port'], $fileConfig['user'], $fileConfig['pass']);
-                            // 先判断有没有安装sshpass工具，没有则自动安装
-                            $result = $ssh->checkCmd('sshpass');
-                            if (empty($result)) {
+                            $ssh     = new Lib_Network_Ssh($fileConfig['host'], $fileConfig['port'], $fileConfig['user'], $fileConfig['pass']);
+                            $sshpass = $ssh->getCmdPath("sshpass");
+                            if (empty($sshpass)) {
                                 if (!empty($ssh->checkCmd('apt-get'))) {
                                     // debian 系统
                                     $ssh->syncExec("echo \"{$fileConfig['pass']}\" | sudo -S apt-get install -y sshpass");
@@ -166,11 +166,14 @@ class Module_Command_Backup extends BaseModule
                                     // rhel 系统，注意这个时候只有root用户才能执行该命令
                                     $ssh->syncExec("yum install -y sshpass");
                                 }
-                                if (!$ssh->checkCmd('sshpass')) {
+                                $sshpass = $ssh->getCmdPath("sshpass");
+                                if (empty($sshpass)) {
                                     Logger::log("sshpass not installed, break");
+                                    break;
                                 }
                             }
-                            $ssh->syncExec("rsync -aurvz --delete -e 'sshpass -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 3600);
+
+                            $ssh->syncExec("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 3600);
                             // 执行目录压缩
                             if ($keepDays > 1) {
                                 $this->_compressBackupFileDir($backupDirPath, date('Ymd'));
