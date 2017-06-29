@@ -132,11 +132,11 @@ MM;
             $path = $parsed['path'];
             $ssh  = $this->_getSshClientByResp($resp, $pass);
             if (!empty($ssh)) {
-                $result = $ssh->syncCmd("if [ -d \"{$path}/.git\" ]; then echo 1; else echo 0; fi");
+                $result = $ssh->syncExec("if [ -d \"{$path}/.git\" ]; then echo 1; else echo 0; fi");
                 $result = trim($result);
                 if ($result == "0") {
                     // 如果服务器的git目录不存在那么初始化目录
-                    $ssh->syncCmd("mkdir -p \"{$path}\" && cd \"{$path}\" && git init && git config receive.denyCurrentBranch ignore");
+                    $ssh->syncExec("mkdir -p \"{$path}\" && cd \"{$path}\" && git init && git config receive.denyCurrentBranch ignore");
                     $ssh->sendFile($this->_getGitPostReceiveHookFilePath(), $path.'/.git/hooks/post-receive', 0777);
                 }
             }
@@ -159,7 +159,7 @@ MM;
             $path = $parsed['path'];
             $ssh  = $this->_getSshClientByResp($resp, $pass);
             if (!empty($ssh)) {
-                $ssh->syncCmd("cd \"{$path}\" && git checkout {$branch} -f");
+                $ssh->syncExec("cd \"{$path}\" && git checkout {$branch} -f");
             }
         }
     }
