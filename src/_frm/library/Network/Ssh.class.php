@@ -21,10 +21,12 @@ class Lib_Network_Ssh
     public $pass;
     public $port;
     public $conn;
-    public $stream;
-    public $streamTimeout = 86400;
-    public $lastLog;
-    public $echoLog = true;
+
+    public $stream        = null;  // 非交互式命令操作对象(阻塞执行)
+    public $shellStream   = null;  // 交互式命令操作对象(非阻塞执行)
+    public $streamTimeout = 86400; // 命令执行的超时时间
+    public $lastLog       = null;  // 最后一次执行命令的结果
+    public $echoLog       = true;  // 是否在终端标准输出输出日志
 
     /**
      * Lib_Network_Ssh constructor.
@@ -37,8 +39,7 @@ class Lib_Network_Ssh
     public function __construct ($host, $port, $user, $pass)
     {
         if (!function_exists('ssh2_connect')) {
-            $this->log("ssh2 extension not installed!\n");
-            exit();
+            exception("ssh2 extension not installed!");
         }
 
         $this->host = $host;
@@ -48,25 +49,38 @@ class Lib_Network_Ssh
     }
 
     /**
-     * 初始化连接.
+     * 初始化shell连接.
      *
-     * @throws Exception
+     * @return void
      */
     private function _init()
     {
         if (empty($this->conn)) {
-            $this->log("connecting to {$this->host}:{$this->port}");
-            if ($this->conn = ssh2_connect($this->host, $this->port)) {
-                $this->log("authenticating to {$this->host}:{$this->port}");
-                if (!ssh2_auth_password($this->conn, $this->user, $this->pass)) {
-                    $this->log("unable to authenticate to {$this->host}:{$this->port}");
-                    exit(1);
-                }
-            } else {
-                $this->log("unable to connect to {$this->host}:{$this->port}");
-                exit(1);
+            $this->conn = $this->_getSsh2Connection();
+            if (empty($this->conn)) {
+                $this->log("shell: unable to connect to {$this->host}:{$this->port}");
             }
         }
+    }
+
+    /**
+     * 创建SSH2链接
+     *
+     * @return null|resource
+     */
+    private function _getSsh2Connection()
+    {
+        if ($conn = ssh2_connect($this->host, $this->port)) {
+            $this->log("authenticating to {$this->host}:{$this->port}");
+            if (!ssh2_auth_password($conn, $this->user, $this->pass)) {
+                $this->log("unable to authenticate to {$this->host}:{$this->port}");
+                return null;
+            }
+        } else {
+            $this->log("unable to connect to {$this->host}:{$this->port}");
+            return null;
+        }
+        return $conn;
     }
 
     /**
@@ -90,11 +104,17 @@ class Lib_Network_Ssh
         }
         $this->log("sending file {$localFile} to {$remoteFile}");
 
-        $sftp       = ssh2_sftp($this->conn);
-        $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'w');
-        if (!@ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision)) {
-            $this->log("could not open remote file: {$remoteFile}");
-            return false;
+        $result = @ssh2_scp_send($this->conn, $localFile, $remoteFile, $permision);
+        if (empty($result)) {
+            $sftp       = ssh2_sftp($this->conn);
+            $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'w');
+            $dataToSend = @file_get_contents($localFile);
+            $result     = false;
+            if (!empty($dataToSend)) {
+                $result = (@fwrite($sftpStream, $dataToSend) !== false);
+            }
+            @fclose($sftpStream);
+            return $result;
         } else {
             return true;
         }
@@ -111,22 +131,41 @@ class Lib_Network_Ssh
     public function getFile($remoteFile, $localFile)
     {
         $this->_init();
-
         $this->log("receiving file {$remoteFile} to {$localFile}");
-        return @ssh2_scp_recv($this->conn, $remoteFile, $localFile);
+
+        $result = @ssh2_scp_recv($this->conn, $remoteFile, $localFile);
+        if (empty($result)) {
+            $sftp       = @ssh2_sftp($this->conn);
+            $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'r');
+            if (!empty($sftpStream)) {
+                $contents = stream_get_contents($sftpStream);
+                @file_put_contents ($localFile, $contents);
+            }
+            @fclose($sftpStream);
+            // 如果以上两种方式都失败了，那么尝试使用远程命令的方式来下载文件
+            if (!file_exists($localFile)) {
+                $this->disconnect();
+                $shellCmd = "sshpass -p {$this->pass} scp -P {$this->port} {$this->user}@{$this->host}:{$remoteFile} {$localFile}";
+                shell_exec($shellCmd);
+            }
+        }
+        return file_exists($localFile);
     }
 
     /**
-     * 远程阻塞执行一条SHELL命令.
+     * 远程阻塞执行一条SHELL命令(非交互式).
      *
-     * @param string $cmd 命令.
+     * @param string  $cmd     命令.
+     * @param integer $timeout 命令执行超时时间.
      *
      * @return string
      */
-    public function syncCmd($cmd)
+    public function syncExec($cmd, $timeout = 0)
     {
         $this->_init();
-
+        if (empty($timeout)) {
+            $timeout = $this->streamTimeout;
+        }
         $this->log($cmd);
         $this->stream = ssh2_exec($this->conn, $cmd);
         if (false === $this->stream ) {
@@ -134,10 +173,86 @@ class Lib_Network_Ssh
             exit(1);
         }
         stream_set_blocking($this->stream, 1);
-        stream_set_timeout($this->stream,  $this->streamTimeout);
+        stream_set_timeout($this->stream,  $timeout);
         $this->lastLog = stream_get_contents($this->stream);
         fclose($this->stream);
         return $this->lastLog;
+    }
+
+
+    /**
+     * 远程阻塞执行一条SHELL命令(交互式).
+     *
+     * @param string  $cmd                   命令.
+     * @param integer $timeout               命令执行超时时间.
+     * @param boolean $showInteractiveString 是否显示交互式显示内容，为false的话，只会输出执行结果，不过显示交互内容.
+     *
+     * @return string
+     */
+    public function syncShell($cmd, $timeout = 600, $showInteractiveString = false)
+    {
+        $this->_init();
+
+        $shellStream = $this->_getShellStream();
+        if (!empty($shellStream)) {
+            // 首先获取对象输出的缓冲区内容，例如提示符界面：[john@iZwz9f6h0o28aja4p79wztZ ~]$
+            while (true) {
+                usleep(100000);
+                $line = fgets($this->shellStream);
+                if (empty($line)) {
+                    break;
+                } else {
+                    if ($showInteractiveString) {
+                        $this->log($line);
+                    }
+                }
+            }
+            // 其次执行用户指令
+            $this->log($cmd);
+            $shellCmd = "{$cmd} && echo '##end##';".PHP_EOL;
+            fwrite($shellStream, $shellCmd);
+            // 命令超时时间
+            $this->lastLog     = '';
+            $cmdTimeoutEndTime = time() + $timeout;
+            while (true) {
+                $line = fgets($shellStream);
+                if (empty($line)) {
+                    usleep(100000);
+                } else {
+                    if (trim($line) == '##end##') {
+                        break;
+                    }
+                }
+                $this->lastLog .= $line;
+                // 命令超时时间
+                if (time() > $cmdTimeoutEndTime) {
+                    $this->log("shell command timeout");
+                    break;
+                }
+            }
+            if (!$showInteractiveString && !empty($this->lastLog)) {
+                $this->lastLog = substr($this->lastLog, strlen($shellCmd) + 1);
+            }
+        }
+        return $this->lastLog;
+    }
+
+    /**
+     * 获得一个交互命令的操作对象.
+     *
+     * @return null|resource
+     */
+    private function _getShellStream()
+    {
+        $this->_init();
+
+        if (empty($this->shellStream)) {
+            $this->shellStream = ssh2_shell($this->conn);
+            if (!empty($this->shellStream)) {
+                stream_set_timeout($this->shellStream, $this->streamTimeout);
+            }
+        }
+        return $this->shellStream;
     }
 
     /**
@@ -152,7 +267,7 @@ class Lib_Network_Ssh
      *
      * @return void
      */
-    public function asyncCmd($cmds = array())
+    public function asyncShell($cmds = array())
     {
         $this->_init();
 
@@ -169,19 +284,14 @@ class Lib_Network_Ssh
             $cmds = array($cmds);
         }
         foreach ($cmds as $index => $item) {
-            /*
-             * $isInteractive 表示是否交互命令，以便执行输入
-             * 注意$cmdInterval的默认值是null,判断的时候使用isset
-             */
-            $cmdInterval        = null;
-            $interactive        = false;
             if (is_array($item)) {
                 $cmd             = isset($item[0]) ? $item[0] : '';
                 $interactive     = isset($item[1]) ? $item[1] : false;
                 $intervalTimeout = isset($item[2]) ? $item[2] : 30;
             } else {
-                $cmd         = $item;
-                $interactive = false;
+                $cmd             = $item;
+                $interactive     = false;
+                $intervalTimeout = $this->streamTimeout;
             }
             $cmd = trim($cmd, ';');
             if ($interactive) {
@@ -269,7 +379,7 @@ class Lib_Network_Ssh
      */
     public function getCmdPath($cmd)
     {
-        $result = $this->syncCmd("which {$cmd}");
+        $result = $this->syncShell("which {$cmd}");
         return trim($result);
     }
 
