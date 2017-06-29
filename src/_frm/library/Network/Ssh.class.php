@@ -167,14 +167,14 @@ class Lib_Network_Ssh
             $timeout = $this->streamTimeout;
         }
         $this->log($cmd);
-        $this->stream = ssh2_exec($this->conn, $cmd);
-        if (false === $this->stream ) {
+        $stream = ssh2_exec($this->conn, $cmd);
+        if (false === $stream ) {
             $this->log("unable to execute command:{$cmd}");
         }
-        stream_set_blocking($this->stream, 1);
-        stream_set_timeout($this->stream,  $timeout);
-        $this->lastLog = stream_get_contents($this->stream);
-        fclose($this->stream);
+        stream_set_blocking($stream, 1);
+        stream_set_timeout($stream,  $timeout);
+        $this->lastLog = stream_get_contents($stream);
+        fclose($stream);
         return $this->lastLog;
     }
 

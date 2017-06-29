@@ -36,11 +36,11 @@ class Module_Command_Backup extends BaseModule
      */
     public function run()
     {
-        $id = shell_exec("id -u");
-        $id = trim($id);
-        if ($id != "0") {
-            exception("This script must be running as root");
-        }
+//        $id = shell_exec("id -u");
+//        $id = trim($id);
+//        if ($id != "0") {
+//            exception("This script must be running as root");
+//        }
 
         $configFilePath = Lib_ConsoleOption::instance()->getOption('config');
         if (empty($configFilePath)) {
@@ -50,10 +50,7 @@ class Module_Command_Backup extends BaseModule
             exception("Specified backup config file does not exist!");
         }
 
-        Logger::setAdapterFileLogPath("/var/log/lge/backup/");
 
-        Logger::log('==================start===================');
-        Logger::log("using backup config file: {$configFilePath}");
 
         $config       = include $configFilePath;
         $centerConfig = $config['backup_center'];
@@ -68,6 +65,11 @@ class Module_Command_Backup extends BaseModule
         if (!empty($result)) {
             exception($result);
         }
+
+        Logger::setAdapterFileLogPath($backupDir);
+
+        Logger::log('==================start===================');
+        Logger::log("using backup config file: {$configFilePath}");
         foreach ($groupsConfig as $groupName => $backupConfig) {
             // 首先备份数据库
             if (!empty($backupConfig['data'])) {
