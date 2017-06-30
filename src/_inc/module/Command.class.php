@@ -98,9 +98,10 @@ class Module_Command extends BaseModule
                 echo "{$version}\n";
                 break;
 
+            case 'backup':
             case 'init':
             case 'install':
-            case 'backup':
+            case 'clear':
             case 'phar':
                 $this->_runCommand($command);
                 break;
@@ -127,8 +128,8 @@ Usage   : lge [command/option] [option]
 Commands:
   ?,-?,-h,help        : this help
   -v,-i,info          : show version info
-  backup -config=path : backup database and file folders using lge and a specified config file
-  init    [path]      : initialize current working folder/the folder path(relative or absolute) as an empty PHP project using Lge framework
+  backup -config=PATH : backup database and file folders using lge and a specified config file
+  init    [PATH]      : initialize current working folder/the folder PATH(relative or absolute) as an empty PHP project using Lge framework
   install [lge/php]   : install lge binary to system
     lge               : install lge binary to system(default)
     php               : install basic PHP extensions automatically
