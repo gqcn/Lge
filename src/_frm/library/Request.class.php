@@ -197,7 +197,7 @@ class Lib_Request
     public static function isRequestMethodPost()
     {
         $globalServer = &Data::get('_SERVER');
-        return ($globalServer['REQUEST_METHOD'] == 'POST');
+        return (isset($globalServer['REQUEST_METHOD']) && $globalServer['REQUEST_METHOD'] == 'POST');
     }
 
     /**
