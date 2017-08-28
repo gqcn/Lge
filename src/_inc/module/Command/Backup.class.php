@@ -109,14 +109,11 @@ class Module_Command_Backup extends BaseModule
                                 // 将远程备份文件同步到备份中心
                                 $centerBackupFilePath = "{$centerBackupDir}/{$fileName}";
                                 $ssh->getFile($filePath, $centerBackupFilePath);
-                                var_dump(file_exists($centerBackupFilePath));
-                                var_dump(Lib_FileSys::getFileSize($centerBackupFilePath));
-                                sleep(10000);
                                 // 备份完成后清除远程的备份文件
-                                // $ssh->syncShell("rm {$filePath}");
+                                $ssh->syncShell("rm {$filePath}");
                             }
                             // 本地的备份文件数量控制
-                            $this->_clearDirByKeepDays($centerBackupDir, $keepDays);
+                            $this->_clearDirByKeepDays($centerBackupDir, $keepDays, $name);
                         }
                     }
                 }
