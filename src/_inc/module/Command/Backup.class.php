@@ -108,9 +108,8 @@ class Module_Command_Backup extends BaseModule
                                 $ssh->syncShell($shellCmd);
                                 // 将远程备份文件同步到备份中心
                                 $centerBackupFilePath = "{$centerBackupDir}/{$fileName}";
-                                $result = $ssh->getFile($filePath, $centerBackupFilePath);
-                                var_dump($result);
-                                if (!$result || filesize($centerBackupFilePath) < 1024) {
+                                $ssh->getFile($filePath, $centerBackupFilePath);
+                                if (!file_exists($centerBackupFilePath) || filesize($centerBackupFilePath) < 1024) {
                                     // 文件下载失败，那么远程执行命令主动同步到备份中心服务器上
                                     $shellCmd = "scp -P {$centerConfig['port']} {$filePath} {$centerConfig['user']}@{$centerConfig['host']}:{$centerBackupFilePath}";
                                     $ssh->syncShell($shellCmd);
