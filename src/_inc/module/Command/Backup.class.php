@@ -50,8 +50,6 @@ class Module_Command_Backup extends BaseModule
             exception("Specified backup config file does not exist!");
         }
 
-
-
         $config       = include $configFilePath;
         $centerConfig = $config['backup_center'];
         $groupsConfig = $config['backup_groups'];
@@ -98,7 +96,7 @@ class Module_Command_Backup extends BaseModule
                         }
                         // 远程创建临时目录
                         $dataBackupDir = "/tmp/lge_backuper/data";
-                        $ssh->syncExec("mkdir -p {$dataBackupDir}");
+                        $ssh->syncShell("mkdir -p {$dataBackupDir}");
                         // 远程执行执行备份
                         foreach ($db['names'] as $name => $keepDays) {
                             if ($keepDays > 0) {
@@ -107,13 +105,13 @@ class Module_Command_Backup extends BaseModule
                                 $fileName = "{$name}.{$date}.sql.bz2";
                                 $filePath = "{$dataBackupDir}/{$fileName}";
                                 $shellCmd = "{$mysqldump} -C -h{$db['host']} -P{$db['port']} -u{$db['user']} -p{$db['pass']} {$name} | bzip2 > {$filePath}";
-                                $ssh->syncExec($shellCmd);
+                                $ssh->syncShell($shellCmd);
                                 // 将远程备份文件同步到备份中心
                                 $centerBackupFilePath = "{$centerBackupDir}/{$fileName}";
                                 // @todo 这里需要检查下载下来的文件大小
                                 $ssh->getFile($filePath, $centerBackupFilePath);
                                 // 备份完成后清除远程的备份文件
-                                $ssh->syncExec("rm {$filePath}");
+                                $ssh->syncShell("rm {$filePath}");
                             }
                             // 本地的备份文件数量控制
                             $this->_clearDirByKeepDays($centerBackupDir, $keepDays);
@@ -163,10 +161,10 @@ class Module_Command_Backup extends BaseModule
                             if (empty($sshpass)) {
                                 if (!empty($ssh->checkCmd('apt-get'))) {
                                     // debian 系统
-                                    $ssh->syncExec("echo \"{$fileConfig['pass']}\" | sudo -S apt-get install -y sshpass");
+                                    $ssh->syncShell("echo \"{$fileConfig['pass']}\" | sudo -S apt-get install -y sshpass");
                                 } elseif (!empty($ssh->checkCmd('yum'))) {
                                     // rhel 系统，注意这个时候只有root用户才能执行该命令
-                                    $ssh->syncExec("yum install -y sshpass");
+                                    $ssh->syncShell("yum install -y sshpass");
                                 }
                                 $sshpass = $ssh->getCmdPath("sshpass");
                                 if (empty($sshpass)) {
@@ -175,7 +173,7 @@ class Module_Command_Backup extends BaseModule
                                 }
                             }
 
-                            $ssh->syncExec("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 3600);
+                            $ssh->syncShell("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 3600);
                             // 执行目录压缩
                             if ($keepDays > 1) {
                                 $this->_compressBackupFileDir($backupDirPath, date('Ymd'));

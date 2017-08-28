@@ -112,7 +112,7 @@ class Logger
      */
     public static function setAdapterFileLogPath($path)
     {
-        self::initOptions(false);
+        self::initOptions();
         self::$_options['adapter_file_log_path'] = $path;
     }
 
@@ -129,7 +129,7 @@ class Logger
     }
 
     /**
-     * PHP内置错误转为Logger错误可识别的编码.
+     * PHP内置错误转为Logger错误可识别的错误编码.
      *
      * @param integer $phpErrorNo PHP错误码.
      *
@@ -161,15 +161,9 @@ class Logger
      *
      * @return void
      */
-    public static function log($message,
-                               $category = '',
-                               $level    = Logger::INFO,
-                               $adapter  = null,
-                               $cache    = null)
+    public static function log($message, $category = '', $level = Logger::INFO, $adapter = null, $cache = null)
     {
-        if (!self::initOptions(false)) {
-            return;
-        }
+        self::initOptions();
         if (!isset($adapter)) {
             $adapter = self::$_options['adapter'];
         }
@@ -233,16 +227,9 @@ class Logger
      *
      * @return void
      */
-    public static function logToDatabase($message,
-                                         $category = 'default',
-                                         $level    = Logger::INFO,
-                                         $cache    = false,
-                                         $time     = null
-    )
+    public static function logToDatabase($message, $category = 'default', $level = Logger::INFO, $cache = false, $time = null)
     {
-        if (!self::initOptions(false)) {
-            return;
-        }
+        self::initOptions();
         if (!isset($time)) {
             $time = time();
         }
@@ -275,30 +262,27 @@ class Logger
      *
      * @return void
      */
-    public static function logToFile($message,
-                                     $category = '',
-                                     $level    = Logger::INFO,
-                                     $cache    = false,
-                                     $time     = null
-    )
+    public static function logToFile($message, $category = '', $level = Logger::INFO, $cache = false, $time = null)
     {
-        if (!self::initOptions(false)) {
-            return;
-        }
+        self::initOptions();
+
         if (!isset($time)) {
             $time = time();
         }
 
         $logDirPath = self::$_options['adapter_file_log_path'];
+        $cache      = isset($cache) ? $cache : self::$_options['cache'];
+        if (!empty($cache)) {
+            self::_cacheLog($message, $category, $level);
+            return;
+        }
+        $levelStr = self::levelNo2String($level);
+        $message  = self::_filterLog($message);
+        $datetime = date('Y-m-d H:i:s', $time);
+        $message  = empty($levelStr) ? "{$datetime}\t{$message}".PHP_EOL : "{$datetime}\t{$levelStr}\t{$message}".PHP_EOL;
         if (empty($logDirPath)) {
-            exception("Log dir path not set!");
+            echo $message;
         } else {
-            $cache = isset($cache) ? $cache : self::$_options['cache'];
-            if (!empty($cache)) {
-                self::_cacheLog($message, $category, $level);
-                return;
-            }
-            $levelStr = self::levelNo2String($level);
             if (!empty($category)) {
                 $path = $logDirPath.'/'.$category;
             } else {
@@ -312,9 +296,6 @@ class Logger
             }
             $fileName = date('Ymd', $time);
             $filePath = $path . "/{$fileName}.log";
-            $message  = self::_filterLog($message);
-            $datetime = date('Y-m-d H:i:s', $time);
-            $message  = empty($levelStr) ? "{$datetime}\t{$message}".PHP_EOL : "{$datetime}\t{$levelStr}\t{$message}".PHP_EOL;
             // 初始化文件的时候改变文件的权限，以便每个用户都可以写入
             if (!file_exists($filePath)) {
                 touch($filePath);
@@ -420,28 +401,35 @@ class Logger
     /**
      * 检查Logger是否有配置.
      *
-     * @param boolean|true $throwException 当配置文件中没有日志项配置时是否抛异常.
-     *
-     * @return boolean
-     * @throws \Exception 异常
+     * @return void
      */
-    public static function initOptions($throwException = true)
+    public static function initOptions()
     {
-        $result = false;
         if (empty(self::$_options)) {
             $loggerConfig = Config::getValue('Logger');
-            if (!empty($loggerConfig)) {
-                if (!empty($loggerConfig['enabled'])) {
-                    self::setOptions($loggerConfig);
-                    $result = true;
-                }
-            } elseif ($throwException) {
-                exception('No configuration for Logger is found!');
+            if (empty($loggerConfig)) {
+                // 默认配置
+                $loggerConfig = array(
+                    'cache'                 => false,
+                    'adapter'               => self::ADAPTER_FILE,
+                    'error_logging'         => false,
+                    'error_logging_levels'  => self::LOG_LEVEL_ALL,
+                );
             }
-        } else {
-            $result = true;
+            if (!isset($loggerConfig['cache'])) {
+                $loggerConfig['cache'] = false;
+            }
+            if (!isset($loggerConfig['adapter'])) {
+                $loggerConfig['adapter'] = self::ADAPTER_FILE;
+            }
+            if (!isset($loggerConfig['error_logging'])) {
+                $loggerConfig['error_logging'] = false;
+            }
+            if (!isset($loggerConfig['error_logging_levels'])) {
+                $loggerConfig['error_logging_levels'] = self::LOG_LEVEL_ALL;
+            }
+            self::setOptions($loggerConfig);
         }
-        return $result;
     }
 
 }

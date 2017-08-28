@@ -583,7 +583,7 @@ class Core
             return false;
         }
         $loggerConfig = Config::getValue('Logger');
-        if (!empty($loggerConfig['error_logging']) && Logger::initOptions(false)) {
+        if (!empty($loggerConfig['error_logging'])) {
             $levelNo   = Logger::phpErrorNo2LoggerNo($errorNo);
             $errorStr  = "{$errorStr} in {$errorFile}({$errorLine})";
             $backtrace = self::_getBacktraceString();

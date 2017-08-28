@@ -166,7 +166,7 @@ class Lib_Network_Ssh
         if (empty($timeout)) {
             $timeout = $this->streamTimeout;
         }
-        $this->log($cmd);
+        $this->log("Exec: ".$cmd);
         $stream = ssh2_exec($this->conn, $cmd);
         if (false === $stream ) {
             $this->log("unable to execute command:{$cmd}");
@@ -206,7 +206,7 @@ class Lib_Network_Ssh
                 }
             }
             // 其次执行用户指令
-            $this->log($cmd);
+            $this->log("Shell: ".$cmd);
             $shellCmd = "{$cmd} && echo '##end##';".PHP_EOL;
             fwrite($shellStream, $shellCmd);
             // 命令超时时间

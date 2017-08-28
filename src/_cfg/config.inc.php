@@ -22,12 +22,13 @@ return array(
      * 日志配置(可选)
      */
     'Logger' => array(
-        'enabled'               => true,                       // 开启日志功能
+        /*
         'cache'                 => false,                      // 缓存写入的日志内容到内存，最后请求执行完毕后再真正写入到文件系统
         'adapter'               => \Lge\Logger::ADAPTER_FILE,  // 适配配置，默认写入文件
         'adapter_file_log_path' => L_ROOT_PATH.'../log/',      // 日志目录绝对路径
         'error_logging'         => false,                      // 是否将运行产生的日志自动使用logger进行记录，默认关闭
         'error_logging_levels'  => \Lge\Logger::LOG_LEVEL_ALL, // 当产生错误时的日志记录级别，对手动调用日志记录无用，使用 \Lge\Logger::LOG_LEVEL_NONE 来关闭错误日志记录
+        */
     ),
 
     /*
@@ -44,7 +45,7 @@ return array(
             'charset'  => 'utf8',      // 数据库编码
             'prefix'   => '',          // 表名前缀，这个时候缩略表名应当以'_'符号开头
             'database' => '',          // 数据库名称
-            'linkinfo' => '',          // 可自定义PDO数据库连接信息，主要用于操作type项不支持，但PDO支持的数据库类型
+            'linkinfo' => '',          // 可自定义PDO数据库连接信息
         ),
         */
 
