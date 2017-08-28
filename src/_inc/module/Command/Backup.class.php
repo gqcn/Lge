@@ -111,7 +111,7 @@ class Module_Command_Backup extends BaseModule
                                 // @todo 这里需要检查下载下来的文件大小
                                 $ssh->getFile($filePath, $centerBackupFilePath);
                                 // 备份完成后清除远程的备份文件
-                                $ssh->syncShell("rm {$filePath}");
+//                                $ssh->syncShell("rm {$filePath}");
                             }
                             // 本地的备份文件数量控制
                             $this->_clearDirByKeepDays($centerBackupDir, $keepDays);

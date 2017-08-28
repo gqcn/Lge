@@ -146,7 +146,7 @@ class Lib_Network_Ssh
             var_dump(file_exists($localFile));
             // 如果以上两种方式都失败了，那么尝试使用scp的方式来下载文件
             if (!file_exists($localFile)) {
-                $this->disconnect();
+//                $this->disconnect();
                 $shellCmd = "sshpass -p {$this->pass} scp -P {$this->port} {$this->user}@{$this->host}:{$remoteFile} {$localFile}";
                 var_dump($shellCmd);
                 shell_exec($shellCmd);
