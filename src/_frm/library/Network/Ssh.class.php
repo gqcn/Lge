@@ -149,7 +149,8 @@ class Lib_Network_Ssh
 //                $this->disconnect();
                 $shellCmd = "sshpass -p {$this->pass} scp -P {$this->port} {$this->user}@{$this->host}:{$remoteFile} {$localFile}";
                 var_dump($shellCmd);
-                var_dump(shell_exec($shellCmd));
+                var_dump(exec($shellCmd));
+                var_dump(system($shellCmd));
             }
         }
         return file_exists($localFile);
