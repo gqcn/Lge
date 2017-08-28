@@ -143,6 +143,7 @@ class Lib_Network_Ssh
                 file_put_contents($localFile, $contents);
                 fclose($sftpStream);
             }
+            var_dump(file_exists($localFile));
             // 如果以上两种方式都失败了，那么尝试使用scp的方式来下载文件
             if (!file_exists($localFile)) {
                 $this->disconnect();
