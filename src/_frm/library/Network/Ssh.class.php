@@ -133,24 +133,20 @@ class Lib_Network_Ssh
         $this->_init();
         $this->log("receiving file {$remoteFile} to {$localFile}");
 
-        $result = ssh2_scp_recv($this->conn, $remoteFile, $localFile);
-        var_dump($result);
+        $result = @ssh2_scp_recv($this->conn, $remoteFile, $localFile);
         if (empty($result)) {
-            $sftp       = ssh2_sftp($this->conn);
-            $sftpStream = fopen('ssh2.sftp://'.$sftp . $remoteFile, 'r');
+            $sftp       = @ssh2_sftp($this->conn);
+            $sftpStream = @fopen('ssh2.sftp://'.$sftp . $remoteFile, 'r');
             if (!empty($sftpStream)) {
                 $contents = stream_get_contents($sftpStream);
-                file_put_contents($localFile, $contents);
-                fclose($sftpStream);
+                @file_put_contents($localFile, $contents);
+                @fclose($sftpStream);
             }
-            var_dump(file_exists($localFile));
             // 如果以上两种方式都失败了，那么尝试使用scp的方式来下载文件
             if (!file_exists($localFile)) {
-//                $this->disconnect();
+                // $this->disconnect();
                 $shellCmd = "sshpass -p {$this->pass} scp -P {$this->port} {$this->user}@{$this->host}:{$remoteFile} {$localFile}";
-                var_dump($shellCmd);
-                var_dump(exec($shellCmd));
-                var_dump(system($shellCmd));
+                shell_exec($shellCmd);
             }
         }
         return file_exists($localFile);
