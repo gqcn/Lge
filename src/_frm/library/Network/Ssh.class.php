@@ -377,12 +377,8 @@ class Lib_Network_Ssh
      */
     public function getCmdPath($cmd)
     {
-        $result = $this->syncExec("which {$cmd}");
+        $result = $this->syncShell("which {$cmd}");
         $result = trim($result);
-        if (empty($result)) {
-            $result = $this->syncShell("which {$cmd}");
-            $result = trim($result);
-        }
         return $result;
     }
 
