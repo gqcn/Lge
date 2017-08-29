@@ -59,10 +59,10 @@ class Module_Command_Backup extends BaseModule
             exception("Invalid hostinfo for center node:{$centerConfig['hostinfo']}");
         }
         $centerConfig = array_merge($centerConfig, $hostInfo);
-        $result       = shell_exec("sudo chown {$centerConfig['user']}:{$centerConfig['user']} {$backupDir} -R");
-        if (!empty($result)) {
-            exception($result);
-        }
+//        $result       = shell_exec("sudo chown {$centerConfig['user']}:{$centerConfig['user']} {$backupDir} -R");
+//        if (!empty($result)) {
+//            exception($result);
+//        }
 
         Logger::setAdapterFileLogPath($backupDir);
 
