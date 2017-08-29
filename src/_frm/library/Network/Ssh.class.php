@@ -378,16 +378,8 @@ class Lib_Network_Ssh
      */
     public function getCmdPath($cmd)
     {
-        $path = $this->syncShell("which {$cmd}");
+        $path = $this->syncShell("which {$cmd} || echo ''");
         $path = trim($path);
-        if (!empty($path)) {
-            // 判断命令是否执行报错，如果报错，那么表示查找的文件不存在
-            $result = $this->syncShell('echo $?');
-            var_dump($result);
-            if (trim($result) == "1") {
-                $path = "";
-            }
-        }
         return $path;
     }
 
