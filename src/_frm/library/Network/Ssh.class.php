@@ -370,6 +370,7 @@ class Lib_Network_Ssh
 
     /**
      * 判断服务端的指定命令的可执行文件绝对路径，例如：php,sshpass
+     * 如果查找失败返回空
      *
      * @param string $cmd 命令
      *
@@ -377,9 +378,16 @@ class Lib_Network_Ssh
      */
     public function getCmdPath($cmd)
     {
-        $result = $this->syncShell("which {$cmd}");
-        $result = trim($result);
-        return $result;
+        $path = $this->syncShell("which {$cmd}");
+        $path = trim($path);
+        if (!empty($path)) {
+            // 判断命令是否执行报错，如果报错，那么表示查找的文件不存在
+            $result = $this->syncShell('echo $?');
+            if (trim($result) == "1") {
+                $path = "";
+            }
+        }
+        return $path;
     }
 
     /**
@@ -393,6 +401,36 @@ class Lib_Network_Ssh
     {
         if ($this->echoLog) {
             echo 'Lge_SSH2: '.trim($content)."\n";
+        }
+    }
+
+    /**
+     * 通过系统包管理工具安装软件，多个安装包请以空格分隔.
+     *
+     * @param string $packages 安装包列表，多个安装包请以空格分隔.
+     * @param string $sudopass root密码或者但钱用户的sudo密码.
+     *
+     * @return void
+     */
+    public function installPackages($packages, $sudopass)
+    {
+        $pkgArray = explode(" ", $packages);
+        if (!empty($this->checkCmd('apt-get'))) {
+            // debian 系统
+            foreach ($pkgArray as $package) {
+                $package = trim($package);
+                if (!empty($package)) {
+                    $this->syncShell("echo \"{$sudopass}\" | sudo -S apt-get install -y {$package}");
+                }
+            }
+        } elseif (!empty($this->checkCmd('yum'))) {
+            // rhel 系统，注意这个时候只有root用户才能执行该命令
+            foreach ($pkgArray as $package) {
+                $package = trim($package);
+                if (!empty($package)) {
+                    $this->syncShell("yum install -y {$package}");
+                }
+            }
         }
     }
 

@@ -180,7 +180,9 @@ class Lib_Console
     }
 
     /**
-     * 查找可执行文件的绝对路径
+     * 查找可执行文件的绝对路径，如果查找失败，那么返回空
+     *
+     * @todo 对于CentOS系统，查找失败也会返回错误信息字符串，需要做处理
      *
      * @param string $bin 可执行文件名称，例如：php,nginx,mysql...
      *
@@ -189,20 +191,6 @@ class Lib_Console
     public static function getBinPath($bin)
     {
         return trim(shell_exec("which {$bin}"));
-    }
-
-    /**
-     * 获取当前系统的Linux发布版本信息
-     * array(
-     *     'os' => 主版本,
-     *     'distr' => 主版本,
-     * )
-     *
-     * @return array
-     */
-    public function getLinuxDistributionInfo()
-    {
-
     }
 
 }

@@ -80,6 +80,13 @@ class Module_Command_Backup extends BaseModule
                     $dataConfig = array_merge($dataConfig, $hostInfo);
                     $ssh        = new Lib_Network_Ssh($dataConfig['host'], $dataConfig['port'], $dataConfig['user'], $dataConfig['pass']);
                     $mysqldump  = $ssh->getCmdPath("mysqldump");
+                    if (empty($mysqldump)) {
+                        $ssh->installPackages("mysql mysql-client", $dataConfig['pass']);
+                        if (empty($mysqldump)) {
+                            Logger::log("!!!!!!!!!mysqldump not found, break!!!!!!!!!");
+                            break;
+                        }
+                    }
                     foreach ($dataConfig['databases'] as $db) {
                         $hostInfo = $this->_parseHostInfo($db['hostinfo']);
                         if (empty($hostInfo)) {
@@ -158,20 +165,12 @@ class Module_Command_Backup extends BaseModule
                             $ssh     = new Lib_Network_Ssh($fileConfig['host'], $fileConfig['port'], $fileConfig['user'], $fileConfig['pass']);
                             $sshpass = $ssh->getCmdPath("sshpass");
                             if (empty($sshpass)) {
-                                if (!empty($ssh->checkCmd('apt-get'))) {
-                                    // debian 系统
-                                    $ssh->syncShell("echo \"{$fileConfig['pass']}\" | sudo -S apt-get install -y sshpass");
-                                } elseif (!empty($ssh->checkCmd('yum'))) {
-                                    // rhel 系统，注意这个时候只有root用户才能执行该命令
-                                    $ssh->syncShell("yum install -y sshpass");
-                                }
-                                $sshpass = $ssh->getCmdPath("sshpass");
+                                $ssh->installPackages("sshpass", $fileConfig['pass']);
                                 if (empty($sshpass)) {
-                                    Logger::log("sshpass not installed, break");
+                                    Logger::log("!!!!!!!!!sshpass not found, break!!!!!!!!!");
                                     break;
                                 }
                             }
-
                             $ssh->syncShell("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 36000);
                             // 执行目录压缩
                             if ($keepDays > 1) {
