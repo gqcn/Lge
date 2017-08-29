@@ -378,8 +378,13 @@ class Lib_Network_Ssh
      */
     public function getCmdPath($cmd)
     {
-        $path = $this->syncShell("which {$cmd} || echo ''");
+        $path = $this->syncShell("which {$cmd}");
         $path = trim($path);
+        if (!empty($path)) {
+            if (strpos($path, 'which:')) {
+                $path = '';
+            }
+        }
         return $path;
     }
 
