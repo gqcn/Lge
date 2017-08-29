@@ -207,7 +207,7 @@ class Lib_Network_Ssh
             }
             // 其次执行用户指令
             $this->log("Shell: ".$cmd);
-            $shellCmd = "{$cmd} && echo '##end##';".PHP_EOL;
+            $shellCmd = "{$cmd} ; echo '##end##';".PHP_EOL;
             fwrite($shellStream, $shellCmd);
             // 命令超时时间
             $this->lastLog     = '';
@@ -297,7 +297,7 @@ class Lib_Network_Ssh
                 $shellCmd = $cmd.PHP_EOL;
                 fwrite($this->shellStream, $shellCmd);
             } else {
-                $shellCmd  = "{$cmd} && echo '##end##';".PHP_EOL;
+                $shellCmd  = "{$cmd} ; echo '##end##';".PHP_EOL;
                 fwrite($this->shellStream, $shellCmd);
             }
             // 命令超时时间

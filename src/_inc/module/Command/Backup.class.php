@@ -110,7 +110,7 @@ class Module_Command_Backup extends BaseModule
                                 $centerBackupFilePath = "{$centerBackupDir}/{$fileName}";
                                 $ssh->getFile($filePath, $centerBackupFilePath);
                                 // 备份完成后清除远程的备份文件
-                                $ssh->syncShell("rm {$filePath}");
+                                $ssh->syncShell("rm {$filePath} -f");
                             }
                             // 本地的备份文件数量控制
                             $this->_clearDirByKeepDays($centerBackupDir, $keepDays, $name);
@@ -172,7 +172,7 @@ class Module_Command_Backup extends BaseModule
                                 }
                             }
 
-                            $ssh->syncShell("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 3600);
+                            $ssh->syncShell("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 36000);
                             // 执行目录压缩
                             if ($keepDays > 1) {
                                 $this->_compressBackupFileDir($backupDirPath, date('Ymd'));
