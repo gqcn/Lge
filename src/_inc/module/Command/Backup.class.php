@@ -82,6 +82,7 @@ class Module_Command_Backup extends BaseModule
                     $mysqldump  = $ssh->getCmdPath("mysqldump");
                     if (empty($mysqldump)) {
                         $ssh->installPackages("mysql mysql-client", $dataConfig['pass']);
+                        $mysqldump = $ssh->getCmdPath("mysqldump");
                         if (empty($mysqldump)) {
                             Logger::log("!!!!!!!!!mysqldump not found, break!!!!!!!!!");
                             break;
@@ -166,6 +167,7 @@ class Module_Command_Backup extends BaseModule
                             $sshpass = $ssh->getCmdPath("sshpass");
                             if (empty($sshpass)) {
                                 $ssh->installPackages("sshpass", $fileConfig['pass']);
+                                $sshpass = $ssh->getCmdPath("sshpass");
                                 if (empty($sshpass)) {
                                     Logger::log("!!!!!!!!!sshpass not found, break!!!!!!!!!");
                                     break;
