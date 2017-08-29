@@ -173,7 +173,7 @@ class Module_Command_Backup extends BaseModule
                                     break;
                                 }
                             }
-                            $ssh->syncShell("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port}' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 36000);
+                            $ssh->syncShell("rsync -aurvz --delete -e '{$sshpass} -p {$pass} ssh -p {$port} -o \"StrictHostKeyChecking no\"' {$folderPath} {$user}@{$host}:{$fileBackupDir}", 36000);
                             // 执行目录压缩
                             if ($keepDays > 1) {
                                 $this->_compressBackupFileDir($backupDirPath, date('Ymd'));
