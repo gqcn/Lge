@@ -189,7 +189,7 @@ class Lib_Validator
         $messages = array();
         if (is_array($rule)) {
             $ruleString = $rule[0];
-            $messages   = $rule[1];
+            $messages   = isset($rule[1]) ? $rule[1] : null;
             if (!is_array($messages)) {
                 $messages = array($messages);
             }
