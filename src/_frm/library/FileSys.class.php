@@ -227,7 +227,7 @@ class Lib_FileSys
                 // 自动转换为Excel可识别的字符串格式
                 $content .= '"'.implode('"'.$glue.'="', $item).'"';
             } else {
-                $content .= '="'.$item.'"';
+                $content .= '"'.$item.'"';
             }
             $content .= PHP_EOL;
         }
