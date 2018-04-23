@@ -112,6 +112,7 @@ class Lib_Response
     {
         header("Access-Control-Allow-Origin: {$allowOrigin}");
         header("Access-Control-Allow-Methods: {$allowMethods}");
+        header("Access-Control-Allow-Credentials: true");
         header("Access-Control-Max-Age: {$maxAge}");
     }
 
