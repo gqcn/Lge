@@ -146,13 +146,14 @@ class Lib_Validator
         $result             = array();
         self::$_currentData = $data;
         foreach ($rules as $key => $rule) {
-            if (isset($data[$key])) {
-                $r = self::checkRule($data[$key], $rule, $returnWhenError);
-                if (!empty($r)) {
-                    $result[$key] = $r;
-                    if ($returnWhenError) {
-                        break;
-                    }
+            if (!isset($data[$key])) {
+                $data[$key] = null;
+            }
+            $r = self::checkRule($data[$key], $rule, $returnWhenError);
+            if (!empty($r)) {
+                $result[$key] = $r;
+                if ($returnWhenError) {
+                    break;
                 }
             }
         }
