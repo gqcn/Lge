@@ -25,42 +25,45 @@ $rules = array(
 );
 
 校验规则如下：
-required           格式：required                      说明：必需参数
-required_if        格式：required_if:field,value,...   说明：必需参数(当给定字段值与所给任意值相等时)
-required_with      格式：required_with:foo,bar,...     说明：必需参数(当所给定任意字段值不为空时)
-required_with_all  格式：required_with_all:foo,bar,... 说明：必须参数(当所给定所有字段值都不为空时)
-date               格式：date                          说明：参数日期类型(使用strtotime进行判断)，例如：2017-04-20, 20170420, 2017.04.20
-date_format        格式：date_format:format            说明：判断日期是否为制定格式，format为PHP标准的日期格式
-email              格式：email                         说明：EMAIL邮箱地址
-phone              格式：phone                         说明：手机号
-telephone          格式：telephone                     说明：国内座机电话号码，"XXXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"、"XXXXXXXX"
-passport           格式：passport                      说明：通用帐号规则(字母开头，只能包含字母、数字和下划线，长度在6~18之间)
-password           格式：password                      说明：通用密码(任意可见字符，长度在6~18之间)
-password2          格式：password2                     说明：中等强度密码(在弱密码的基础上，必须包含大小写字母和数字)
-password3          格式：password3                     说明：强等强度密码(在弱密码的基础上，必须包含大小写字母、数字和特殊字符)
-postcode           格式：id_number                     说明：中国邮政编码
-id_number          格式：id_number                     说明：公民身份证号码
-qq                 格式：qq                            说明：腾讯QQ号码
-ip                 格式：ip                            说明：IP地址(IPv4|IPv6)
-mac                格式：mac                           说明：MAC地址
-url                格式：url                           说明：URL
-length             格式：length:min,max                说明：参数长度为min到max
-min_length         格式：min_length:min                说明：参数长度最小为min
-max_length         格式：max_length:max                说明：参数长度最大为max
-between            格式：between:min,max               说明：参数大小为min到max
-min                格式：min:min                       说明：参数最小为min
-max                格式：max:max                       说明：参数最大为max
-json               格式：json                          说明：判断数据格式为JSON
-xml                格式：xml                           说明：判断数据格式为XML
-array              格式：array                         说明：数组
-integer            格式：integer                       说明：整数
-float              格式：float                         说明：浮点数
-boolean            格式：boolean                       说明：布尔值(1,true,on,yes:true | 0,false,off,no,"":false)
-same               格式：same:field                    说明：参数值必需与field参数的值相同
-different          格式：different:field               说明：参数值不能与field参数的值相同
-in                 格式：in:foo,bar,...                说明：参数值应该在foo,bar,...中
-not_in             格式：not_in:foo,bar,...            说明：参数值不应该在foo,bar,...中
-regex              格式：regex:pattern                 说明：参数值应当满足正则匹配规则pattern(使用preg_match判断)
+required             格式：required                              说明：必需参数
+required_if          格式：required_if:field,value,...           说明：必需参数(当任意所给定字段值与所给值相等时，即：当field字段的值为value时，当前验证字段为必须参数)
+required_unless      格式：required_unless:field,value,...       说明：必需参数(当所给定字段值与所给值都不相等时，即：当field字段的值不为value时，当前验证字段为必须参数)
+required_with        格式：required_with:field1,field2,...       说明：必需参数(当所给定任意字段值不为空时)
+required_with_all    格式：required_with_all:field1,field2,...   说明：必须参数(当所给定所有字段值都不为空时)
+required_without     格式：required_without:field1,field2,...    说明：必需参数(当所给定任意字段值为空时)
+required_without_all 格式：required_without_all:field1,field2,...说明：必须参数(当所给定所有字段值都为空时)
+date                 格式：date                          说明：参数日期类型(使用strtotime进行判断)，例如：2017-04-20, 20170420, 2017.04.20
+date_format          格式：date_format:format            说明：判断日期是否为制定格式，format为PHP标准的日期格式
+email                格式：email                         说明：EMAIL邮箱地址
+phone                格式：phone                         说明：手机号
+telephone            格式：telephone                     说明：国内座机电话号码，"XXXX-XXXXXXX"、"XXXX-XXXXXXXX"、"XXX-XXXXXXX"、"XXX-XXXXXXXX"、"XXXXXXX"、"XXXXXXXX"
+passport             格式：passport                      说明：通用帐号规则(字母开头，只能包含字母、数字和下划线，长度在6~18之间)
+password             格式：password                      说明：通用密码(任意可见字符，长度在6~18之间)
+password2            格式：password2                     说明：中等强度密码(在弱密码的基础上，必须包含大小写字母和数字)
+password3            格式：password3                     说明：强等强度密码(在弱密码的基础上，必须包含大小写字母、数字和特殊字符)
+postcode             格式：id_number                     说明：中国邮政编码
+id_number            格式：id_number                     说明：公民身份证号码
+qq                   格式：qq                            说明：腾讯QQ号码
+ip                   格式：ip                            说明：IP地址(IPv4|IPv6)
+mac                  格式：mac                           说明：MAC地址
+url                  格式：url                           说明：URL
+length               格式：length:min,max                说明：参数长度为min到max
+min_length           格式：min_length:min                说明：参数长度最小为min
+max_length           格式：max_length:max                说明：参数长度最大为max
+between              格式：between:min,max               说明：参数大小为min到max
+min                  格式：min:min                       说明：参数最小为min
+max                  格式：max:max                       说明：参数最大为max
+json                 格式：json                          说明：判断数据格式为JSON
+xml                  格式：xml                           说明：判断数据格式为XML
+array                格式：array                         说明：数组
+integer              格式：integer                       说明：整数
+float                格式：float                         说明：浮点数
+boolean              格式：boolean                       说明：布尔值(1,true,on,yes:true | 0,false,off,no,"":false)
+same                 格式：same:field                    说明：参数值必需与field参数的值相同
+different            格式：different:field               说明：参数值不能与field参数的值相同
+in                   格式：in:foo,bar,...                说明：参数值应该在foo,bar,...中
+not_in               格式：not_in:foo,bar,...            说明：参数值不应该在foo,bar,...中
+regex                格式：regex:pattern                 说明：参数值应当满足正则匹配规则pattern(使用preg_match判断)
 
  * @author John
  */
@@ -83,12 +86,12 @@ class Lib_Validator
      */
     public static $defaultMessages = array(
         'required'              => '字段不能为空',
-        'required-if'           => '字段不能为空',
-        'required-unless'       => '字段不能为空',
-        'required-with'         => '字段不能为空',
-        'required-with-all'     => '字段不能为空',
-        'required-without'      => '字段不能为空',
-        'required-without-all'  => '字段不能为空',
+        'required_if'           => '字段不能为空',
+        'required_unless'       => '字段不能为空',
+        'required_with'         => '字段不能为空',
+        'required_with_all'     => '字段不能为空',
+        'required_without'      => '字段不能为空',
+        'required_without_all'  => '字段不能为空',
         'date'                  => '日期格式不正确',
         'date_format'           => '日期格式不正确',
         'email'                 => '邮箱地址格式不正确',
@@ -244,12 +247,12 @@ class Lib_Validator
             switch ($ruleName) {
                 // 必须字段
                 case "required":
-                case "required-if":
-                case "required-unless":
-                case "required-with":
-                case "required-with-all":
-                case "required-without":
-                case "required-without-all":
+                case "required_if":
+                case "required_unless":
+                case "required_with":
+                case "required_with_all":
+                case "required_without":
+                case "required_without_all":
                     $ruleMatch = self::_checkRequired($value, $ruleName, $ruleAttr, $params);
                     break;
 
@@ -574,7 +577,7 @@ class Lib_Validator
                 break;
 
             // 必须字段(当任意所给定字段值与所给值相等时)
-            case "required-if":
+            case "required_if":
                 $required = false;
                 $array    = explode(",", $ruleVal);
                 // 必须为偶数，才能是键值对匹配
@@ -594,7 +597,7 @@ class Lib_Validator
                 break;
 
             // 必须字段(当所给定字段值与所给值都不相等时)
-            case "required-unless":
+            case "required_unless":
                 $required = true;
                 $array    = explode(",", $ruleVal);
                 // 必须为偶数，才能是键值对匹配
@@ -614,7 +617,7 @@ class Lib_Validator
                 break;
 
             // 必须字段(当所给定任意字段值不为空时)
-            case "required-with":
+            case "required_with":
                 $required = false;
                 $array    = explode(",", $ruleVal);
                 for ($i = 0; $i < count($array); $i++) {
@@ -628,7 +631,7 @@ class Lib_Validator
                 break;
 
             // 必须字段(当所给定所有字段值都不为空时)
-            case "required-with-all":
+            case "required_with_all":
                 $required = true;
                 $array    = explode(",", $ruleVal);
                 for ($i = 0; $i < count($array); $i++) {
@@ -642,7 +645,7 @@ class Lib_Validator
                 break;
 
             // 必须字段(当所给定任意字段值为空时)
-            case "required-without":
+            case "required_without":
                 $required = false;
                 $array    = explode(",", $ruleVal);
                 for ($i = 0; $i < count($array); $i++) {
@@ -656,7 +659,7 @@ class Lib_Validator
                 break;
 
             // 必须字段(当所给定所有字段值都为空时)
-            case "required-without-all":
+            case "required_without_all":
                 $required = true;
                 $array    = explode(",", $ruleVal);
                 for ($i = 0; $i < count($array); $i++) {
