@@ -225,7 +225,7 @@ class Lib_FileSys
         foreach ($list as $item) {
             if (is_array($item)) {
                 // 自动转换为Excel可识别的字符串格式
-                $content .= '"'.implode('"'.$glue.'="', $item).'"';
+                $content .= '"'.implode('"'.$glue.'"', $item).'"';
             } else {
                 $content .= '"'.$item.'"';
             }
