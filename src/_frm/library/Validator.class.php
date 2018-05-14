@@ -388,7 +388,7 @@ class Lib_Validator
 
                 // 长度范围
                 case 'length':
-                    $length   = mb_strcount($value, 'utf-8');
+                    $length   = mb_strlen($value, 'utf-8');
                     $tmpArray = explode(',', $ruleAttr);
                     $min      = isset($tmpArray[0]) ? $tmpArray[0] : null;
                     $max      = isset($tmpArray[1]) ? $tmpArray[1] : null;
@@ -407,7 +407,7 @@ class Lib_Validator
 
                 // 最小长度
                 case 'min_length':
-                    $length    = mb_strcount($value, 'utf-8');
+                    $length    = mb_strlen($value, 'utf-8');
                     $minLength = $ruleAttr;
                     if ($length < $minLength) {
                         $ruleMatch = false;
@@ -424,7 +424,7 @@ class Lib_Validator
 
                 // 最大长度
                 case 'max_length':
-                    $length    = mb_strcount($value, 'utf-8');
+                    $length    = mb_strlen($value, 'utf-8');
                     $maxLength = $ruleAttr;
                     if ($length > $maxLength) {
                         $ruleMatch = false;
