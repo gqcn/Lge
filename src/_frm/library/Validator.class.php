@@ -82,42 +82,45 @@ class Lib_Validator
      * @var array
      */
     public static $defaultMessages = array(
-        'required'          => '字段不能为空',
-        'required_if'       => '字段不能为空',
-        'required_with'     => '字段不能为空',
-        'required_with_all' => '字段不能为空',
-        'date'              => '日期格式不正确',
-        'date_format'       => '日期格式不正确',
-        'email'             => '邮箱地址格式不正确',
-        'phone'             => '手机号码格式不正确',
-        'telephone'         => '电话号码格式不正确',
-        'passport'          => '账号格式不合法，必需以字母开头，只能包含字母、数字和下划线，长度在6~18之间',
-        'password'          => '密码格式不合法，密码格式为任意6-18位的可见字符',
-        'password2'         => '密码格式不合法，密码格式为任意6-18位的可见字符，必须包含大小写字母和数字',
-        'password3'         => '密码格式不合法，密码格式为任意6-18位的可见字符，必须包含大小写字母、数字和特殊字符',
-        'postcode'          => '邮政编码不正确',
-        'id_number'         => '身份证号码不正确',
-        'qq'                => 'QQ号码格式不正确',
-        'ip'                => 'IP地址格式不正确',
-        'mac'               => 'MAC地址格式不正确',
-        'url'               => 'URL地址格式不正确',
-        'length'            => '字段长度为:min到:max个字符',
-        'min_length'        => '字段最小长度为:min',
-        'max_length'        => '字段最大长度为:max',
-        'between'           => '字段大小为:min到:max',
-        'min'               => '字段最小值为:min',
-        'max'               => '字段最大值为:max',
-        'json'              => '字段应当为JSON格式',
-        'xml'               => '字段应当为XML格式',
-        'array'             => '字段应当为数组',
-        'integer'           => '字段应当为整数',
-        'float'             => '字段应当为浮点数',
-        'boolean'           => '字段应当为布尔值',
-        'same'              => '字段值不合法',
-        'different'         => '字段值不合法',
-        'in'                => '字段值不合法',
-        'not_in'            => '字段值不合法',
-        'regex'             => '字段值不合法',
+        'required'              => '字段不能为空',
+        'required-if'           => '字段不能为空',
+        'required-unless'       => '字段不能为空',
+        'required-with'         => '字段不能为空',
+        'required-with-all'     => '字段不能为空',
+        'required-without'      => '字段不能为空',
+        'required-without-all'  => '字段不能为空',
+        'date'                  => '日期格式不正确',
+        'date_format'           => '日期格式不正确',
+        'email'                 => '邮箱地址格式不正确',
+        'phone'                 => '手机号码格式不正确',
+        'telephone'             => '电话号码格式不正确',
+        'passport'              => '账号格式不合法，必需以字母开头，只能包含字母、数字和下划线，长度在6~18之间',
+        'password'              => '密码格式不合法，密码格式为任意6-18位的可见字符',
+        'password2'             => '密码格式不合法，密码格式为任意6-18位的可见字符，必须包含大小写字母和数字',
+        'password3'             => '密码格式不合法，密码格式为任意6-18位的可见字符，必须包含大小写字母、数字和特殊字符',
+        'postcode'              => '邮政编码不正确',
+        'id_number'             => '身份证号码不正确',
+        'qq'                    => 'QQ号码格式不正确',
+        'ip'                    => 'IP地址格式不正确',
+        'mac'                   => 'MAC地址格式不正确',
+        'url'                   => 'URL地址格式不正确',
+        'length'                => '字段长度为:min到:max个字符',
+        'min_length'            => '字段最小长度为:min',
+        'max_length'            => '字段最大长度为:max',
+        'between'               => '字段大小为:min到:max',
+        'min'                   => '字段最小值为:min',
+        'max'                   => '字段最大值为:max',
+        'json'                  => '字段应当为JSON格式',
+        'xml'                   => '字段应当为XML格式',
+        'array'                 => '字段应当为数组',
+        'integer'               => '字段应当为整数',
+        'float'                 => '字段应当为浮点数',
+        'boolean'               => '字段应当为布尔值',
+        'same'                  => '字段值不合法',
+        'different'             => '字段值不合法',
+        'in'                    => '字段值不合法',
+        'not_in'                => '字段值不合法',
+        'regex'                 => '字段值不合法',
     );
 
     /**
@@ -149,7 +152,20 @@ class Lib_Validator
             if (!isset($data[$key])) {
                 $data[$key] = null;
             }
-            $r = self::checkRule($data[$key], $rule, $returnWhenError);
+            $r = self::checkRule($data[$key], $rule, false, $data);
+            // 如果值为null，并且不需要require*验证时，其他验证失效
+            if (!isset($data[$key]) && !empty($r)) {
+                $required = false;
+                foreach ($r as $k => $v) {
+                    if (stripos($k, 'required') !== false) {
+                        $required = true;
+                        break;
+                    }
+                }
+                if (!$required) {
+                    $r = array();
+                }
+            }
             if (!empty($r)) {
                 $result[$key] = $r;
                 if ($returnWhenError) {
@@ -181,10 +197,11 @@ class Lib_Validator
      * @param mixed   $value           数值.
      * @param mixed   $rule            规则.
      * @param boolean $returnWhenError 当错误产生时立即返回错误并停止检测(这个时候返回的是第一个错误).
+     * @param array   $params          参数数组，用于关联性规则校验.
      *
      * @return array
      */
-    public static function checkRule($value, $rule, $returnWhenError = false)
+    public static function checkRule($value, $rule, $returnWhenError = false, array $params = array())
     {
         $result   = array();
         $messages = array();
@@ -226,43 +243,14 @@ class Lib_Validator
             }
             switch ($ruleName) {
                 // 必须字段
-                case 'required':
-                    $ruleMatch = !empty($value);
-                    break;
-
-                // 必须字段(当给定字段值与所给任意值相等时)
-                case 'required_if':
-                    $tmpArray = explode(',', $ruleAttr);
-                    if (isset($tmpArray[0]) && isset(self::$_currentData[$tmpArray[0]])) {
-                        $fieldValue = self::$_currentData[$tmpArray[0]];
-                        unset($tmpArray[0]);
-                        if (in_array($fieldValue, $tmpArray) && empty($value)) {
-                            $ruleMatch = false;
-                        }
-                    }
-                    break;
-
-                // 必须字段(当所给定任意字段值不为空时)
-                case 'required_with':
-                    $ruleMatch = false;
-                    $tmpArray  = explode(',', $ruleAttr);
-                    foreach ($tmpArray as $v) {
-                        if (!empty(self::$_currentData[$v])) {
-                            $ruleMatch = true;
-                            break;
-                        }
-                    }
-                    break;
-
-                // 必须字段(当所给定所有字段值都不为空时)
-                case 'required_with_all':
-                    $tmpArray  = explode(',', $ruleAttr);
-                    foreach ($tmpArray as $v) {
-                        if (empty(self::$_currentData[$v])) {
-                            $ruleMatch = false;
-                            break;
-                        }
-                    }
+                case "required":
+                case "required-if":
+                case "required-unless":
+                case "required-with":
+                case "required-with-all":
+                case "required-without":
+                case "required-without-all":
+                    $ruleMatch = self::_checkRequired($value, $ruleName, $ruleAttr, $params);
                     break;
 
                 // 日期格式(使用strtotime判断)
@@ -397,7 +385,7 @@ class Lib_Validator
 
                 // 长度范围
                 case 'length':
-                    $length   = mb_strlen($value, 'utf-8');
+                    $length   = mb_strcount($value, 'utf-8');
                     $tmpArray = explode(',', $ruleAttr);
                     $min      = isset($tmpArray[0]) ? $tmpArray[0] : null;
                     $max      = isset($tmpArray[1]) ? $tmpArray[1] : null;
@@ -416,7 +404,7 @@ class Lib_Validator
 
                 // 最小长度
                 case 'min_length':
-                    $length    = mb_strlen($value, 'utf-8');
+                    $length    = mb_strcount($value, 'utf-8');
                     $minLength = $ruleAttr;
                     if ($length < $minLength) {
                         $ruleMatch = false;
@@ -433,7 +421,7 @@ class Lib_Validator
 
                 // 最大长度
                 case 'max_length':
-                    $length    = mb_strlen($value, 'utf-8');
+                    $length    = mb_strcount($value, 'utf-8');
                     $maxLength = $ruleAttr;
                     if ($length > $maxLength) {
                         $ruleMatch = false;
@@ -510,22 +498,38 @@ class Lib_Validator
                     break;
 
                 // 数组
-                case 'array':   $ruleMatch = is_array($value); break;
+                case 'array':
+                    $ruleMatch = is_array($value);
+                    break;
 
                 // 整数
-                case 'integer': $ruleMatch = filter_var($value, FILTER_VALIDATE_INT)     !== false; break;
+                case 'integer':
+                    $ruleMatch = filter_var($value, FILTER_VALIDATE_INT) !== false;
+                    break;
                 // 小数
-                case 'float':   $ruleMatch = filter_var($value, FILTER_VALIDATE_FLOAT)   !== false; break;
+                case 'float':
+                    $ruleMatch = filter_var($value, FILTER_VALIDATE_FLOAT) !== false;
+                    break;
                 // 布尔值(1,true,on,yes:true | 0,false,off,no,"":false)
-                case 'boolean': $ruleMatch = filter_var($value, FILTER_VALIDATE_BOOLEAN) !== false; break;
+                case 'boolean':
+                    $ruleMatch = filter_var($value, FILTER_VALIDATE_BOOLEAN) !== false;
+                    break;
                 // 邮件
-                case 'email':   $ruleMatch = filter_var($value, FILTER_VALIDATE_EMAIL)   !== false; break;
+                case 'email':
+                    $ruleMatch = filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
+                    break;
                 // URL
-                case 'url':     $ruleMatch = filter_var($value, FILTER_VALIDATE_URL)     !== false; break;
+                case 'url':
+                    $ruleMatch = filter_var($value, FILTER_VALIDATE_URL) !== false;
+                    break;
                 // IP
-                case 'ip':      $ruleMatch = filter_var($value, FILTER_VALIDATE_IP)      !== false; break;
+                case 'ip':
+                    $ruleMatch = filter_var($value, FILTER_VALIDATE_IP) !== false;
+                    break;
                 // MAC地址
-                case 'mac':     $ruleMatch = filter_var($value, FILTER_VALIDATE_MAC)     !== false; break;
+                case 'mac':
+                    $ruleMatch = filter_var($value, FILTER_VALIDATE_MAC) !== false;
+                    break;
 
                 default:
                     exception('Invalid rule name:'.$ruleName);
@@ -549,4 +553,127 @@ class Lib_Validator
         }
         return $result;
     }
+
+    /**
+     * 判断必须字段，是否匹配.
+     *
+     * @param string $value   参数值.
+     * @param string $ruleKey 规则名称.
+     * @param string $ruleVal 规则内容.
+     * @param array  $params  参数数组.
+     *
+     * @return boolean
+     */
+    private static function _checkRequired($value, $ruleKey, $ruleVal, array $params)
+    {
+        $required = false;
+        switch ($ruleKey) {
+            // 必须字段
+            case "required":
+                $required = true;
+                break;
+
+            // 必须字段(当任意所给定字段值与所给值相等时)
+            case "required-if":
+                $required = false;
+                $array    = explode(",", $ruleVal);
+                // 必须为偶数，才能是键值对匹配
+                if (count($array) % 2 == 0) {
+                    for ($i = 0; $i < count($array); ) {
+                        $tk = $array[$i];
+                        $tv = $array[$i + 1];
+                        if (isset($params[$tk])) {
+                            if ($tv == $params[$tk]) {
+                                $required = true;
+                                break;
+                            }
+                        }
+                        $i += 2;
+                    }
+                }
+                break;
+
+            // 必须字段(当所给定字段值与所给值都不相等时)
+            case "required-unless":
+                $required = true;
+                $array    = explode(",", $ruleVal);
+                // 必须为偶数，才能是键值对匹配
+                if (count($array) % 2 == 0) {
+                    for ($i = 0; $i < count($array); ) {
+                        $tk = $array[$i];
+                        $tv = $array[$i + 1];
+                        if (isset($params[$tk])) {
+                            if ($tv == $params[$tk]) {
+                                $required = false;
+                                break;
+                            }
+                        }
+                        $i += 2;
+                    }
+                }
+                break;
+
+            // 必须字段(当所给定任意字段值不为空时)
+            case "required-with":
+                $required = false;
+                $array    = explode(",", $ruleVal);
+                for ($i = 0; $i < count($array); $i++) {
+                    if (isset($params[$array[$i]])) {
+                        if (!empty($params[$array[$i]])) {
+                            $required = true;
+                            break;
+                        }
+                    }
+                }
+                break;
+
+            // 必须字段(当所给定所有字段值都不为空时)
+            case "required-with-all":
+                $required = true;
+                $array    = explode(",", $ruleVal);
+                for ($i = 0; $i < count($array); $i++) {
+                    if (isset($params[$array[$i]])) {
+                        if (!empty($params[$array[$i]])) {
+                            $required = false;
+                            break;
+                        }
+                    }
+                }
+                break;
+
+            // 必须字段(当所给定任意字段值为空时)
+            case "required-without":
+                $required = false;
+                $array    = explode(",", $ruleVal);
+                for ($i = 0; $i < count($array); $i++) {
+                    if (isset($params[$array[$i]])) {
+                        if (!empty($params[$array[$i]])) {
+                            $required = true;
+                            break;
+                        }
+                    }
+                }
+                break;
+
+            // 必须字段(当所给定所有字段值都为空时)
+            case "required-without-all":
+                $required = true;
+                $array    = explode(",", $ruleVal);
+                for ($i = 0; $i < count($array); $i++) {
+                    if (isset($params[$array[$i]])) {
+                        if (!empty($params[$array[$i]])) {
+                            $required = false;
+                            break;
+                        }
+                    }
+                }
+                break;
+        }
+        if ($required) {
+            return (isset($value) && $value !== '');
+        } else {
+            return true;
+        }
+    }
+
 }
