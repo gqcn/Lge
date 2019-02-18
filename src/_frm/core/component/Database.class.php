@@ -1279,7 +1279,8 @@ class Database
                 }
                 $this->close();
                 if ((php_sapi_name() == 'cli')) {
-                    $errorContent = strip_tags($errorContent);
+                    // 不能使用strp_tags方法，会引起$info变量中的'>'符号被过滤
+                    $errorContent = str_replace(array('<h3>','</h3>','<p>','</p>','<b>','</b>'),'', $errorContent);
                 }
                 echo $errorContent;
                 exit();
