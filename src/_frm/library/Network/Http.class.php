@@ -331,7 +331,10 @@ class Lib_Network_Http
         $this->httpCode          = curl_getinfo($this->_ch, CURLINFO_HTTP_CODE);
         $this->httpHeaderArray   = $this->_parseHeader($headerContent);
         $this->httpHeaderContent = $headerContent;
-        if (isset($this->httpHeaderArray['content-type'])) {
+        if (!empty($this->httpHeaderArray['content-type'])) {
+            if (is_array($this->httpHeaderArray['content-type'])) {
+                $this->httpHeaderArray['content-type'] = $this->httpHeaderArray['content-type'][count($this->httpHeaderArray['content-type']) - 1];
+            }
             $tArray           = explode(';', $this->httpHeaderArray['content-type']);
             $this->httpType   = $tArray[0];
         }
